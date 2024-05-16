@@ -1,0 +1,1537 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "db2b-api",
+        "description": "Développement d'une plateforme B2B multilingue complète",
+        "contact": {
+            "email": "ayenaaurel15@gmail.com"
+        },
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/ad/all": {
+            "get": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Get all ads.",
+                "description": "Get All ads.",
+                "operationId": "b7e0c0d13e9228caecd0aa415d30ae7f",
+                "responses": {
+                    "200": {
+                        "description": "Success. Return all ads.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Serveur error."
+                    }
+                }
+            }
+        },
+        "/api/ad/recent/{perPage}": {
+            "get": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Get recent ads.",
+                "description": "Get recent ads.",
+                "operationId": "129ce8c1391a1017d1354e22424517df",
+                "parameters": [
+                    {
+                        "name": "perPage",
+                        "in": "path",
+                        "description": "number of ad per page.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success. Return all recent ads.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Serveur error."
+                    }
+                }
+            }
+        },
+        "/api/ad/marchand": {
+            "get": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Get all seller ads.",
+                "description": "Get All ads.",
+                "operationId": "b7823d82f0a81e723b4947135a7abc36",
+                "responses": {
+                    "200": {
+                        "description": "Success. Return all seller ads.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Serveur error."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ad/storeAd": {
+            "post": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Create a new ad",
+                "operationId": "bb2a41d34a4a6df9f03ef86f694a3ed7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Ad title"
+                                    },
+                                    "location_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "value_entered[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "value1"
+                                        },
+                                        "example": [
+                                            "value1",
+                                            "value2",
+                                            "value3"
+                                        ]
+                                    },
+                                    "files[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ad added successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ad added successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Validation error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ad/editAd/{uid}": {
+            "post": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Edit an existing ad",
+                "operationId": "f3ff816fbcd6e65a6d166eb27ae26c02",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "UID of the ad to edit",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "New ad title"
+                                    },
+                                    "location_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "value_entered[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ad edited successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ad edited successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Validation error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/category/add": {
+            "post": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Ajouter une nouvelle catégorie",
+                "operationId": "b82d7c0248c8e3f8560bb206d70ddaa7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "parent_id": {
+                                        "type": "integer"
+                                    },
+                                    "files[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "description": "Image de la catégorie (JPEG, PNG, JPG, GIF, taille max : 2048)",
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Criteria  created successfully"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/category/detail/{uid}": {
+            "get": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Récupérer les détails d'une catégorie.",
+                "operationId": "a6a3c4418148e0845860d8d947db473b",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "L'UID de la catégorie à récupérer.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Succès. Retourne les détails de la catégorie avec ses fichiers associés.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Non trouvé. La catégorie avec l'UID spécifié n'existe pas."
+                    },
+                    "500": {
+                        "description": "Erreur de serveur. Une erreur s'est produite lors du traitement de la requête."
+                    }
+                }
+            }
+        },
+        "/api/category/all": {
+            "get": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Récupérer toutes les catégories.",
+                "description": "Récupérer toutes les catégories.",
+                "operationId": "5417b653892ac2baf32d3d12510c72a5",
+                "responses": {
+                    "200": {
+                        "description": "Succès. Retourne toutes les catégories.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur de serveur. Une erreur s'est produite lors du traitement de la requête."
+                    }
+                }
+            }
+        },
+        "/api/category/search": {
+            "get": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Rechercher une catégorie par titre.",
+                "operationId": "d10176cf946fad63358d7be3275e937f",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Le terme de recherche pour le titre de la catégorie.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Succès. Retourne les catégories correspondant à la recherche.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur de serveur. Une erreur s'est produite lors du traitement de la requête."
+                    }
+                }
+            }
+        },
+        "/api/country/add": {
+            "post": {
+                "tags": [
+                    "Country"
+                ],
+                "summary": "Ajouter un pays.",
+                "operationId": "2edc4628d1918806a669eb332b76430a",
+                "requestBody": {
+                    "description": "Données requises pour ajouter un pays.",
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "fullname",
+                                    "shortcode",
+                                    "callcode",
+                                    "file"
+                                ],
+                                "properties": {
+                                    "fullname": {
+                                        "type": "string",
+                                        "example": "Nom complet du pays"
+                                    },
+                                    "shortcode": {
+                                        "type": "string",
+                                        "example": "Code court du pays"
+                                    },
+                                    "callcode": {
+                                        "type": "string",
+                                        "example": "Code d'appel du pays"
+                                    },
+                                    "file": {
+                                        "description": "Fichier d'image du drapeau du pays (jpeg, jpg, png)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Succès. Le pays a été ajouté avec succès."
+                    },
+                    "400": {
+                        "description": "Requête invalide. Veuillez fournir toutes les données requises et vérifier les contraintes de validation."
+                    },
+                    "500": {
+                        "description": "Erreur de serveur. Une erreur s'est produite lors du traitement de la requête."
+                    }
+                }
+            }
+        },
+        "/api/country/all": {
+            "get": {
+                "tags": [
+                    "Country"
+                ],
+                "summary": "Get all country.",
+                "description": "Récupérer tous les pays.",
+                "operationId": "f790519fc3f6615f524e7ec869411e5c",
+                "responses": {
+                    "200": {
+                        "description": "Success. Return all countries.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Serveur error."
+                    }
+                }
+            }
+        },
+        "/api/deliveryAgency/add/{id}": {
+            "post": {
+                "tags": [
+                    "Delivery Agencies"
+                ],
+                "summary": "Ajouter une agence de livraison pour une personne",
+                "operationId": "3adb86b4cc3dc51d2133a2e0e1170599",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la personne à laquelle ajouter l'agence de livraison",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "agent_type": {
+                                        "description": "Type de l'agent de livraison",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "agent_type": "votre_type"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Succès de l'opération"
+                    },
+                    "400": {
+                        "description": "Requête invalide"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/api/favorite/addAdToFavorite": {
+            "post": {
+                "tags": [
+                    "Favorite"
+                ],
+                "summary": "add new ad to favorite",
+                "operationId": "3a4ca13bce683d5458259ef611001221",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ad_id": {
+                                        "description": "Get specific ID of ad",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "ad_id": 123
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "add added successfully"
+                    },
+                    "400": {
+                        "description": "Requête invalide"
+                    },
+                    "401": {
+                        "description": "unauthorized"
+                    },
+                    "500": {
+                        "description": "error server"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/validateEmail": {
+            "post": {
+                "tags": [
+                    "Validation"
+                ],
+                "summary": "Valider un e-mail",
+                "description": "Valide si l'e-mail fourni existe dans la base de données",
+                "operationId": "961c0b41a8c9c5a9795072c166395456",
+                "requestBody": {
+                    "description": "Données d'entrée requises",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "E-mail valide",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "E-mail valide"
+                                        },
+                                        "data": {
+                                            "$ref": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "E-mail invalide",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "E-mail invalide"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/restrictedUser": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Ajouter un utilisateur restreint",
+                "description": "Ajoute un utilisateur restreint à la base de données avec son email et adresse IP.",
+                "operationId": "13d79d5baadcf70e897b527903b39091",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "L'email de l'utilisateur à restreindre",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "ip_address": {
+                                        "description": "L'adresse IP de l'utilisateur à restreindre",
+                                        "type": "string",
+                                        "format": "ipv4"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message de succès",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Détails de l'erreur de validation",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Détails de l'erreur serveur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/login": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Connexion de l'utilisateur",
+                "description": "Authentifie l'utilisateur et renvoie un jeton d'accès en cas de succès.",
+                "operationId": "c9b20e2431404b7383ce7e626b4b6f05",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "username",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "username": {
+                                        "description": "Nom d'utilisateur (email ou numéro de téléphone)",
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "description": "Mot de passe de l'utilisateur",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "$ref": ""
+                                        },
+                                        "access_token": {
+                                            "description": "Jeton d'accès JWT",
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "description": "Type de jeton (Bearer)",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Détails de l'erreur de validation",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Détails de l'erreur serveur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/register": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Enregistrer un nouvel utilisateur",
+                "description": "Crée un nouvel utilisateur avec l'email, le numéro de téléphone et le mot de passe fournis.",
+                "operationId": "758e750cf3b7f1b6a9c906c443a12b83",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phone",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "phone": {
+                                        "description": "Numéro de téléphone de l'utilisateur (format international avec le préfixe +)",
+                                        "type": "string"
+                                    },
+                                    "country_id": {
+                                        "description": "Numéro de téléphone de l'utilisateur (format international avec le préfixe +)",
+                                        "type": "integer"
+                                    },
+                                    "email": {
+                                        "description": "Adresse e-mail de l'utilisateur",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "description": "Mot de passe de l'utilisateur (au moins 8 caractères, une lettre majuscule, un chiffre et un caractère spécial)",
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "password_confirmation": {
+                                        "description": "Confirmation du mot de passe de l'utilisateur",
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Utilisateur créé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message de succès",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Détails de l'erreur de validation",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Détails de l'erreur serveur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/logout": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Déconnexion de l'utilisateur",
+                "description": "Déconnecte l'utilisateur authentifié.",
+                "operationId": "3f4630f2faa114f9a6495b04588632ec",
+                "responses": {
+                    "200": {
+                        "description": "Déconnexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message de succès",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Détails de l'erreur serveur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user": {
+            "get": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Obtenir les informations de l'utilisateur authentifié",
+                "description": "Renvoie les informations de l'utilisateur authentifié.",
+                "operationId": "c4c131a523d50505e9c9f3c1fe2e43b5",
+                "responses": {
+                    "200": {
+                        "description": "Informations de l'utilisateur récupérées avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "description": "Détails de l'utilisateur authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Détails de l'erreur serveur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/getUser": {
+            "get": {
+                "tags": [
+                    "Utilisateurs"
+                ],
+                "summary": "Obtenir la liste des utilisateurs",
+                "description": "Renvoie la liste de tous les utilisateurs enregistrés dans le système.",
+                "operationId": "7b2f143e1d6d6e9d878d4729986829f5",
+                "responses": {
+                    "200": {
+                        "description": "Liste des utilisateurs récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "description": "Liste des utilisateurs avec leurs informations",
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "total_users": {
+                                            "description": "Nombre total d'utilisateurs dans le système",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Détails de l'erreur serveur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/getUserLogin": {
+            "get": {
+                "tags": [
+                    "Utilisateurs"
+                ],
+                "summary": "Obtenir la liste des utilisateurs connectés",
+                "description": "Renvoie la liste de tous les utilisateurs connectés au système.",
+                "operationId": "11762c5a34033a013e16893c2743cb2c",
+                "responses": {
+                    "200": {
+                        "description": "Liste des utilisateurs connectés récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "description": "Liste des utilisateurs connectés avec leurs informations",
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "total_users": {
+                                            "description": "Nombre total d'utilisateurs connectés dans le système",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Détails de l'erreur serveur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/getUserLogout": {
+            "get": {
+                "tags": [
+                    "Utilisateurs"
+                ],
+                "summary": "Obtenir la liste des utilisateurs déconnectés",
+                "description": "Renvoie la liste de tous les utilisateurs déconnectés du système.",
+                "operationId": "011fd2f470fe6eb3764a4ed00e5dd02d",
+                "responses": {
+                    "200": {
+                        "description": "Liste des utilisateurs déconnectés récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "description": "Liste des utilisateurs déconnectés avec leurs informations",
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "total_users": {
+                                            "description": "Nombre total d'utilisateurs déconnectés dans le système",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Détails de l'erreur serveur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/updatePassword": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Mettre à jour le mot de passe de l'utilisateur",
+                "description": "Permet à l'utilisateur de mettre à jour son mot de passe.",
+                "operationId": "146bab92f4aed7ee78df5b7aafbe7101",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "old_password",
+                                    "new_password"
+                                ],
+                                "properties": {
+                                    "old_password": {
+                                        "description": "Ancien mot de passe de l'utilisateur",
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "new_password": {
+                                        "description": "Nouveau mot de passe de l'utilisateur (au moins 8 caractères)",
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mot de passe mis à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message de succès",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Message d'erreur de validation",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Détails de l'erreur serveur",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/right/store": {
+            "post": {
+                "tags": [
+                    "Right"
+                ],
+                "summary": "add new right",
+                "operationId": "50898de928048a036a8342cd4dd50760",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "traveler"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "new right created successfuly",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "string",
+                                            "example": "new right created successfuly"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/right/update/{id}": {
+            "put": {
+                "tags": [
+                    "Right"
+                ],
+                "summary": "Update a right by ID",
+                "operationId": "bfa1eb96313b62b7aafc79bbe4f04ccf",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the right",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "traveler"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Right updated successfully"
+                    },
+                    "404": {
+                        "description": "Right not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/right/destroy/{id}": {
+            "delete": {
+                "tags": [
+                    "Right"
+                ],
+                "summary": "Delete a right by ID",
+                "operationId": "9d51ca54b1ca1f98972f9a34e775642e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the right",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Right deleted successfully"
+                    },
+                    "404": {
+                        "description": "Right not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}
