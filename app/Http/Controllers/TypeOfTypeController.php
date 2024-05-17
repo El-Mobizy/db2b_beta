@@ -32,9 +32,8 @@ class TypeOfTypeController extends Controller
     public function store(Request $request)
     {
         try {
-            $db = DB::connection()->getPdo();
             $request->validate([
-                'libelle' => 'required'
+                'libelle' => 'required|unique:type_of_types'
             ]);
 
             $help = new CategoryController();
@@ -45,38 +44,24 @@ class TypeOfTypeController extends Controller
             $type = new TypeOfType();
             $type->libelle = $request->libelle;
             $type->uid = $ulidType;
+            $type->codereference = $randomString;
             if ($request->has('parent_id')) {
                 $type->parent_id = $request->parent_id;
             }
-            if ($request->hasFile('files')) {
-                $type->codereference = $randomString;
-
+            if($request->hasFile('files')){
                 foreach($request->file('files') as $index => $photo){
-                    $size = filesize($photo);
-                    $ulid = Uuid::uuid1();
-                    $ulidPhoto = $ulid->toString();
-                    $created_at = date('Y-m-d H:i:s');
-                    $updated_at = date('Y-m-d H:i:s');
-                    $photoName = uniqid() . '.' . $photo->getClientOriginalExtension();
-                    $photoPath = $photo->move(public_path('image/photo_type'), $photoName);
-                    $photoUrl = url('/image/photo_type/' . $photoName);
-                    $type = $photo->getClientOriginalExtension();
-                    $location = $photoPath;
-                    $referencecode = $randomString;
-                    $filename = md5(uniqid()) . '.' . $type;
-                    $uid = $ulidPhoto;
-                    $q = "INSERT INTO files (filename, type, location, size, referencecode, uid,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)";
-                    $stmt = $db->prepare($q);
-                    $stmt->bindParam(1, $filename);
-                    $stmt->bindParam(2, $type);
-                    $stmt->bindParam(3, $location);
-                    $stmt->bindParam(4,  $size);
-                    $stmt->bindParam(5,  $referencecode);
-                    $stmt->bindParam(6,  $uid);
-                    $stmt->bindParam(7,  $created_at);
-                    $stmt->bindParam(8,  $updated_at);
-                    $stmt->execute();
+
+                    $allowedExtensions = ['jpeg', 'jpg', 'png', 'gif'];
+        
+                    $extension = $photo->getClientOriginalExtension();
+        
+                    if (!in_array($extension, $allowedExtensions)) {
+                        return response()->json(['message' =>"Veuillez télécharger une image (jpeg, jpg, png, gif)." ]);
+                    }
                 }
+
+                $file = new FileController();
+                $file->store($request,$randomString,"typeoftype");
             }
             $type->save();
 

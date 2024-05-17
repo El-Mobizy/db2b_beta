@@ -62,6 +62,13 @@ class CountryController extends Controller
             $shortcode =  htmlspecialchars($request->input('shortcode'));
             $callcode =  htmlspecialchars($request->input('callcode'));
             $photo =  $request->file('file');
+            $allowedExtensions = ['jpeg', 'jpg', 'png', 'gif'];
+
+            $extension = $photo->getClientOriginalExtension();
+
+            if (!in_array($extension, $allowedExtensions)) {
+                return response()->json(['message' =>"Veuillez télécharger une image (jpeg, jpg, png, gif)." ]);
+            }
             $photoName = uniqid() . '.' . $photo->getClientOriginalExtension();
             $photoPath = $photo->move(public_path('image/country_flag'), $photoName);
             $photoUrl = url('/image/country_flag/' . $photoName);

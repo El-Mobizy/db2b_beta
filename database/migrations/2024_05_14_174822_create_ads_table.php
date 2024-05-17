@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignId('category_id')->references('id')->on('categories');
             $table->foreignId('owner_id')->references('id')->on('users');
             $table->foreignId('location_id')->references('id')->on('countries');
-            $table->foreignId('validated_by_id')->references('id')->on('users')->nullable();
+            $table->foreignId('validated_by_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

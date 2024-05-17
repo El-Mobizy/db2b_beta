@@ -13,7 +13,6 @@ use PhpParser\Node\Stmt\TryCatch;
 
 class CategoryController extends Controller
 {
-    public $a =1;
     /**
      * Display a listing of the resource.
      */
@@ -92,35 +91,22 @@ class CategoryController extends Controller
             $statement->bindParam(5,  $uid);
             $statement->bindParam(6,  $created_at);
             $statement->bindParam(7,  $updated_at);
-            $statement->execute();
-            if($request->hasFile('files')){
-                foreach($request->file('files') as $index => $photo){
-                    $size = filesize($photo);
-                    $ulid = Uuid::uuid1();
-                    $ulidPhoto = $ulid->toString();
-                    $created_at = date('Y-m-d H:i:s');
-                    $updated_at = date('Y-m-d H:i:s');
-                    $photoName = uniqid() . '.' . $photo->getClientOriginalExtension();
-                    $photoPath = $photo->move(public_path('image/photo_category'), $photoName);
-                    $photoUrl = url('/image/photo_category/' . $photoName);
-                    $type = $photo->getClientOriginalExtension();
-                    $location = $photoUrl;
-                    $referencecode = $randomString;
-                    $filename = md5(uniqid()) . '.' . $type;
-                    $uid = $ulidPhoto;
-                    $q = "INSERT INTO files (filename, type, location, size, referencecode, uid,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)";
-                    $stmt = $db->prepare($q);
-                    $stmt->bindParam(1, $filename);
-                    $stmt->bindParam(2, $type);
-                    $stmt->bindParam(3, $location);
-                    $stmt->bindParam(4,  $size);
-                    $stmt->bindParam(5,  $referencecode);
-                    $stmt->bindParam(6,  $uid);
-                    $stmt->bindParam(7,  $created_at);
-                    $stmt->bindParam(8,  $updated_at);
-                    $stmt->execute();
-                }
+
+            foreach($request->file('files') as $index => $photo){
+
+            $allowedExtensions = ['jpeg', 'jpg', 'png', 'gif'];
+
+            $extension = $photo->getClientOriginalExtension();
+
+            if (!in_array($extension, $allowedExtensions)) {
+                return response()->json(['message' =>"Veuillez télécharger une image (jpeg, jpg, png, gif)." ]);
             }
+        }
+
+            $file = new FileController();
+            $file->store($request,$randomString,"category");
+
+            $statement->execute();
             return response()->json([
                 'message' => "category created successfuly"
             ],200);

@@ -12,6 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
+use App\Interfaces\Interfaces\FileRepositoryInterface;
+use App\Models\Country;
+use App\Services\Useful;
 
 class AdController extends Controller
 {
@@ -100,13 +103,13 @@ class AdController extends Controller
             if($perPage > 50){
                 $perPage = 50;
             }
-            $products = Ad::with('ad_detail', 'file')
+            $ads = Ad::with('ad_detail', 'file')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
 
                   return response()->json([
-                    'data' =>$products,
+                    'data' =>$ads,
                   ]);
         } catch (Exception $e) {
            return response()->json([
@@ -145,16 +148,28 @@ class AdController extends Controller
     {
         try {
 
-            // $db = DB::connection()->getPdo();
-            // $query = "SELECT * FROM ads WHERE deleted = false AND owner_id=:id";
-            // $stmt = $db->prepare($query);
-            // $stmt->bindValue(':id',Auth::user()->id);
-            // $stmt->execute();
-            // $ads = $stmt->fetchAll($db::FETCH_ASSOC);
+            $db = DB::connection()->getPdo();
+          
+        //   $query = "SELECT *
+        //   FROM ads
+        //   LEFT JOIN ad_details ON ads.id = ad_details.ad_id
+        //   LEFT JOIN files ON ads.file_code = files.referencecode
+        //   WHERE ads.deleted = false AND ads.owner_id =:id
+        //   ORDER BY ads.created_at DESC
+        //   ";
+
+        // $stmt = $db->prepare($query);
+        // $stmt->bindValue(':id',Auth::user()->id);
+        // $stmt->execute();
+        // $ads = $stmt->fetchAll($db::FETCH_ASSOC);
+
+            $ads = Ad::with('ad_detail', 'file')
+            ->orderBy('created_at', 'desc')
+            ->where('deleted',false)->where('owner_id',Auth::user()->id)->get();
             return response()->json([
-                'data' => Ad::with('ad_detail', 'file')
-                ->orderBy('created_at', 'desc')
-                ->where('deleted',false)->where('owner_id',Auth::user()->id)->get()
+                'data' =>[
+                    'data'=> $ads,
+                ]
             ]);
 
         } catch (Exception $e) {
@@ -164,60 +179,60 @@ class AdController extends Controller
         }
     }
 
-//     /**
-//  * @OA\Delete(
-//  *     path="/api/ad/destroyAd/{uid}",
-//  *     tags={"Ad"},
-//  *     summary="Delete an ad",
-//  *     description="Deletes an ad using its UID",
-//  *     operationId="destroyAd",
-//  *     security={{"bearerAuth":{}}},
-//  *     @OA\Parameter(
-//  *         name="uid",
-//  *         in="path",
-//  *         description="UID of the ad to delete",
-//  *         required=true,
-//  *         @OA\Schema(
-//  *             type="string"
-//  *         )
-//  *     ),
-//  *     @OA\Response(
-//  *         response=200,
-//  *         description="Ad deleted successfully",
-//  *         @OA\JsonContent(
-//  *             @OA\Property(property="message", type="string", example="Ad deleted successfully !")
-//  *         )
-//  *     ),
-//  *     @OA\Response(
-//  *         response=401,
-//  *         description="Unauthorized - User not authenticated",
-//  *         @OA\JsonContent(
-//  *             @OA\Property(property="message", type="string", example="Unauthenticated.")
-//  *         )
-//  *     ),
-//  *     @OA\Response(
-//  *         response=403,
-//  *         description="Forbidden - User is not allowed to delete this ad",
-//  *         @OA\JsonContent(
-//  *             @OA\Property(property="message", type="string", example="You can't delete an ad that you don't belong to")
-//  *         )
-//  *     ),
-//  *     @OA\Response(
-//  *         response=404,
-//  *         description="Not Found - No ad found with the specified UID",
-//  *         @OA\JsonContent(
-//  *             @OA\Property(property="message", type="string", example="No ad found with the specified UID")
-//  *         )
-//  *     ),
-//  *     @OA\Response(
-//  *         response=500,
-//  *         description="Internal Server Error - An error occurred while deleting the ad",
-//  *         @OA\JsonContent(
-//  *             @OA\Property(property="error", type="string", example="Internal Server Error")
-//  *         )
-//  *     )
-//  * )
-//  */
+    /**
+ * @OA\Delete(
+ *     path="/api/ad/destroyAd/{uid}",
+ *     tags={"Ad"},
+ *     summary="Delete an ad",
+ *     description="Deletes an ad using its UID",
+ *     operationId="destroyAd",
+ *     security={{"bearerAuth":{}}},
+ *     @OA\Parameter(
+ *         name="uid",
+ *         in="path",
+ *         description="UID of the ad to delete",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Ad deleted successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Ad deleted successfully !")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=401,
+ *         description="Unauthorized - User not authenticated",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Unauthenticated.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="Forbidden - User is not allowed to delete this ad",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="You can't delete an ad that you don't belong to")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Not Found - No ad found with the specified UID",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="No ad found with the specified UID")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error - An error occurred while deleting the ad",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Internal Server Error")
+ *         )
+ *     )
+ * )
+ */
 
 
     public function destroyAd($uid)
@@ -225,9 +240,9 @@ class AdController extends Controller
         try {
             $ad = Ad::where('uid',$uid)->first();
 
-            if ($ad->owner_id != Auth::user()->id) {
+            if (!$ad) {
                 return response()->json([
-                    'message' => "You can't delete a ad that you don't belong to"
+                    'message' => "Ad not found"
                 ]);
             }
 
@@ -236,6 +251,13 @@ class AdController extends Controller
                     'message' => "You can't delete a ad that's already deleted"
                 ]);
             }
+
+            if ($ad->owner_id != Auth::user()->id) {
+                return response()->json([
+                    'message' => "You can't delete a ad that you don't belong to"
+                ]);
+            }
+
 
             $db = DB::connection()->getPdo();
 
@@ -297,153 +319,77 @@ class AdController extends Controller
  * )
  */
 
-
-    public function storeAd(Request $request){
-         try {
-            $db = DB::connection()->getPdo();
-
-                $request->validate([
-                    'title' => 'required',
-                    'location_id' => 'required',
-                    'category_id' => 'required',
-                    'value_entered' => 'required|array',
-                    'files' =>''
-                ]);
-
-                $help = new CategoryController();
-                $randomString =  $help->generateRandomAlphaNumeric(15);
-                $title =  htmlspecialchars($request->input('title'));
-                $location_id =  htmlspecialchars($request->input('location_id'));
-                $category_id =  htmlspecialchars($request->input('category_id'));
-                $ulid = Uuid::uuid1();
-                $ulidAd = $ulid->toString();
-                $uid = $ulidAd;
-                $owner_id = Auth::user()->id;
-                $status = "pending";
-
-                $ad = new Ad();
-                $ad->title = $title;
-                $ad->location_id = $location_id;
-                $ad->category_id = $category_id;
-                $ad->owner_id = $owner_id;
-                $ad->validated_by_id = 1;
-                $ad->validated_on ="2024-05-14 18:49:37";
-                $ad->status = $status;
-                $ad->uid = $ulidAd;
-                $ad->file_code = $randomString;
-
-                $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();
-                if($existUserAd){
-                    return response()->json([
-                        'message' => 'You already add this ad'
-                    ]);
-                }
-
-              
-
-                if($request->hasFile('files')){
-                    foreach($request->file('files') as $index => $photo){
-                        $size = filesize($photo);
-                        $ulid = Uuid::uuid1();
-                        $ulidPhoto = $ulid->toString();
-                        $created_at = date('Y-m-d H:i:s');
-                        $updated_at = date('Y-m-d H:i:s');
-                        $photoName = uniqid() . '.' . $photo->getClientOriginalExtension();
-                        $photoPath = $photo->move(public_path('image/photo_ad'), $photoName);
-                        $photoUrl = url('/image/photo_ad/' . $photoName);
-                        $type = $photo->getClientOriginalExtension();
-                        $location = $photoUrl;
-                        $referencecode = $randomString;
-                        $filename = md5(uniqid()) . '.' . $type;
-                        $uid = $ulidPhoto;
-                        $q = "INSERT INTO files (filename, type, location, size, referencecode, uid,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)";
-                        $stmt = $db->prepare($q);
-                        $stmt->bindParam(1, $filename);
-                        $stmt->bindParam(2, $type);
-                        $stmt->bindParam(3, $location);
-                        $stmt->bindParam(4,  $size);
-                        $stmt->bindParam(5,  $referencecode);
-                        $stmt->bindParam(6,  $uid);
-                        $stmt->bindParam(7,  $created_at);
-                        $stmt->bindParam(8,  $updated_at);
-                        $stmt->execute();
-                    }
-                }
-
-                $category = Category::find($request->input('category_id'));
-                $attributeGroups = AttributeGroup::where('group_title_id',$category->attribute_group_id)->get();
-                $a = $request->input('value_entered');
-
-                if (is_array($a) && count($a) === 1) {
-                    $values = explode(",", $a[0]);
-                    $c = count($values);
-                    // return $values[3];
-
-                    if ($attributeGroups->count() != $c) {
-
-                        return response()->json([
-                            'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".$c
-                        ]);
-                    }
-
-                } else{
-
-                    if ($attributeGroups->count() != count( $request->input('value_entered'))) {
-
-                        return response()->json([
-                            'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".count( $request->input('value_entered'))
-                        ]);
-                }
-                }
-
-                $ad->save();
+ public function storeAd(Request $request){
+    try {
 
 
+        $this->validateRequest($request);
 
-                foreach ($attributeGroups as $index => $value) {
-                    foreach(CategoryAttributes::where('id',$value->attribute_id)->get() as $d){
-                        $ulid = Uuid::uuid1();
-                        $ulidAdDetail = $ulid->toString();
-                        $cat = CategoryAttributes::find($d->id);
-                        $ad_detail = new AdDetail();
-                        $ad_detail->ad_id = $ad->id;
-                        $ad_detail->fieldtype = $cat->fieldtype;
-                        $ad_detail->label = $cat->label;
-                        $ad_detail->possible_value = $cat->possible_value;
-                        $ad_detail->description = $cat->description;
-                        $ad_detail->isrequired = $cat->isrequired;
-                        $ad_detail->order_no = $cat->order_no;
-                        $ad_detail->is_price_field = $cat->is_price_field;
-                        $ad_detail->is_crypto_price_field = $cat->is_crypto_price_field;
-                        $ad_detail->search_criteria = $cat->search_criteria;
-                        $ad_detail->is_active = $cat->is_active;
-                        $ad_detail->fieldtype = $cat->fieldtype;
-                        $ad_detail->uid = $ulidAdDetail;
-                        if (is_array($a) && count($a) === 1) {
-                            $values = explode(",", $a[0]);
-                            $ad_detail->value_entered = $values[$index];
-                        } else{
-                            $ad_detail->value_entered = $request->input('value_entered')[$index];
-                        }
-                        $ad_detail->possible_value =$cat->possible_value ?? " a ";
-                        $ad_detail->save();
-                    }
-                }
-
-                return response()->json([
-                    'message' => 'ad added successfully !'
-                ]);
-
-            
-
-        } catch (Exception $e) {
-           return response()->json([
-            'error' => $e->getMessage()
-           ]);
+        if(!Category::find($request->category_id)){
+            // dd(1);
+            return response()->json([
+                'error' => 'category not found'
+            ]);
         }
 
+        if(!Country::find($request->location_id)){
+          
+            return response()->json([
+                'error' => 'location not found'
+            ]);
+        }
+
+        $this->validateLocation($request);
+
+        $this->validateCategory($request);
+
+
+    foreach($request->file('files') as $photo){
+        $this->validateFile($photo);
     }
 
+        $category = Category::find($request->input('category_id'));
+        $attributeGroups = AttributeGroup::where('group_title_id',$category->attribute_group_id)->get();
+        $a = $request->input('value_entered');
+
+        if (is_array($a) && count($a) === 1) {
+            $values = explode(",", $a[0]);
+            $c = count($values);
+
+            if ($attributeGroups->count() != $c) {
+
+                return response()->json([
+                    'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".$c
+                ]);
+            }
+
+        } else{
+
+            if ($attributeGroups->count() != count( $request->input('value_entered'))) {
+
+                return response()->json([
+                    'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".count( $request->input('value_entered'))
+                ]);
+        }
+        }
+
+        $ad = $this->createAd($request);
+
+        $this->uploadFiles($request, $ad->file_code);
+
+        $this->saveAdDetails($request, $ad);
+
+        return response()->json([
+            'message' => 'ad added successfully !'
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+   
     /**
  * @OA\Post(
  *     path="/api/ad/editAd/{uid}",
@@ -488,118 +434,271 @@ class AdController extends Controller
  * )
  */
 
-
-    public function editAd(Request $request,$uid){
-
-         try {
-            $db = DB::connection()->getPdo();
-
-            $request->validate([
-                'title' => 'nullable',
-                'location_id' => 'nullable',
-                'category_id' => 'nullable',
-                'value_entered' => 'nullable|array',
+ public function editAd(Request $request, $uid){
+    try {
+        $existAd = Ad::where('uid',$uid)->first();
+        if(!$existAd){
+            return response()->json([
+                'message' => ' ADd not found'
             ]);
+        }
 
-            $ad = Ad::where('uid',$uid)->first();
-            if(!$ad){
-                return response()->json([
-                    'message' => ' ADd not found'
-                ]);
-            }
-            $ad->title = $request->input('title') ?? $ad->title;
-            $ad->location_id = $request->input('location_id') ?? $ad->location_id;
+        $this->validateRequest($request);
+
+      
+
+        if(!Country::find($request->location_id)){
           
+            return response()->json([
+                'error' => 'location not found'
+            ]);
+        }
 
-            if($request->has('category_id')){
-                if($request->has('value_entered')){
+        if($existAd->owner_id != Auth::user()->id){
+            return response()->json([
+                'error' => 'Your are not allowed'
+            ]);
+        }
 
-                    $ad_details = AdDetail::where('ad_id',$ad->id)->get();
-                    foreach($ad_details as $ad_detail){
-                        $ad_detail->update(['deleted' => true]);
-                    }
+       
 
+        $ad = $this->updateAd($request,$existAd);
+
+        if(($request->has('category_id'))){
+
+            if($request->has('value_entered')){
+
+                if(!Category::find($request->category_id)){
+                    return response()->json([
+                        'error' => 'category not found'
+                    ]);
+                }
 
                 $category = Category::find($request->input('category_id'));
+
                 $attributeGroups = AttributeGroup::where('group_title_id',$category->attribute_group_id)->get();
                 $a = $request->input('value_entered');
-
+        
                 if (is_array($a) && count($a) === 1) {
                     $values = explode(",", $a[0]);
                     $c = count($values);
-
+        
                     if ($attributeGroups->count() != $c) {
-
+        
                         return response()->json([
                             'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".$c
                         ]);
                     }
-
+        
                 } else{
-
+        
                     if ($attributeGroups->count() != count( $request->input('value_entered'))) {
-
+        
                         return response()->json([
                             'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".count( $request->input('value_entered'))
                         ]);
                 }
                 }
-
-                $ad->save();
-
-
-                    foreach ($attributeGroups as $index => $value) {
-                        foreach(CategoryAttributes::where('id',$value->attribute_id)->get() as $c){
-                            $ulid = Uuid::uuid1();
-                            $ulidAdDetail = $ulid->toString();
-                            $cat = CategoryAttributes::find($c->id);
-                            $ad_detail = new AdDetail();
-                            $ad_detail->ad_id = $ad->id;
-                            $ad_detail->fieldtype = $cat->fieldtype;
-                            $ad_detail->label = $cat->label;
-                            $ad_detail->possible_value = $cat->possible_value;
-                            $ad_detail->description = $cat->description;
-                            $ad_detail->isrequired = $cat->isrequired;
-                            $ad_detail->order_no = $cat->order_no;
-                            $ad_detail->is_price_field = $cat->is_price_field;
-                            $ad_detail->is_crypto_price_field = $cat->is_crypto_price_field;
-                            $ad_detail->search_criteria = $cat->search_criteria;
-                            $ad_detail->is_active = $cat->is_active;
-                            $ad_detail->fieldtype = $cat->fieldtype;
-                            $ad_detail->uid = $ulidAdDetail;
-                            if (is_array($a) && count($a) === 1) {
-                                $values = explode(",", $a[0]);
-                                $ad_detail->value_entered = $values[$index];
-                            } else{
-                                $ad_detail->value_entered = $request->input('value_entered')[$index];
-                            }
-                            $ad_detail->possible_value =$cat->possible_value ?? " a ";
-                            $ad_detail->save();
-                        }
-                    }
-
-                }else{
-                    return response()->json([
-                        'message' => 'Veuillez envoyer  les valeurs des attributs !'
-                    ]);
+                $ad_details = AdDetail::where('ad_id',$ad->id)->get();
+                foreach($ad_details as $ad_detail){
+                    $ad_detail->update(['deleted' => true]);
                 }
 
-                    
+            $this->saveAdDetails($request, $ad);
+
+            }else{
+                return response()->json([
+                    'message' => 'Veuillez envoyer  les valeurs des attributs !'
+                ]);
+            }
+        }
+
+        return response()->json([
+            'message' => 'ad edited successfully !'
+        ]);
+
+    } catch (Exception $e) {
+       return response()->json([
+        'error' => $e->getMessage()
+       ]);
+    }
+   }
+
+
+    
+
+    // try {
+          
+    // } catch (Exception $e) {
+    //    return response()->json([
+    //     'error' => $e->getMessage()
+    //    ]);
+    // }
+
+
+   
+    
+    private function validateRequest(Request $request){
+
+           if (!$request->validate([
+                'title' => 'required',
+                'location_id' => 'required',
+                'category_id' => '',
+                'value_entered' => 'required|array',
+                'files' =>''
+            ])){
+                $e = new Exception();
+                return response()->json([
+                    'error' => $e->getMessage()
+                ]);
+            }else{
 
             }
 
-            return response()->json([
-                'message' => 'ad edited successfully !'
-            ]);
-
-        } catch (Exception $e) {
-           return response()->json([
-            'error' => $e->getMessage()
-           ]);
         }
 
+        private function validateLocation(Request $request){
+
+            if(!Country::find($request->location_id)){
+              
+                return response()->json([
+                    'error' => 'location not found'
+                ]);
+            }else{
+
+            }
+
+        }
+
+        private function validateCategory(Request $request){
+            if(!Category::find($request->category_id)){
+                // dd(1);
+                return response()->json([
+                    'error' => 'category not found'
+                ]);
+            }else{
+
+            }
+        }
+    
+
+    
+
+    private function createAd(Request $request){
+        $title = htmlspecialchars($request->input('title'));
+        $location_id = htmlspecialchars($request->input('location_id'));
+        $category_id = htmlspecialchars($request->input('category_id'));
+        $owner_id = Auth::user()->id;
+        $status = "pending";
+        $ulidAd = Uuid::uuid1()->toString();
+        $code = new Service();
+        $randomString = $code->generateRandomAlphaNumeric(7);
+
+        $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();
+        if($existUserAd){
+            throw new \Exception('You already added this ad');
+        }
+
+        $ad = new Ad();
+        $ad->title = $title;
+        $ad->location_id = $location_id;
+        $ad->category_id = $category_id;
+        $ad->owner_id = $owner_id;
+        $ad->status = $status;
+        $ad->uid = $ulidAd;
+        $ad->file_code = $randomString;
+        $ad->save();
+    
+        return $ad;
+    }
+    
+    private function uploadFiles(Request $request, $randomString){
+        foreach($request->file('files') as $photo){
+            $this->validateFile($photo);
+            $this->storeFile($photo, $randomString, "ad");
+        }
     }
 
+    
+    
+    private function validateFile( $file){
+        $allowedExtensions = ['jpeg', 'jpg', 'png', 'gif'];
+        $extension = $file->getClientOriginalExtension();
+        if (!in_array($extension, $allowedExtensions)) {
+            throw new \Exception('Veuillez télécharger une image (jpeg, jpg, png, gif)');
+        }
+    }
+    
+    private function storeFile( $photo, $randomString, $location){
+        $fileController = new FileController();
+        $fileController->store($photo, $randomString, $location);
+    }
+    
+    private function saveAdDetails(Request $request, Ad $ad){
+        $category = Category::find($request->input('category_id'));
+        $attributeGroups = AttributeGroup::where('group_title_id',$category->attribute_group_id)->get();
+        $values = $request->input('value_entered');
+        $a = $request->input('value_entered');
+    
+        if (is_array($a) && count($a) === 1) {
+            $values = explode(",", $a[0]);
+            $c = count($values);
+            // return $values[3];
 
+           
+        }
+    
+        foreach ($attributeGroups as $index => $value) {
+            foreach(CategoryAttributes::where('id',$value->attribute_id)->get() as $d){
+                $ulidAdDetail = Uuid::uuid1()->toString();
+                $cat = CategoryAttributes::find($d->id);
+                $ad_detail = new AdDetail();
+                $ad_detail->ad_id = $ad->id;
+                $ad_detail->fieldtype = $cat->fieldtype;
+                $ad_detail->label = $cat->label;
+                $ad_detail->possible_value = $cat->possible_value;
+                $ad_detail->description = $cat->description;
+                $ad_detail->isrequired = $cat->isrequired;
+                $ad_detail->order_no = $cat->order_no;
+                $ad_detail->is_price_field = $cat->is_price_field;
+                $ad_detail->is_crypto_price_field = $cat->is_crypto_price_field;
+                $ad_detail->search_criteria = $cat->search_criteria;
+                $ad_detail->is_active = $cat->is_active;
+                $ad_detail->fieldtype = $cat->fieldtype;
+                $ad_detail->uid = $ulidAdDetail;
+                if (is_array($a) && count($a) === 1) {
+                    $values = explode(",", $a[0]);
+                    $ad_detail->value_entered = $values[$index];
+                } else{
+                    $ad_detail->value_entered = $request->input('value_entered')[$index];
+                }
+                $ad_detail->possible_value =$cat->possible_value ?? "null";
+                $ad_detail->save();
+            }
+        }
+    }
+    
+  
+
+   public function updateAd(Request $request, $existAd){
+
+    $title = htmlspecialchars($request->input('title'));
+    $location_id = htmlspecialchars($request->input('location_id'));
+    $category_id = htmlspecialchars($request->input('category_id'));
+    $owner_id = Auth::user()->id;
+
+    $existAd->title = $title ?? $existAd->title;
+    $existAd->location_id = $location_id ?? $existAd->location_id;
+    // $existAd->category_id = $category_id ?? $existAd->category_id;
+    $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();
+        if($existUserAd){
+            throw new \Exception('You already added this ad');
+        }
+
+    $existAd->save();
+
+    return $existAd;
+
+   }
 
 }

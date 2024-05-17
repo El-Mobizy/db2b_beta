@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AttributeGroup;
 use Exception;
 use Illuminate\Http\Request;
-use Ramsey\Uuid\Nonstandard\Uuid;
+use Ramsey\Uuid\Uuid;
 
 class AttributeGroupController extends Controller
 {
