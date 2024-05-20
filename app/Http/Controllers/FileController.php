@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Interfaces\Interfaces\FileRepositoryInterface;
 use App\Models\File;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
@@ -20,18 +21,13 @@ class FileController extends Controller
 }
 
 
-    public function store(Request $request, $randomString, $location)
+
+
+    public function store( $photo, $randomString, $location)
     {
         try {
             $db = DB::connection()->getPdo();
-                    $request->validate([
-                        // 'files' => 'mimes:jpeg,jpg,png,gif'
-                    ]);
 
-                    
-
-                    if($request->hasFile('files')){
-                        foreach($request->file('files') as $index => $photo){
 
                             $size = filesize($photo);
                             $ulid = Uuid::uuid1();
@@ -57,10 +53,6 @@ class FileController extends Controller
                             $stmt->bindParam(7,  $created_at);
                             $stmt->bindParam(8,  $updated_at);
                             $stmt->execute();
-
-                           
-                        }
-                    }
 
         } catch (Exception $e) {
            return response()->json([

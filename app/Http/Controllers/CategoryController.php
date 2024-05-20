@@ -61,14 +61,13 @@ class CategoryController extends Controller
                 'title' => 'required|unique:categories|max:255',
                 // 'files' => 'image|mimes:jpeg,jpg,png,gif'
             ]);
+
+            $service = new Service();
            
-            $randomString = $this->generateRandomAlphaNumeric(15);
-            $categories = Category::all();
-            foreach ($categories as $c) {
-                $exist = Category::where('filecode',$randomString)->first();
-                while($exist){
-                    $randomString = $this->generateRandomAlphaNumeric(15);
-                }
+            $randomString = $service->generateRandomAlphaNumeric(7);
+            $exist = Category::where('filecode',$randomString)->first();
+            while($exist){
+                $randomString = $service->generateRandomAlphaNumeric(7);
             }
             $ulid = Uuid::uuid1();
             $ulidCategory = $ulid->toString();
@@ -92,19 +91,8 @@ class CategoryController extends Controller
             $statement->bindParam(6,  $created_at);
             $statement->bindParam(7,  $updated_at);
 
-            foreach($request->file('files') as $index => $photo){
-
-            $allowedExtensions = ['jpeg', 'jpg', 'png', 'gif'];
-
-            $extension = $photo->getClientOriginalExtension();
-
-            if (!in_array($extension, $allowedExtensions)) {
-                return response()->json(['message' =>"Veuillez télécharger une image (jpeg, jpg, png, gif)." ]);
-            }
-        }
-
-            $file = new FileController();
-            $file->store($request,$randomString,"category");
+            $file = new Service();
+            $file->uploadFiles($request,$randomString,"category");
 
             $statement->execute();
             return response()->json([
@@ -118,10 +106,7 @@ class CategoryController extends Controller
         }
     }
 
-     public function generateRandomAlphaNumeric($length) {
-        $bytes = random_bytes(ceil($length * 3 / 4));
-        return substr(str_replace(['/', '+', '='], '', base64_encode($bytes)), 0, $length);
-    }
+
     
 
 

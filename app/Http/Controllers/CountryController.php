@@ -27,7 +27,7 @@ class CountryController extends Controller
      *                  @OA\Property(property="fullname", type="string", example="Nom complet du pays"),
      *                  @OA\Property(property="shortcode", type="string", example="Code court du pays"),
      *                  @OA\Property(property="callcode", type="string", example="Code d'appel du pays"),
-     *                  @OA\Property(property="file", type="string", format="binary", description="Fichier d'image du drapeau du pays (jpeg, jpg, png)")
+     *                  @OA\Property(property="files", type="string", format="binary", description="Fichier d'image du drapeau du pays (jpeg, jpg, png)")
      *              )
      *          )
      *      ),
@@ -54,29 +54,23 @@ class CountryController extends Controller
                 'fullname' => 'required|unique:countries|max:255',
                 'shortcode' => 'required|unique:countries|max:10',
                 'callcode' => 'required|unique:countries|max:255',
-                'file' => 'image|mimes:jpeg,jpg,png'
+                'files' => ''
             ]);
             $ulid = Uuid::uuid1();
             $ulidCountry = $ulid->toString();
             $fullname =  htmlspecialchars($request->input('fullname'));
             $shortcode =  htmlspecialchars($request->input('shortcode'));
             $callcode =  htmlspecialchars($request->input('callcode'));
-            $photo =  $request->file('file');
-            $allowedExtensions = ['jpeg', 'jpg', 'png', 'gif'];
-
-            $extension = $photo->getClientOriginalExtension();
-
-            if (!in_array($extension, $allowedExtensions)) {
-                return response()->json(['message' =>"Veuillez télécharger une image (jpeg, jpg, png, gif)." ]);
+            $service = new Service();
+            $randomString = $service->generateRandomAlphaNumeric(7);
+            $exist = Country::where('flag',$randomString)->first();
+            while($exist){
+                $randomString = $service->generateRandomAlphaNumeric(7);
             }
-            $photoName = uniqid() . '.' . $photo->getClientOriginalExtension();
-            $photoPath = $photo->move(public_path('image/country_flag'), $photoName);
-            $photoUrl = url('/image/country_flag/' . $photoName);
-            $location = $photoPath;
+
             $uid = $ulidCountry;
-            $created_at = date('Y-m-d H:i:s');
-            $updated_at = date('Y-m-d H:i:s');
-            $flag = $photoUrl;
+
+            $flag = $randomString;
             $query = " INSERT INTO countries (fullname, shortcode, flag,callcode,uid,created_at,updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)" ;
             $statement = $db->prepare($query);
 
@@ -88,6 +82,9 @@ class CountryController extends Controller
             $statement->bindParam(6,  $created_at);
             $statement->bindParam(7,  $updated_at);
             $statement->execute();
+
+            $file = new Service();
+            $file->uploadFiles($request,$randomString,"country");
 
             return response()->json([
                 'message' => 'country added successfully!'

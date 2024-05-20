@@ -15,6 +15,7 @@ use Ramsey\Uuid\Uuid;
 use App\Interfaces\Interfaces\FileRepositoryInterface;
 use App\Models\Country;
 use App\Services\Useful;
+use Illuminate\Http\JsonResponse;
 
 class AdController extends Controller
 {
@@ -278,6 +279,7 @@ class AdController extends Controller
         }
     }
 
+
    /**
  * @OA\Post(
  *     path="/api/ad/storeAd",
@@ -322,30 +324,36 @@ class AdController extends Controller
  public function storeAd(Request $request){
     try {
 
-
         $this->validateRequest($request);
 
         if(!Category::find($request->category_id)){
-            // dd(1);
             return response()->json([
                 'error' => 'category not found'
             ]);
         }
 
         if(!Country::find($request->location_id)){
-          
             return response()->json([
                 'error' => 'location not found'
             ]);
         }
 
-        $this->validateLocation($request);
+        if(!$request->hasFile('files')){
+            return response()->json([
+                'message' =>'the field file is required'
+            ]);
+        }
 
-        $this->validateCategory($request);
+        $service = new Service();
 
+        // $service->validateLocation($request->category_id);
+
+        // $service->validateCategory($request->category_id);
+
+        // $service->checkFile($request);
 
     foreach($request->file('files') as $photo){
-        $this->validateFile($photo);
+        $service->validateFile($photo);
     }
 
         $category = Category::find($request->input('category_id'));
@@ -375,7 +383,8 @@ class AdController extends Controller
 
         $ad = $this->createAd($request);
 
-        $this->uploadFiles($request, $ad->file_code);
+        $file = new Service();
+        $file->uploadFiles($request, $ad->file_code,'ad');
 
         $this->saveAdDetails($request, $ad);
 
@@ -468,11 +477,11 @@ class AdController extends Controller
 
             if($request->has('value_entered')){
 
-                if(!Category::find($request->category_id)){
-                    return response()->json([
-                        'error' => 'category not found'
-                    ]);
-                }
+                // if(!Category::find($request->category_id)){
+                //     return response()->json([
+                //         'error' => 'category not found'
+                //     ]);
+                // }
 
                 $category = Category::find($request->input('category_id'));
 
@@ -553,33 +562,13 @@ class AdController extends Controller
                 ]);
             }else{
 
-            }
 
-        }
-
-        private function validateLocation(Request $request){
-
-            if(!Country::find($request->location_id)){
-              
-                return response()->json([
-                    'error' => 'location not found'
-                ]);
-            }else{
 
             }
 
         }
 
-        private function validateCategory(Request $request){
-            if(!Category::find($request->category_id)){
-                // dd(1);
-                return response()->json([
-                    'error' => 'category not found'
-                ]);
-            }else{
-
-            }
-        }
+        
     
 
     
@@ -591,8 +580,13 @@ class AdController extends Controller
         $owner_id = Auth::user()->id;
         $status = "pending";
         $ulidAd = Uuid::uuid1()->toString();
-        $code = new Service();
-        $randomString = $code->generateRandomAlphaNumeric(7);
+        
+        $service = new Service();
+        $randomString = $service->generateRandomAlphaNumeric(7);
+        $exist = Category::where('filecode',$randomString)->first();
+        while($exist){
+            $randomString = $service->generateRandomAlphaNumeric(7);
+        }
 
         $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();
         if($existUserAd){
@@ -608,31 +602,11 @@ class AdController extends Controller
         $ad->uid = $ulidAd;
         $ad->file_code = $randomString;
         $ad->save();
-    
+
         return $ad;
     }
     
-    private function uploadFiles(Request $request, $randomString){
-        foreach($request->file('files') as $photo){
-            $this->validateFile($photo);
-            $this->storeFile($photo, $randomString, "ad");
-        }
-    }
 
-    
-    
-    private function validateFile( $file){
-        $allowedExtensions = ['jpeg', 'jpg', 'png', 'gif'];
-        $extension = $file->getClientOriginalExtension();
-        if (!in_array($extension, $allowedExtensions)) {
-            throw new \Exception('Veuillez télécharger une image (jpeg, jpg, png, gif)');
-        }
-    }
-    
-    private function storeFile( $photo, $randomString, $location){
-        $fileController = new FileController();
-        $fileController->store($photo, $randomString, $location);
-    }
     
     private function saveAdDetails(Request $request, Ad $ad){
         $category = Category::find($request->input('category_id'));
@@ -677,8 +651,6 @@ class AdController extends Controller
             }
         }
     }
-    
-  
 
    public function updateAd(Request $request, $existAd){
 

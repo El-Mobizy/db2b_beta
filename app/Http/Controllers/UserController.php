@@ -176,6 +176,13 @@ class UserController extends Controller
             $email =  htmlspecialchars($request->input('email'));
             $ip_address =  htmlspecialchars($request->input('ip_address'));
 
+            $existEmail = User::where('email',$email)->exists();
+
+            if(!$existEmail){
+                return response()->json([
+                    'message' =>'Check if the email exist'
+                ]);
+            }
 
             $currentDateTime = Carbon::now();
             // $ip_address = $request->ip();
@@ -320,19 +327,7 @@ class UserController extends Controller
                    ->orderBy('created_at', 'desc')
                    ->first();
             $formattedDateTime = Carbon::parse($a->created_at)->format('H:i:s');
-            // $q = "
-            //     SELECT * FROM restricteds
-            //     WHERE email = :email
-            //     LIMIT 1
-            //     ";
-            //     $statement = $pdo->prepare($q);
-        
-            //     $statement->execute([
-            //         'email' => $username,
-            //     ]);
-                // $a = $statement->fetch( $pdo::FETCH_ASSOC);
-                // dd($a->created_at);
-                // $formattedDateTime = Carbon::parse($a["created_at"])->format('H:i:s');
+
 
                 $currentDateTime = Carbon::now('Africa/Porto-Novo');
                 $currentTime = $currentDateTime->toTimeString();
@@ -357,7 +352,7 @@ class UserController extends Controller
                     ]);
                 }
                 }
-               
+
                 // else{
                 //     return response()->json([
                 //         'message' =>"Vous avez fait $hours h $minutes min $seconds s  vous pouvez vous  connecter.",
@@ -367,7 +362,7 @@ class UserController extends Controller
                 //     ]);
                 // }
             }
-          
+
             $user = User::where('email',$username)->first();
             if(!$user){
                 return response()->json([
@@ -526,6 +521,7 @@ class UserController extends Controller
 
           $db = DB::connection()->getPdo();
           $email =  htmlspecialchars($request->input('email'));
+          $country_id = htmlspecialchars($request->input('country_id'));
         //   dd($request);
           $phone =  htmlspecialchars($request->input('phone'));
           $password = bcrypt($request->input('password'));
@@ -548,49 +544,61 @@ class UserController extends Controller
 
           $statement->execute();
 
-          $user = User::where('email', $email)->first();
-          $ulid = Uuid::uuid1();
-          $ulidPeople = $ulid->toString();
-          $first_name =  'XXXXX';
-          $last_name =  'XXXXX';
-          $user_id = $user->id;
-          $connected = 0;
-          $sex = 1;
-          $dateofbirth =  date('Y-m-d');
-          $profile_img_code=  'XXX';
-          $first_login =  1;
-          $phonenumber =  $phone;
-          $deleted = 0;
-          $type =  'client';
-          $country_id = htmlspecialchars($request->input('country_id'));
-          $uid = $ulidPeople;
-          $created_at = date('Y-m-d H:i:s');
-          $updated_at = date('Y-m-d H:i:s');
-    
-          DB::table('person')->insert([
-            'first_name' => $first_name,
-            'last_name' => $last_name,
-            'user_id' => $user_id,
-            'connected' => $connected,
-            'sex' => $sex,
-            'dateofbirth' => $dateofbirth,
-            'profile_img_code' => $profile_img_code,
-            'first_login' => $first_login,
-            'phonenumber' => $phonenumber,
-            'deleted' => $deleted,
-            'uid' => $ulidPeople,
-            'type' => $type,
-            'country_id' => $country_id,
-            'created_at' => $created_at,
-            'updated_at' => $updated_at
-        ]);
-    
+          $this->createPerson($country_id, $email, $phone);
+
+         
     
             return response()->json('User created successfully');
         }
         catch (Exception $e)
         {
             return response()->json(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function createPerson($country_id, $email, $phone){
+        try{
+            $user = User::where('email', $email)->first();
+            $ulid = Uuid::uuid1();
+            $ulidPeople = $ulid->toString();
+            $first_name =  'XXXXX';
+            $last_name =  'XXXXX';
+            $user_id = $user->id;
+            $connected = 0;
+            $sex = 1;
+            $dateofbirth =  date('Y-m-d');
+            $profile_img_code=  'XXX';
+            $first_login =  1;
+            $phonenumber =  $phone;
+            $deleted = 0;
+            $type =  'client';
+            $country_id = $country_id;
+            $uid = $ulidPeople;
+            $created_at = date('Y-m-d H:i:s');
+            $updated_at = date('Y-m-d H:i:s');
+      
+            DB::table('person')->insert([
+              'first_name' => $first_name,
+              'last_name' => $last_name,
+              'user_id' => $user_id,
+              'connected' => $connected,
+              'sex' => $sex,
+              'dateofbirth' => $dateofbirth,
+              'profile_img_code' => $profile_img_code,
+              'first_login' => $first_login,
+              'phonenumber' => $phonenumber,
+              'deleted' => $deleted,
+              'uid' => $ulidPeople,
+              'type' => $type,
+              'country_id' => $country_id,
+              'created_at' => $created_at,
+              'updated_at' => $updated_at
+          ]);
+      
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
         }
     }
     
