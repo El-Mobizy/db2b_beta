@@ -197,10 +197,10 @@ class UserController extends Controller
             $statement->bindParam(4,  $updated_at);
             $statement->execute();
 
-            return response()->json(['message' => 'stocké avec succès']);
+            return response()->json(['message' => 'stocké avec succès'],200);
 
         } catch (\Exception $e) {
-           return response()->json($e->getMessage());
+           return response()->json($e->getMessage(),500);
         }
     }
 

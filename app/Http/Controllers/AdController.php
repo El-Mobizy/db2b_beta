@@ -326,60 +326,31 @@ class AdController extends Controller
 
         $this->validateRequest($request);
 
-        if(!Category::find($request->category_id)){
-            return response()->json([
-                'error' => 'category not found'
-            ]);
-        }
-
-        if(!Country::find($request->location_id)){
-            return response()->json([
-                'error' => 'location not found'
-            ]);
-        }
-
-        if(!$request->hasFile('files')){
-            return response()->json([
-                'message' =>'the field file is required'
-            ]);
-        }
-
         $service = new Service();
 
-        // $service->validateLocation($request->category_id);
+         $validateLocation=$service->validateLocation($request->location_id);
+         if($validateLocation){
+            return $validateLocation;
+         }
 
-        // $service->validateCategory($request->category_id);
+         $validateCategory = $service->validateCategory($request->category_id);
+         if($validateCategory){
+            return $validateCategory;
+         }
 
-        // $service->checkFile($request);
+        $checkFile = $service->checkFile($request);
+        if($checkFile){
+            return $checkFile;
+         }
 
     foreach($request->file('files') as $photo){
         $service->validateFile($photo);
     }
 
-        $category = Category::find($request->input('category_id'));
-        $attributeGroups = AttributeGroup::where('group_title_id',$category->attribute_group_id)->get();
-        $a = $request->input('value_entered');
-
-        if (is_array($a) && count($a) === 1) {
-            $values = explode(",", $a[0]);
-            $c = count($values);
-
-            if ($attributeGroups->count() != $c) {
-
-                return response()->json([
-                    'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".$c
-                ]);
-            }
-
-        } else{
-
-            if ($attributeGroups->count() != count( $request->input('value_entered'))) {
-
-                return response()->json([
-                    'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".count( $request->input('value_entered'))
-                ]);
-        }
-        }
+    $checkAdAttribute = $service->checkAdAttribute($request,$request->input('category_id'));
+    if($checkAdAttribute){
+        return $checkAdAttribute;
+     }
 
         $ad = $this->createAd($request);
 
@@ -398,7 +369,6 @@ class AdController extends Controller
     }
 }
 
-   
     /**
  * @OA\Post(
  *     path="/api/ad/editAd/{uid}",
@@ -448,20 +418,18 @@ class AdController extends Controller
         $existAd = Ad::where('uid',$uid)->first();
         if(!$existAd){
             return response()->json([
-                'message' => ' ADd not found'
+                'message' => ' Ad not found'
             ]);
         }
 
         $this->validateRequest($request);
 
-      
+        $service = new Service();
 
-        if(!Country::find($request->location_id)){
-          
-            return response()->json([
-                'error' => 'location not found'
-            ]);
-        }
+         $validateLocation=$service->validateLocation($request->location_id);
+         if($validateLocation){
+            return $validateLocation;
+         }
 
         if($existAd->owner_id != Auth::user()->id){
             return response()->json([
@@ -473,41 +441,26 @@ class AdController extends Controller
 
         $ad = $this->updateAd($request,$existAd);
 
+        if($ad->deleted == false){
+            return response()->json([
+                'message' => 'Your cannot edit a ad deleted'
+            ]);
+        }
+
         if(($request->has('category_id'))){
 
             if($request->has('value_entered')){
 
-                // if(!Category::find($request->category_id)){
-                //     return response()->json([
-                //         'error' => 'category not found'
-                //     ]);
-                // }
-
-                $category = Category::find($request->input('category_id'));
-
-                $attributeGroups = AttributeGroup::where('group_title_id',$category->attribute_group_id)->get();
-                $a = $request->input('value_entered');
-        
-                if (is_array($a) && count($a) === 1) {
-                    $values = explode(",", $a[0]);
-                    $c = count($values);
-        
-                    if ($attributeGroups->count() != $c) {
-        
-                        return response()->json([
-                            'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".$c
-                        ]);
-                    }
-        
-                } else{
-        
-                    if ($attributeGroups->count() != count( $request->input('value_entered'))) {
-        
-                        return response()->json([
-                            'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".count( $request->input('value_entered'))
-                        ]);
+                $validateCategory = $service->validateCategory($request->category_id);
+                if($validateCategory){
+                   return $validateCategory;
                 }
-                }
+
+                $checkAdAttribute = $service->checkAdAttribute($request,$request->input('category_id'));
+                if($checkAdAttribute){
+                    return $checkAdAttribute;
+                 }
+
                 $ad_details = AdDetail::where('ad_id',$ad->id)->get();
                 foreach($ad_details as $ad_detail){
                     $ad_detail->update(['deleted' => true]);

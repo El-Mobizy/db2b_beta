@@ -7,7 +7,9 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\DeliveryAgencyController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\RightController;
+use App\Http\Controllers\Service;
 use App\Http\Controllers\TypeOfTypeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -64,6 +66,7 @@ Route::prefix('users')->group(function () {
         Route::get('/all', [AdController::class, 'getAllAd'])->name('ad.all');
         Route::post('/storeAd', [AdController::class, 'storeAd'])->name('ad.storeAd');
         Route::post('/editAd/{uid}', [AdController::class, 'editAd'])->name('ad.editAd');
+        Route::post('/uploadAdImage/{adUid}', [Service::class, 'uploadAdImage'])->name('ad.uploadAdImage');
     });
 
     Route::prefix('deliveryAgency')->group(function () {
@@ -97,3 +100,10 @@ Route::prefix('users')->group(function () {
     Route::prefix('categoryAttribute')->group(function () {
         Route::post('/store', [CategoryAttributesController::class, 'store']);
     });
+
+    Route::prefix('file')->group(function () {
+        Route::get('/getFilesByFileCode/{file}/{returnSingleFile}', [FileController::class, 'getFilesByFileCode']);
+        Route::delete('/removeFile/{uid}', [Service::class, 'removeFile'])->name("file.removeFile");
+    });
+
+    
