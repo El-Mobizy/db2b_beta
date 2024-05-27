@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -19,6 +20,44 @@ return new class extends Migration
             $table->string('uid')->unique();
             $table->timestamps();
         });
+
+
+
+        DB::table('attribute_groups')->insert([
+            [
+                'attribute_id' => 1,
+                'group_title_id' => 1,
+                'deleted' => false,
+                'uid' => uniqid(),
+                'created_at' => now(),
+                'updated_at'=>now()
+            ],
+            [
+                'attribute_id' => 2,
+                'group_title_id' => 1,
+                'deleted' => false,
+                'uid' => uniqid(),
+                'created_at' => now(),
+                'updated_at'=>now()
+            ],
+            [
+                'attribute_id' => 1,
+                'group_title_id' => 2,
+                'deleted' => false,
+                'uid' => uniqid(),
+                'created_at' => now(),
+                'updated_at'=>now()
+            ],
+            [
+                'attribute_id' => 2,
+                'group_title_id' => 2,
+                'deleted' => false,
+                'uid' => uniqid(),
+                'created_at' => now(),
+                'updated_at'=>now()
+            ],
+        ]);
+       
     }
 
     /**

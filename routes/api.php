@@ -8,10 +8,12 @@ use App\Http\Controllers\CountryController;
 use App\Http\Controllers\DeliveryAgencyController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\RightController;
 use App\Http\Controllers\Service;
 use App\Http\Controllers\TypeOfTypeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WebNotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -47,7 +49,20 @@ Route::prefix('users')->group(function () {
             Route::delete('/destroyAd/{uid}', [AdController::class, 'destroyAd'])->name('ad.destroyAdd');
         });
 
-       
+        Route::prefix('preorder')->group(function () {
+            Route::post('/createPreorder', [PreorderController::class, 'createPreorder'])->name('preorder.createPreorder');
+            Route::post('/validatePreorder/{uid}', [PreorderController::class, 'validatePreorder'])->name('preorder.validatePreorder');
+            Route::post('/rejectPreorder/{uid}', [PreorderController::class, 'rejectPreorder'])->name('preorder.rejectPreorder');
+        });
+
+        Route::prefix('preorder_answer')->group(function () {
+            Route::post('/createPreorderAnswer/{preorderId}', [PreorderController::class, 'createPreorderAnswer'])->name('preorder.createPreorderAnswer');
+            Route::post('/validatePreorderAnswer/{uid}', [PreorderController::class, 'validatePreorderAnswer'])->name('preorder.validatePreorderAnswer');
+            Route::post('/rejectPreorderAnswer/{uid}', [PreorderController::class, 'rejectPreorderAnswer'])->name('preorder.rejectPreorderAnswer');
+        });
+
+        
+
     });
     Route::prefix('category')->group(function () {
         Route::post('/add', [CategoryController::class, 'add'])->name('category.add');
@@ -67,6 +82,8 @@ Route::prefix('users')->group(function () {
         Route::post('/storeAd', [AdController::class, 'storeAd'])->name('ad.storeAd');
         Route::post('/editAd/{uid}', [AdController::class, 'editAd'])->name('ad.editAd');
         Route::post('/uploadAdImage/{adUid}', [Service::class, 'uploadAdImage'])->name('ad.uploadAdImage');
+        Route::post('/validateAd/{uid}', [AdController::class, 'validateAd'])->name('ad.validateAd');
+        Route::post('/rejectAd/{uid}', [AdController::class, 'rejectAd'])->name('ad.rejectAd');
     });
 
     Route::prefix('deliveryAgency')->group(function () {
@@ -106,4 +123,21 @@ Route::prefix('users')->group(function () {
         Route::delete('/removeFile/{uid}', [Service::class, 'removeFile'])->name("file.removeFile");
     });
 
-    
+
+    Route::prefix('preorder')->group(function () {
+        Route::get('/getPreorderValidated', [PreorderController::class, 'getPreorderValidated'])->name('preorder.getPreorderValidated');
+        Route::get('/getPreorderPending', [PreorderController::class, 'getPreorderPending'])->name('preorder.getPreorderPending');
+        Route::get('/getPreorderWitnAnswer', [PreorderController::class, 'getPreorderWitnAnswer'])->name('preorder.getPreorderWitnAnswer');
+        Route::get('/getPreorderRejected', [PreorderController::class, 'getPreorderRejected'])->name('preorder.getPreorderRejected');
+        Route::get('/getPreorderWithValidatedAnswers/{uid}', [PreorderController::class, 'getPreorderWithValidatedAnswers'])->name('preorder.getPreorderWithValidatedAnswers');
+        Route::get('/getAuthPreorderValidated', [PreorderController::class, 'getAuthPreorderValidated'])->name('preorder.getAuthPreorderValidated');
+    });
+
+    Route::prefix('preorder_answer')->group(function () {
+        Route::get('/getPreorderAnswerValidated', [PreorderController::class, 'getPreorderAnswerValidated'])->name('preorder.getPreorderAnswerValidated');
+        Route::get('/getPreorderAnswerPending', [PreorderController::class, 'getPreorderAnswerPending'])->name('preorder.getPreorderAnswerPending');
+        Route::get('/getPreorderAnswerRejected', [PreorderController::class, 'getPreorderAnswerRejected'])->name('preorder.getPreorderAnswerRejected');
+        Route::get('/getSpecificPreorderAnswer/{uid}', [PreorderController::class, 'getSpecificPreorderAnswer'])->name('preorder.getSpecificPreorderAnswer');
+    });
+
+

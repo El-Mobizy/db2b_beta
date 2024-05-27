@@ -27,7 +27,7 @@ class CountryController extends Controller
      *                  @OA\Property(property="fullname", type="string", example="Nom complet du pays"),
      *                  @OA\Property(property="shortcode", type="string", example="Code court du pays"),
      *                  @OA\Property(property="callcode", type="string", example="Code d'appel du pays"),
-     *                  @OA\Property(property="files", type="string", format="binary", description="Fichier d'image du drapeau du pays (jpeg, jpg, png)")
+     *                  @OA\Property(property="files[]", type="string", format="binary", description="Fichier d'image du drapeau du pays (jpeg, jpg, png)")
      *              )
      *          )
      *      ),
@@ -56,32 +56,22 @@ class CountryController extends Controller
                 'callcode' => 'required|unique:countries|max:255',
                 'files' => ''
             ]);
-            $ulid = Uuid::uuid1();
-            $ulidCountry = $ulid->toString();
+
             $fullname =  htmlspecialchars($request->input('fullname'));
             $shortcode =  htmlspecialchars($request->input('shortcode'));
             $callcode =  htmlspecialchars($request->input('callcode'));
+
             $service = new Service();
-            $randomString = $service->generateRandomAlphaNumeric(7);
-            $exist = Country::where('flag',$randomString)->first();
-            while($exist){
-                $randomString = $service->generateRandomAlphaNumeric(7);
-            }
 
-            $uid = $ulidCountry;
+            $country = new Country();
+            $randomString = $service->generateRandomAlphaNumeric(7,$country,'flag');
+            $country->fullname = $fullname;
+            $country->shortcode = $shortcode;
+            $country->callcode = $callcode;
+            $country->flag = $randomString;
+            $country->uid = $service->generateUid($country);
+            $country->save();
 
-            $flag = $randomString;
-            $query = " INSERT INTO countries (fullname, shortcode, flag,callcode,uid,created_at,updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)" ;
-            $statement = $db->prepare($query);
-
-            $statement->bindParam(1, $fullname);
-            $statement->bindParam(2, $shortcode);
-            $statement->bindParam(3, $flag);
-            $statement->bindParam(4,  $callcode);
-            $statement->bindParam(5,  $uid);
-            $statement->bindParam(6,  $created_at);
-            $statement->bindParam(7,  $updated_at);
-            $statement->execute();
 
             $file = new Service();
             $file->uploadFiles($request,$randomString,"country");

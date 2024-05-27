@@ -9,6 +9,10 @@ class Ad extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'statut'
+    ];
+
     public function ad_detail()
     {
         return $this->hasMany(AdDetail::class);

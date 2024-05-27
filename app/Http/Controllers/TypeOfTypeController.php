@@ -33,36 +33,20 @@ class TypeOfTypeController extends Controller
     {
         try {
             $request->validate([
-                'libelle' => 'required|unique:type_of_types'
+                'libelle' => 'required|unique:type_of_types',
+                'codereference'
             ]);
 
-            $help = new CategoryController();
-            $randomString =  $help->generateRandomAlphaNumeric(15);
-            $ulid = Uuid::uuid1();
-            $ulidType = $ulid->toString();
+            $service = new Service();
 
             $type = new TypeOfType();
             $type->libelle = $request->libelle;
-            $type->uid = $ulidType;
-            $type->codereference = $randomString;
+            $type->uid =  $service->generateUid($type);
+            $type->codereference = $request->codereference??null;
             if ($request->has('parent_id')) {
                 $type->parent_id = $request->parent_id;
             }
-            if($request->hasFile('files')){
-                foreach($request->file('files') as $index => $photo){
-
-                    $allowedExtensions = ['jpeg', 'jpg', 'png', 'gif'];
-        
-                    $extension = $photo->getClientOriginalExtension();
-        
-                    if (!in_array($extension, $allowedExtensions)) {
-                        return response()->json(['message' =>"Veuillez télécharger une image (jpeg, jpg, png, gif)." ]);
-                    }
-                }
-
-                $file = new FileController();
-                $file->store($request,$randomString,"typeoftype");
-            }
+           
             $type->save();
 
             return response()->json([

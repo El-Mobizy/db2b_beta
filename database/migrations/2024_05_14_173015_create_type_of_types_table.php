@@ -2,7 +2,9 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Ramsey\Uuid\Uuid;
 
 return new class extends Migration
 {
@@ -20,6 +22,19 @@ return new class extends Migration
             $table->string('uid')->unique();
             $table->timestamps();
         });
+
+      
+
+        DB::table('type_of_types')->insert([
+            ['libelle' => 'Group A', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(), 'codereference'=>null,'parent_id'=>null],
+            ['libelle' => 'Group B', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(), 'codereference'=>null,'parent_id'=>null],
+            ['libelle' => 'Group C', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(), 'codereference'=>null,'parent_id'=>null],
+            ['libelle' => 'STATUS','codereference' => 'STATUS', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>null],
+            ['libelle' => 'validated','codereference' => 'STATUS_VALIDATED', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>4],
+            ['libelle' => 'pending','codereference' => 'STATUS_PENDING', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>4],
+            ['libelle' => 'rejected','codereference' => 'STATUS_REJECTED', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>4],
+            ['libelle' => 'incomplete','codereference' => 'STATUS_DRAFT', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>4],
+        ]);
     }
 
     /**

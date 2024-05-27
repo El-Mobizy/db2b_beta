@@ -21,6 +21,7 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'device_key',
     ];
 
     /**
@@ -64,4 +65,15 @@ class User extends Authenticatable implements JWTSubject
     public function person(){
         return $this->hasOne(Person::class);
     }
+
+    public function preorders(){
+        return $this->hasMany(Preorder::class);
+    }
+
+    public function preorder_answers(){
+        return $this->hasMany(PreorderAnswers::class);
+    }
+    
 }
+
+

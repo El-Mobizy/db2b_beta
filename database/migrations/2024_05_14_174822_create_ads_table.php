@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('ads', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('status');
+            $table->foreignId('statut')->constrained('type_of_types');
             $table->string('file_code')->unique();
             $table->text('reject_reason')->nullable();
             $table->timestamp('validated_on')->nullable();

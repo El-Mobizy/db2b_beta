@@ -546,9 +546,19 @@ class UserController extends Controller
 
           $this->createPerson($country_id, $email, $phone);
 
+          $title = "Confirmationregistration";
+          $body = "Welcome to DB2B";
+
+          $user = User::WhereEmail($email)->first();
+  
+          $message = new ChatMessageController();
+          $mes = $message->sendNotification($user->id,$title,$body, 'User created successfully!');
+          if($mes){
+              return response()->json($mes);
+            }
+
          
     
-            return response()->json('User created successfully');
         }
         catch (Exception $e)
         {
@@ -560,7 +570,7 @@ class UserController extends Controller
         try{
             $user = User::where('email', $email)->first();
             $ulid = Uuid::uuid1();
-            $ulidPeople = $ulid->toString();
+            $ulidPerson = $ulid->toString();
             $first_name =  'XXXXX';
             $last_name =  'XXXXX';
             $user_id = $user->id;
@@ -573,7 +583,7 @@ class UserController extends Controller
             $deleted = 0;
             $type =  'client';
             $country_id = $country_id;
-            $uid = $ulidPeople;
+            $uid = $ulidPerson;
             $created_at = date('Y-m-d H:i:s');
             $updated_at = date('Y-m-d H:i:s');
       
@@ -588,7 +598,7 @@ class UserController extends Controller
               'first_login' => $first_login,
               'phonenumber' => $phonenumber,
               'deleted' => $deleted,
-              'uid' => $ulidPeople,
+              'uid' => $ulidPerson,
               'type' => $type,
               'country_id' => $country_id,
               'created_at' => $created_at,
@@ -765,9 +775,9 @@ class UserController extends Controller
         {
             try {
                 $users = DB::select("
-                    SELECT users.*, people.*
-                    FROM users, people
-                    WHERE users.id = people.user_id
+                    SELECT users.*, person.*
+                    FROM users, person
+                    WHERE users.id = person.user_id
                     AND users.deleted = FALSE
                 ");
 
@@ -824,9 +834,9 @@ class UserController extends Controller
         public function getUserLogin(){
             try {
                 $users = DB::select("
-                    SELECT users.*, people.*
-                    FROM users, people
-                    WHERE users.id = people.user_id
+                    SELECT users.*, person.*
+                    FROM users, person
+                    WHERE users.id = person.user_id
                     AND  users.deleted = FALSE AND users.connected = TRUE
                 ");
 
@@ -884,9 +894,9 @@ class UserController extends Controller
         public function getUserLogout(){
             try {
                 $users = DB::select("
-                SELECT users.*, people.*
-                FROM users, people
-                WHERE users.id = people.user_id
+                SELECT users.*, person.*
+                FROM users, person
+                WHERE users.id = person.user_id
                 AND  users.deleted = FALSE AND users.connected = FALSE
                 ");
 

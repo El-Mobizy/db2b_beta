@@ -16,9 +16,26 @@ use Ramsey\Uuid\Uuid;
 
 class Service extends Controller
 {
-    public function generateRandomAlphaNumeric($length) {
+    public function generateRandomAlphaNumeric($length,$class,$colonne) {
         $bytes = random_bytes(ceil($length * 3 / 4));
-        return substr(str_replace(['/', '+', '='], '', base64_encode($bytes)), 0, $length);
+        $randomS =  substr(str_replace(['/', '+', '='], '', base64_encode($bytes)), 0, $length);
+
+        $exist = $class->where($colonne,$randomS)->first();
+        while($exist){
+            $randomS =  substr(str_replace(['/', '+', '='], '', base64_encode($bytes)), 0, $length);
+        }
+
+        return $randomS;
+    }
+
+    public function generateUid($class){
+        $ulid = Uuid::uuid1();
+        $uid = $ulid->toString();
+        $exist = $class->where('uid',$uid)->first();
+            while($exist){
+                $uid =  $ulid->toString();
+            }
+        return $uid;
     }
 
     public function checkFile(Request $request){
@@ -162,7 +179,7 @@ class Service extends Controller
  *             mediaType="multipart/form-data",
  *             @OA\Schema(
  *                 @OA\Property(
- *                     property="files",
+ *                     property="files[]",
  *                     type="array",
  *                     @OA\Items(type="string", format="binary")
  *                 ),
@@ -332,5 +349,7 @@ class Service extends Controller
         }
         }
     }
+
+   
 
 }

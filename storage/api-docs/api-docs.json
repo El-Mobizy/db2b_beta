@@ -412,6 +412,197 @@
                 ]
             }
         },
+        "/api/ad/validateAd/{uid}": {
+            "post": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Validate an ad",
+                "operationId": "023a2ffc22fddc592c679f8cb75a5913",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "UID of the ad",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {}
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ad validated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ad validated successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ad not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ad not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Statut of ad must be pending. Please, check it !",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Statut of ad must be pending. Please, check it !"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ad/rejectAd/{uid}": {
+            "post": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Reject an ad",
+                "description": "Reject an ad.",
+                "operationId": "rejectAd",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "The UID of the ad",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "reject_reason": {
+                                        "description": "The reason for rejecting the ad",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ad rejected successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Ad not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/category/add": {
             "post": {
                 "tags": [
@@ -612,7 +803,7 @@
                                         "type": "string",
                                         "example": "Code d'appel du pays"
                                     },
-                                    "files": {
+                                    "files[]": {
                                         "description": "Fichier d'image du drapeau du pays (jpeg, jpg, png)",
                                         "type": "string",
                                         "format": "binary"
@@ -845,6 +1036,1268 @@
                 }
             }
         },
+        "/api/preorder/createPreorder": {
+            "post": {
+                "tags": [
+                    "Preorder"
+                ],
+                "summary": "Create a new preorder",
+                "operationId": "ad16aeba9d04ad37128c47503a204b77",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "description",
+                                    "price",
+                                    "location_id",
+                                    "category_id"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "price": {
+                                        "type": "string",
+                                        "pattern": "^\\d{1,2}\\.\\d{6,}$"
+                                    },
+                                    "address": {
+                                        "type": "string"
+                                    },
+                                    "location_id": {
+                                        "type": "integer"
+                                    },
+                                    "category_id": {
+                                        "type": "integer"
+                                    },
+                                    "files[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/preorder_answer/createPreorderAnswer/{preorderId}": {
+            "post": {
+                "tags": [
+                    "PreorderAnswers"
+                ],
+                "summary": "Create a new preorder answer",
+                "operationId": "40f7bd56e0e0d3f7f20950134ebb2718",
+                "parameters": [
+                    {
+                        "name": "preorderId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "content": {
+                                        "type": "string"
+                                    },
+                                    "files[]": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    },
+                                    "parent_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Preorder answer created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Preorder not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/preorder/getPreorderPending": {
+            "get": {
+                "tags": [
+                    "Preorder"
+                ],
+                "summary": "Get all pending preorders",
+                "description": "Retrieves all preorders what been pending.",
+                "operationId": "043e9d17b0f853cfd19adf961b3b005b",
+                "responses": {
+                    "200": {
+                        "description": "A list of pending preorders",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "uid": {
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "example": "0bac4ef8-182a-11ef-9357-00ff5210c7f1"
+                                            },
+                                            "statut": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "content": {
+                                                "type": "string",
+                                                "example": "Sample preorder content"
+                                            },
+                                            "filecode": {
+                                                "type": "string",
+                                                "example": "2VYfU4F"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/preorder/validatePreorder/{uid}": {
+            "post": {
+                "tags": [
+                    "Preorder"
+                ],
+                "summary": "Validate a preorder",
+                "description": "Validates a preorder by changing its status to 'validated' if its current status is 'pending'.",
+                "operationId": "47f16cbf3d13f4e985f599ad0dae8dad",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "Unique identifier of the preorder",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Preorder validated successfully!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder validated successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Preorder not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Statut of preorder must be pending. Please, check it !",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Statut of preorder must be pending. Please, check it !"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/preorder/rejectPreorder/{uid}": {
+            "post": {
+                "tags": [
+                    "Preorder"
+                ],
+                "summary": "Reject a preorder",
+                "description": "Rejects a preorder and updates its status to 'rejected'.",
+                "operationId": "fcc910b131f38f1d54b5c330307b2457",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "The UID of the preorder",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "reject_reason"
+                                ],
+                                "properties": {
+                                    "reject_reason": {
+                                        "description": "Reason for rejecting the preorder",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Preorder rejected successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Preorder not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Statut of preorder must be pending. Please, check it !",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/preorder_answer/getPreorderAnswerValidated": {
+            "get": {
+                "tags": [
+                    "PreorderAnswers"
+                ],
+                "summary": "Get all validated preorders answer",
+                "description": "Retrieves all preorders answer that have been validated.",
+                "operationId": "b4f4af81eef27919ffff6b5d86cb4f23",
+                "responses": {
+                    "200": {
+                        "description": "A list of validated preorders answer",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "uid": {
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "example": "0bac4ef8-182a-11ef-9357-00ff5210c7f1"
+                                            },
+                                            "statut": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "content": {
+                                                "type": "string",
+                                                "example": "Sample preorder content"
+                                            },
+                                            "filecode": {
+                                                "type": "string",
+                                                "example": "2VYfU4F"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/preorder_answer/getPreorderAnswerRejected": {
+            "get": {
+                "tags": [
+                    "PreorderAnswers"
+                ],
+                "summary": "Get all rejected preorders answer",
+                "description": "Retrieves all preorders answer that have been rejected.",
+                "operationId": "8aa6fe77545c065da04068e394802606",
+                "responses": {
+                    "200": {
+                        "description": "A list of rejected preorders answer",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "uid": {
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "example": "0bac4ef8-182a-11ef-9357-00ff5210c7f1"
+                                            },
+                                            "statut": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "content": {
+                                                "type": "string",
+                                                "example": "Sample preorder content"
+                                            },
+                                            "filecode": {
+                                                "type": "string",
+                                                "example": "2VYfU4F"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/preorder_answer/getPreorderAnswerPending": {
+            "get": {
+                "tags": [
+                    "PreorderAnswers"
+                ],
+                "summary": "Get all pending preorders answer",
+                "description": "Retrieves all preorders answers what been pending.",
+                "operationId": "3139bea39166e44d84a9b3d1cf2a04ee",
+                "responses": {
+                    "200": {
+                        "description": "A list of pending preorders answers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "uid": {
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "example": "0bac4ef8-182a-11ef-9357-00ff5210c7f1"
+                                            },
+                                            "statut": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "content": {
+                                                "type": "string",
+                                                "example": "Sample preorder content"
+                                            },
+                                            "filecode": {
+                                                "type": "string",
+                                                "example": "2VYfU4F"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/preorder/getPreorderWitnAnswer": {
+            "get": {
+                "tags": [
+                    "Preorder"
+                ],
+                "summary": "Get all validated preorders with their answers ",
+                "description": "Retrieves all preorders with their answers.",
+                "operationId": "b9bf27236e7ec32b7b265dcd987c9b2e",
+                "responses": {
+                    "200": {
+                        "description": "A list of  validated preorders with their answers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/preorder/getPreorderWithValidatedAnswers/{uid}": {
+            "get": {
+                "tags": [
+                    "Preorder"
+                ],
+                "summary": "Récupérer les informations d'une précommande avec les réponses validées",
+                "operationId": "c55c27a8242f4854aff4e861322a0c48",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "Identifiant unique de la précommande",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Récupération réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Précommande non trouvée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "string",
+                                            "example": "Précommande non trouvée !"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Une erreur s'est produite"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/preorder_answer/getSpecificPreorderAnswer/{uid}": {
+            "get": {
+                "tags": [
+                    "PreorderAnswers"
+                ],
+                "summary": "Récupère une réponse pré-commande spécifique",
+                "description": "Cette opération récupère une réponse pré-commande spécifique en fonction de l'UID fourni.",
+                "operationId": "576f7d993e6d921f1cef0138c8eb25de",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "L'UID de la réponse pré-commande",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "La réponse pré-commande a été trouvée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "La réponse pré-commande n'a pas été trouvée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Une erreur s'est produite lors de la recherche de la réponse pré-commande",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/preorder/getPreorderValidated": {
+            "get": {
+                "tags": [
+                    "Preorder"
+                ],
+                "summary": "Get all validated preorders",
+                "description": "Retrieves all preorders that have been validated.",
+                "operationId": "0eaa4d816604703d6b961892c949da7d",
+                "responses": {
+                    "200": {
+                        "description": "A list of validated preorders",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "uid": {
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "example": "0bac4ef8-182a-11ef-9357-00ff5210c7f1"
+                                            },
+                                            "statut": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "content": {
+                                                "type": "string",
+                                                "example": "Sample preorder content"
+                                            },
+                                            "filecode": {
+                                                "type": "string",
+                                                "example": "2VYfU4F"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/preorder/getPreorderRejected": {
+            "get": {
+                "tags": [
+                    "Preorder"
+                ],
+                "summary": "Get all rejected preorders",
+                "description": "Retrieves all preorders that have been rejected.",
+                "operationId": "d04a1dcf672d1db6da487c7be40ef602",
+                "responses": {
+                    "200": {
+                        "description": "A list of rejected preorders",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "uid": {
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "example": "0bac4ef8-182a-11ef-9357-00ff5210c7f1"
+                                            },
+                                            "statut": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "content": {
+                                                "type": "string",
+                                                "example": "Sample preorder content"
+                                            },
+                                            "filecode": {
+                                                "type": "string",
+                                                "example": "2VYfU4F"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-05-22 10:57:13"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/preorder_answer/validatePreorderAnswer/{uid}": {
+            "post": {
+                "tags": [
+                    "PreorderAnswers"
+                ],
+                "summary": "Validate a preorder answer",
+                "description": "Validates a preorder answer by changing its status to 'validated' if its current status is 'pending'.",
+                "operationId": "1839e352202c7adc07b44737ec72fce4",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "Unique identifier of the preorder",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Preorder validated successfully!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder validated successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Preorder not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Statut of preorder must be pending. Please, check it !",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Statut of preorder must be pending. Please, check it !"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/preorder_answer/rejectPreorderAnswer/{uid}": {
+            "post": {
+                "tags": [
+                    "PreorderAnswers"
+                ],
+                "summary": "Reject a preorder answer",
+                "description": "Rejects a preorder answer and updates its status to 'rejected'.",
+                "operationId": "f42b886a5966a25ecb1379a95994355d",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "The UID of the preorder answer",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "reject_reason"
+                                ],
+                                "properties": {
+                                    "reject_reason": {
+                                        "description": "Reason for rejecting the preorder",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Preorder rejected successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Preorder not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Statut of preorder must be pending. Please, check it !",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/preorder/getAuthPreorderValidated": {
+            "get": {
+                "tags": [
+                    "Preorder"
+                ],
+                "summary": "Retrieve the validated preorder for the authenticated user",
+                "description": "This endpoint retrieves the validated preorder for the authenticated user. It returns a JSON response containing the preorder data.",
+                "operationId": "54951bc2d99bd8373ad07a0cda591974",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/ad/uploadAdImage/{ad_uid}": {
             "post": {
                 "tags": [
@@ -872,7 +2325,7 @@
                                     "files"
                                 ],
                                 "properties": {
-                                    "files": {
+                                    "files[]": {
                                         "type": "array",
                                         "items": {
                                             "type": "string",

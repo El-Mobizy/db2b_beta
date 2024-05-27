@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class TypeOfType extends Model
 {
     use HasFactory;
+
+    public function preorders(){
+        return $this->hasMany(Preorder::class);
+    }
 }
+

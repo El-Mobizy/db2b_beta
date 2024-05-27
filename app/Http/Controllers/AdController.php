@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
 use App\Interfaces\Interfaces\FileRepositoryInterface;
 use App\Models\Country;
+use App\Models\TypeOfType;
 use App\Services\Useful;
 use Illuminate\Http\JsonResponse;
 
@@ -239,6 +240,8 @@ class AdController extends Controller
     public function destroyAd($uid)
     {
         try {
+
+            //todo:check if this ad not belong to a order
             $ad = Ad::where('uid',$uid)->first();
 
             if (!$ad) {
@@ -515,31 +518,18 @@ class AdController extends Controller
                 ]);
             }else{
 
-
-
             }
 
         }
-
-        
-    
-
-    
 
     private function createAd(Request $request){
         $title = htmlspecialchars($request->input('title'));
         $location_id = htmlspecialchars($request->input('location_id'));
         $category_id = htmlspecialchars($request->input('category_id'));
         $owner_id = Auth::user()->id;
-        $status = "pending";
-        $ulidAd = Uuid::uuid1()->toString();
+        $statut = TypeOfType::whereLibelle('pending')->first()->id;
         
         $service = new Service();
-        $randomString = $service->generateRandomAlphaNumeric(7);
-        $exist = Category::where('filecode',$randomString)->first();
-        while($exist){
-            $randomString = $service->generateRandomAlphaNumeric(7);
-        }
 
         $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();
         if($existUserAd){
@@ -551,16 +541,15 @@ class AdController extends Controller
         $ad->location_id = $location_id;
         $ad->category_id = $category_id;
         $ad->owner_id = $owner_id;
-        $ad->status = $status;
-        $ad->uid = $ulidAd;
+        $ad->statut = $statut;
+        $ad->uid = $service->generateUid($ad);
+        $randomString = $service->generateRandomAlphaNumeric(7,$ad,'file_code');
         $ad->file_code = $randomString;
         $ad->save();
 
         return $ad;
     }
-    
 
-    
     private function saveAdDetails(Request $request, Ad $ad){
         $category = Category::find($request->input('category_id'));
         $attributeGroups = AttributeGroup::where('group_title_id',$category->attribute_group_id)->get();
@@ -570,8 +559,6 @@ class AdController extends Controller
         if (is_array($a) && count($a) === 1) {
             $values = explode(",", $a[0]);
             $c = count($values);
-            // return $values[3];
-
            
         }
     
@@ -624,6 +611,197 @@ class AdController extends Controller
 
     return $existAd;
 
+   }
+
+/**
+ * @OA\Post(
+ *     path="/api/ad/validateAd/{uid}",
+ *     summary="Validate an ad",
+ *     tags={"Ad"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="uid",
+ *         in="path",
+ *         description="UID of the ad",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\RequestBody(
+ *         required=false,
+ *         @OA\JsonContent()
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Ad validated successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Ad validated successfully!")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Ad not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Ad not found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Statut of ad must be pending. Please, check it !",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Statut of ad must be pending. Please, check it !")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Error message")
+ *         )
+ *     )
+ * )
+ */
+
+   public function validateAd(Request $request,$uid){
+    try {
+
+        //todo: check if a person who make this action is an admin
+
+        $ad = Ad::where('uid',$uid)->first();
+        // dd($ad->validated_by_id);
+        if(!$ad){
+            return response()->json([
+                'message' => ' Ad not found'
+            ],404);
+        }
+
+        if($ad->statut != TypeOfType::whereLibelle('pending')->first()->id){
+            return response()->json([
+                'message' => 'Statut of ad must be pending. Please, check it !'
+            ]);
+        }
+
+        $ad->statut = TypeOfType::whereLibelle('validated')->first()->id;
+        $ad->validated_on = now();
+        $ad->validated_by_id = Auth::user()->id;
+        $ad->save();
+
+        return response()->json([
+            'message' => 'Ad validated successfully!'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
+   }
+
+
+   /**
+ * Reject an ad.
+ *
+ * @param Request $request The request object.
+ * @param string $uid The UID of the ad.
+ * @return \Illuminate\Http\JsonResponse The JSON response.
+ *
+ * @OA\Post(
+ *     path="/api/ad/rejectAd/{uid}",
+ *     tags={"Ad"},
+ *     security={{"bearerAuth": {}}},
+ *     summary="Reject an ad",
+ *     operationId="rejectAd",
+ *     @OA\Parameter(
+ *         name="uid",
+ *         in="path",
+ *         description="The UID of the ad",
+ *         required=true,
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="multipart/form-data",
+ *             @OA\Schema(
+ *                 @OA\Property(
+ *                     property="reject_reason",
+ *                     type="string",
+ *                     description="The reason for rejecting the ad"
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successful operation",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Ad rejected successfully!"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad request",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Ad not found"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Internal server error"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+   public function rejectAd(Request $request,$uid){
+    try {
+
+         //todo: check if a person who make this action is an admin
+
+        $request->validate([
+            'reject_reason' => 'required'
+        ]);
+        $ad = Ad::where('uid',$uid)->first();
+        if(!$ad){
+            return response()->json([
+                'message' => ' Ad not found'
+            ]);
+        }
+
+        if($ad->statut != TypeOfType::whereLibelle('pending')->first()->id){
+            return response()->json([
+                'message' => 'Statut of ad must be pending. Please, check it !'
+            ]);
+        }
+
+        $ad->validated_by_id = Auth::user()->id;
+        $ad->validated_on = now();
+        $ad->statut = TypeOfType::whereLibelle('rejected')->first()->id;
+        $ad->reject_reason = $request->input('reject_reason');
+        $ad->save();
+
+        return response()->json([
+            'message' => 'Ad rejected successfully!'
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
    }
 
 }
