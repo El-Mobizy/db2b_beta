@@ -22,4 +22,8 @@ class Ad extends Model
     {
         return $this->hasMany(File::class,'referencecode','file_code');
     }
+
+    public function category(){
+        return $this->belongsTo(Category::class);
+    }
 }

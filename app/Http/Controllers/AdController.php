@@ -13,7 +13,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
 use App\Interfaces\Interfaces\FileRepositoryInterface;
+use App\Models\Client;
 use App\Models\Country;
+use App\Models\ShopHasCategory;
+use App\Models\Shop;
 use App\Models\TypeOfType;
 use App\Services\Useful;
 use Illuminate\Http\JsonResponse;
@@ -106,6 +109,7 @@ class AdController extends Controller
                 $perPage = 50;
             }
             $ads = Ad::with('ad_detail', 'file')
+            ->whereDeleted(0)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
@@ -167,7 +171,8 @@ class AdController extends Controller
 
             $ads = Ad::with('ad_detail', 'file')
             ->orderBy('created_at', 'desc')
-            ->where('deleted',false)->where('owner_id',Auth::user()->id)->get();
+            ->where('deleted',false)
+            ->where('owner_id',Auth::user()->id)->get();
             return response()->json([
                 'data' =>[
                     'data'=> $ads,
@@ -327,6 +332,27 @@ class AdController extends Controller
  public function storeAd(Request $request){
     try {
 
+        $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+        $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
+
+        $client = Client::where('person_id',$person->id)->first();
+
+        if($client->is_merchant == false){
+            return response()->json([
+                'data' =>'Permission denied! You cannot add a ad'
+            ],200);
+        }
+
+        $shop = Shop::where('client_id',$client->id)->first();
+
+        $exist = ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->exists();
+
+        if(!$exist){
+            return response()->json([
+                'data' =>'You can only add the categories added to your shop'
+            ],200);
+        }
+
         $this->validateRequest($request);
 
         $service = new Service();
@@ -355,7 +381,8 @@ class AdController extends Controller
         return $checkAdAttribute;
      }
 
-        $ad = $this->createAd($request);
+         $ad = $this->createAd($request);
+      
 
         $file = new Service();
         $file->uploadFiles($request, $ad->file_code,'ad');
@@ -418,6 +445,27 @@ class AdController extends Controller
 
  public function editAd(Request $request, $uid){
     try {
+
+        $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+        $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
+
+        $client = Client::where('person_id',$person->id)->first();
+
+        if($client->is_merchant == false){
+            return response()->json([
+                'data' =>'You cannot add a ad'
+            ],200);
+        }
+
+        $shop = Shop::where('client_id',$client->id)->first();
+
+        $exist = ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->exists();
+
+        if(!$exist){
+            return response()->json([
+                'data' =>'You can only add the categories added to your shop'
+            ],200);
+        }
         $existAd = Ad::where('uid',$uid)->first();
         if(!$existAd){
             return response()->json([
@@ -444,7 +492,7 @@ class AdController extends Controller
 
         $ad = $this->updateAd($request,$existAd);
 
-        if($ad->deleted == false){
+        if($ad->deleted == true){
             return response()->json([
                 'message' => 'Your cannot edit a ad deleted'
             ]);
@@ -523,12 +571,14 @@ class AdController extends Controller
         }
 
     private function createAd(Request $request){
+
         $title = htmlspecialchars($request->input('title'));
         $location_id = htmlspecialchars($request->input('location_id'));
         $category_id = htmlspecialchars($request->input('category_id'));
         $owner_id = Auth::user()->id;
         $statut = TypeOfType::whereLibelle('pending')->first()->id;
         
+
         $service = new Service();
 
         $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();

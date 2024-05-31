@@ -73,8 +73,7 @@ class CountryController extends Controller
             $country->save();
 
 
-            $file = new Service();
-            $file->uploadFiles($request,$randomString,"country");
+            $service->uploadFiles($request,$randomString,"country");
 
             return response()->json([
                 'message' => 'country added successfully!'

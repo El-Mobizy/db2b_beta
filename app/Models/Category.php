@@ -12,5 +12,9 @@ class Category extends Model
     public function preorders(){
         return $this->hasMany(Preorder::class);
     }
+
+    public function ad(){
+        return $this->hasMany(Ad::class);
+    }
 }
 

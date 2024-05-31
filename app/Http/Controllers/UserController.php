@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
+use App\Models\Person;
 use App\Models\Restricted;
+use App\Models\Shop;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -171,8 +174,6 @@ class UserController extends Controller
                 'email' => 'required|email',
             ]);
 
-            $db = DB::connection()->getPdo();
-
             $email =  htmlspecialchars($request->input('email'));
             $ip_address =  htmlspecialchars($request->input('ip_address'));
 
@@ -183,19 +184,12 @@ class UserController extends Controller
                     'message' =>'Check if the email exist'
                 ]);
             }
-
-            $currentDateTime = Carbon::now();
-            // $ip_address = $request->ip();
-            $created_at = $currentDateTime->format('Y-m-d H:i:s');
-            $updated_at = $currentDateTime->format('Y-m-d H:i:s');
-
-            $query = "INSERT INTO restricteds (email, ip_address, created_at,updated_at) VALUES (?, ?, ?,?)";
-            $statement = $db->prepare($query);
-            $statement->bindParam(1, $email);
-            $statement->bindParam(2,  $ip_address);
-            $statement->bindParam(3,  $created_at);
-            $statement->bindParam(4,  $updated_at);
-            $statement->execute();
+            $service = new Service();
+            $restrict = new Restricted();
+            $restrict->email = $email;
+            $restrict->ip_address = $ip_address;
+            $restrict->uid =  $service->generateUid($restrict);
+            $restrict->save();
 
             return response()->json(['message' => 'stocké avec succès'],200);
 
@@ -346,9 +340,10 @@ class UserController extends Controller
                     $formattedSumDateTime = $sumDateTime->format('Y m d H:i:s');
                     return response()->json([
                         "message" =>"Vous devez attendre $d minutes et quelques secondes  avant de vous connecter.",
-                        'durée total' => $timeDifference,
-                        'date actuelle' => $currentTime,
-                        'time' =>$time
+                        "bloked" => "Vous êtes bloqué"
+                        // 'durée total' => $timeDifference,
+                        // 'date actuelle' => $currentTime,
+                        // 'time' =>$time
                     ]);
                 }
                 }
@@ -391,7 +386,7 @@ class UserController extends Controller
                         // }
 
                         if (!$token) {  
-                            return response()->json(['message' => 'Unauthorized'], 401);
+                            return response()->json(['message' => 'Unauthorized'], 200);
                         }
 
                         $user = Auth::user();
@@ -403,10 +398,10 @@ class UserController extends Controller
                             'token_type' => 'Bearer',
                         ]);
                     } else {
-                        return response()->json(['error' => 'Mot de passe invalide.'], 401);
+                        return response()->json(['error' => 'Mot de passe invalide.'], 200);
                     }
-                } else {
-                    return response()->json(['error' => 'Mot de passe invalide.'], 401);
+                    } else {
+                    return response()->json(['error' => 'Mot de passe invalide.'], 200);
                 }
            
         }
@@ -502,19 +497,24 @@ class UserController extends Controller
         try
         {
 
-           $request->validate([
-               'phone' =>  ['required', 'regex:/^\+?[0-9]+$/',  'unique:users'],
-               'email' => 'required|email|unique:users',
-               'password' => [
-                   'required',
-                   'string',
-                   'min:8',
-                   'confirmed',
-                   'regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]+$/',
-               ],
-               'password_confirmation' => 'required|string',
-               'country_id' => 'required'
-           ]);
+            $validator = Validator::make($request->all(), [
+                'phone' =>  ['required', 'regex:/^\+?[0-9]+$/',  'unique:users'],
+                'email' => 'required|email|unique:users',
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'confirmed',
+                    'regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]+$/',
+                ],
+                'password_confirmation' => 'required|string',
+                'country_id' => 'required'
+            ]);
+            
+            if ($validator->fails()) {
+                return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
+            }
+
 
            $ulid = Uuid::uuid1();
            $ulidUser = $ulid->toString();
@@ -544,17 +544,25 @@ class UserController extends Controller
 
           $statement->execute();
 
-          $this->createPerson($country_id, $email, $phone);
+          $createPerson = $this->createPerson($country_id, $email, $phone,$request);
+          if($createPerson){
+            return response()->json([
+                'message' =>$createPerson->original['message']
+              ]);
+           
+          }
 
-          $title = "Confirmationregistration";
-          $body = "Welcome to DB2B";
+          $title = "Confirmation registration";
+          $body = "Welcome to DB2B, we are happy to have you join us";
 
-          $user = User::WhereEmail($email)->first();
+          $user = User::Where('email',$email)->first();
   
           $message = new ChatMessageController();
           $mes = $message->sendNotification($user->id,$title,$body, 'User created successfully!');
           if($mes){
-              return response()->json($mes);
+              return response()->json([
+                'message' =>$mes->original['message']
+              ]);
             }
 
          
@@ -566,8 +574,9 @@ class UserController extends Controller
         }
     }
 
-    public function createPerson($country_id, $email, $phone){
+    public function createPerson($country_id, $email, $phone, Request $request){
         try{
+            $db = DB::connection()->getPdo();
             $user = User::where('email', $email)->first();
             $ulid = Uuid::uuid1();
             $ulidPerson = $ulid->toString();
@@ -598,12 +607,23 @@ class UserController extends Controller
               'first_login' => $first_login,
               'phonenumber' => $phonenumber,
               'deleted' => $deleted,
-              'uid' => $ulidPerson,
+              'uid' => $uid,
               'type' => $type,
               'country_id' => $country_id,
               'created_at' => $created_at,
               'updated_at' => $updated_at
           ]);
+
+          $query = "SELECT id FROM person WHERE user_id = :user_id LIMIT 1";
+
+          $stmt = $db->prepare($query);
+          $stmt->bindParam(':user_id', $user_id, $db::PARAM_INT);
+          $stmt->execute();
+
+      
+          $person = $stmt->fetch($db::FETCH_ASSOC);
+
+          $this->createClient( $person['id'], $request);
       
         }catch(Exception $e){
             return response()->json([
@@ -612,6 +632,54 @@ class UserController extends Controller
         }
     }
     
+    public function createClient($personId, Request $request){
+        try{
+            $service = new Service();
+            $client = new Client();
+            $client->uid = $service->generateUid($client);
+            $client->person_id = $personId;
+        
+            $client->save();
+           
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function createShop($clientId, Request $request){
+        try{
+
+            if(Shop::where('client_id', $clientId)->whereDeleted(0)->exists()){
+                return response()->json([
+                    'message' => 'You already have a shop !'
+                ]);
+            }
+
+            $client = Client::find($clientId);
+
+            $url = url("/api/shop/catalogueClient/$client->uid");
+
+            $service = new Service();
+            $shop = new Shop();
+            $shop->uid = $service->generateUid($shop);
+            $shop->title = "Shop";
+            $shop->description = "XXXXXXXX";
+            $shop->shop_url = $url;
+            $shop->client_id = $clientId;
+            $randomString = $service->generateRandomAlphaNumeric(7,$shop,'filecode');
+            $shop->filecode = $randomString;
+            if($request->hasFile('files')){
+                $service->uploadFiles($request,$randomString,"shop");
+            }
+            $shop->save();
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
     
 
     /**
@@ -723,9 +791,16 @@ class UserController extends Controller
 
         public function userAuth(){
             try{
-    
+                $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+                $person = DB::selectOne($personQuery, ['userId' =>Auth::user()->id]);
+                $client = Client::where('person_id', $person->id)->first();
+                $data = [
+                    'User details' =>Auth::user(),
+                    'Person detail' => $person,
+                    'client detail' => $client
+                ];
                 return response()->json([
-                    'data' =>Auth::user(),
+                    'data' =>$data
                 ]);
     
             } catch (Exception $e) {

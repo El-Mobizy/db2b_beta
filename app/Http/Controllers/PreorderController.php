@@ -8,10 +8,13 @@ use App\Models\TypeOfType;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\NotificationEmailwithoutfile;
 use App\Mail\NotificationEmail;
+use App\Models\Ad;
+use App\Models\Review;
 use Ramsey\Uuid\Type\Integer;
 use Ramsey\Uuid\Uuid;
 
@@ -29,10 +32,11 @@ class PreorderController extends Controller
  *         @OA\MediaType(
  *             mediaType="multipart/form-data",
  *             @OA\Schema(
- *                 required={"title", "description", "price", "location_id", "category_id"},
+ *                 required={"title", "description", "location_id", "category_id"},
  *                 @OA\Property(property="title", type="string"),
  *                 @OA\Property(property="description", type="string"),
- *                 @OA\Property(property="price", type="string", pattern="^\d{1,2}\.\d{6,}$"),
+ *                 @OA\Property(property="minimumbudget", type="string", pattern="^\d{1,2}\.\d{6,}$"),
+ *                 @OA\Property(property="maximumbudget", type="string", pattern="^\d{1,2}\.\d{6,}$"),
  *                 @OA\Property(property="address", type="string"),
  *                 @OA\Property(property="location_id", type="integer"),
  *                 @OA\Property(property="category_id", type="integer"),
@@ -53,7 +57,8 @@ class PreorderController extends Controller
             $request->validate([
                 'title' => 'required',
                 'description' => 'required',
-                'price' => '',
+                'minimumbudget' => '',
+                'maximumbudget' => '',
                 'address' => 'string',
                 'location_id' =>'required',
                 'category_id' => 'required',
@@ -61,6 +66,14 @@ class PreorderController extends Controller
             ]);
 
             $service = new Service();
+
+            $exist = Preorder::where('user_id',Auth::user()->id)->whereTitle($request->title)->exists();
+
+            if($exist){
+                return response()->json([
+                    'message' => 'Preorder already exists'
+                ],200);
+            }
 
             $validateLocation=$service->validateLocation($request->location_id);
             if($validateLocation){
@@ -72,10 +85,17 @@ class PreorderController extends Controller
                 return $validateCategory;
             }
 
+            if($request->input('maximumbudget') < $request->input('minimumbudget')){
+                return response()->json([
+                    'message' => 'Make sure the minimum budget does not exceed the maximum budget'
+                ],200);
+            }
+
             $preorder = new Preorder();
             $preorder->title = $request->input('title');
             $preorder->description = $request->input('description');
-            $preorder->price = $request->input('price')??0.00;
+            $preorder->maximumbudget = $request->input('maximumbudget')??0.00;
+            $preorder->minimumbudget = $request->input('minimumbudget')??0.00;
             $preorder->address = $request->input('address')??'XXXX';
             $preorder->location_id = $request->input('location_id');
             $preorder->category_id = $request->input('category_id');
@@ -99,13 +119,16 @@ class PreorderController extends Controller
                
 
                $message = new ChatMessageController();
-              $mes =  $message->sendNotification(Auth::user()->id,2,$title,$body, 'preorder created successfully !');
+              $mes =  $message->sendNotification(Auth::user()->id,$title,$body, 'preorder created successfully !');
 
               if($mes){
-                return response()->json($mes);
+                return response()->json([
+                      'message' =>$mes->original['message']
+                ]);
               }
 
                //todo: Envoyer un mail aux administrateurs pour leur signaler qu'un client vient de faire une précommande
+               //todo: Envoyer un mail aux vendeurs qui commercialisent des produit de même catégorie
         } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
@@ -132,6 +155,8 @@ class PreorderController extends Controller
  *             @OA\Schema(
  *                 @OA\Property(property="content", type="string"),
  *                 @OA\Property(property="files[]", type="array", @OA\Items(type="string", format="binary")),
+ *                 @OA\Property(property="price", type="string", pattern="^\d{1,2}\.\d{6,}$"),
+ *                  @OA\Property(property="delivery_time", type="integer"),
  *                 @OA\Property(property="parent_id", type="integer")
  *             )
  *         )
@@ -165,7 +190,9 @@ class PreorderController extends Controller
 
             $request->validate([
                 'content' => 'required',
-                'files'
+                'files',
+                'price',
+                'delivery_time'
             ]);
 
             if(!Preorder::find($preorderId)){
@@ -186,7 +213,9 @@ class PreorderController extends Controller
         $preorder_answer->content = $request->input('content');
         $preorder_answer->preorder_id =  Preorder::find($preorderId)->id;
         $preorder_answer->uid = $service->generateUid($preorder_answer);
+        $preorder_answer->price = $request->input('price')??0.00;
         $randomString = $service->generateRandomAlphaNumeric(7,$preorder_answer,'filecode');
+        $preorder_answer->delivery_time = $request->input('delivery_time')??0;
         $preorder_answer->filecode = $randomString;
         $preorder_answer->statut =  TypeOfType::whereLibelle('pending')->first()->id;
         $preorder_answer->user_id = Auth::user()->id;
@@ -199,15 +228,18 @@ class PreorderController extends Controller
             $service->uploadFiles($request,$randomString,"preorder_answers");
         }
 
+        // return($preorder_answer->preorder->user->email);
         $preorder_answer ->save();
 
         $title = "Confirmation that your pre-order reply has been sent";
-        $body = "Your answer has been saved, please wait while an administrator analyzes it. We'll let you know what happens next: Thank you!";
+        $body = "Your answer has been saved, please wait while an administrator analyzes it. We'll let you know what happens next. Thank you!";
 
         $message = new ChatMessageController();
-        $mes = $message->sendNotification(Auth::user()->id,2,$title,$body, 'preorder answers created successfully !');
+        $mes = $message->sendNotification(Auth::user()->id,$title,$body, 'preorder answers created successfully !');
         if($mes){
-            return response()->json($mes);
+            return response()->json([
+                  'message' =>$mes->original['message']
+            ]);
           }
 
            //todo: Envoyer un mail aux administrateurs pour leur signaler qu'un marchand  vient de répondre à une précommande et qu'il doit valider
@@ -264,8 +296,14 @@ public function getPreorderPending(){
         // $preorder = Preorder::whereStatut(TypeOfType::whereLibelle('pending')->first()->id)->get();
 
         $preorder = DB::select("SELECT * FROM preorders WHERE statut = (
-            SELECT id FROM type_of_types WHERE libelle = 'pending' LIMIT 1
+            SELECT id FROM type_of_types WHERE libelle = 'pending' AND deleted = false LIMIT 1 
         )");
+
+        if(count($preorder) == 0){
+            return response()->json([
+                'message' => 'No data found'
+            ]);
+        }
 
         return response()->json([
             'data' => $preorder
@@ -354,6 +392,12 @@ public function getPreorderPending(){
             ],404);
         }
 
+        if($preorder->deleted == 1){
+            return response()->json([
+                'message' => 'this preorder is deleted'
+            ]);
+        }
+
         if($preorder->statut != TypeOfType::whereLibelle('pending')->first()->id){
             return response()->json([
                 'message' => 'Statut of preorder must be pending. Please, check it !'
@@ -371,7 +415,9 @@ public function getPreorderPending(){
         $message = new ChatMessageController();
         $mes = $message->sendNotification($preorder->user_id,$title,$body, 'preorder answers validated successfully !');
         if($mes){
-            return response()->json($mes);
+            return response()->json([
+                  'message' =>$mes->original['message']
+            ]);
           }
 
         } catch (\Exception $e) {
@@ -465,7 +511,9 @@ public function getPreorderPending(){
         $message = new ChatMessageController();
         $mes = $message->sendNotification($preorder->user_id,$title,$body,  'Preorder rejected successfully!');
         if($mes){
-            return response()->json($mes);
+            return response()->json([
+                  'message' =>$mes->original['message']
+            ]);
           }
 
 
@@ -523,6 +571,12 @@ public function getPreorderAnswerValidated(){
             SELECT id FROM type_of_types WHERE libelle = 'validated' LIMIT 1
         )");
 
+if(count($preorder_answer) == 0){
+    return response()->json([
+        'message' => 'No data found'
+    ]);
+}
+
         return response()->json([
             'data' => $preorder_answer,
         ],200);
@@ -578,6 +632,12 @@ public function getPreorderAnswerRejected(){
             SELECT id FROM type_of_types WHERE libelle = 'rejected' LIMIT 1
         )");
 
+        if(count($preorder_answer) == 0){
+            return response()->json([
+                'message' => 'No data found'
+            ]);
+        }
+
         return response()->json([
             'data' => $preorder_answer,
         ],200);
@@ -632,7 +692,11 @@ try {
     $preorder_answer = DB::select("SELECT * FROM preorder_answers WHERE statut = (
         SELECT id FROM type_of_types WHERE libelle = 'pending' LIMIT 1
     )");
-    return " <script> alert(1) </script> ";
+    if(count($preorder_answer) == 0){
+        return response()->json([
+            'message' => 'No data found'
+        ]);
+    }
     return response()->json([
         'data' => $preorder_answer
     ]);
@@ -678,12 +742,12 @@ public function getPreorderWitnAnswer(){
     try {
 
         $preorders = Preorder::whereHas('preorder_answers', function ($query) {
-            $query->where('statut', TypeOfType::whereLibelle('validated')->first()->id);
+            $query->whereDeleted(0)->where('statut', TypeOfType::whereLibelle('validated')->first()->id);
         })->with(['preorder_answers' => function ($query) {
-            $query->where('statut', TypeOfType::whereLibelle('validated')->first()->id);
-        }])->get();
+            $query->whereDeleted(0)->where('statut', TypeOfType::whereLibelle('validated')->first()->id);
+        }])->whereDeleted(0)->get();
 
-        
+
 
         return response()->json([
             'data' => $preorders
@@ -756,8 +820,8 @@ public function getPreorderWithValidatedAnswers($uid)
         $validatedStatusId = TypeOfType::whereLibelle('validated')->firstOrFail()->id;
 
         $preorder = Preorder::with(['preorder_answers' => function ($query) use ($validatedStatusId) {
-            $query->where('statut', $validatedStatusId);
-        }])->with('file')->whereUid($uid)->get();
+            $query->where('statut', $validatedStatusId)->whereDeleted(0);
+        }])->with('file')->whereDeleted(0)->whereUid($uid)->get();
 
         return response()->json([
             'data' => $preorder
@@ -876,8 +940,14 @@ public function getPreorderValidated(){
         // $preorder = Preorder::whereStatut(TypeOfType::whereLibelle('validated')->first()->id)->get();
 
         $preorder = DB::select("SELECT * FROM preorders WHERE statut = (
-            SELECT id FROM type_of_types WHERE libelle = 'validated' LIMIT 1
+            SELECT id FROM type_of_types WHERE libelle = 'validated' AND deleted = false LIMIT 1
         )");
+
+        if(count($preorder) == 0){
+            return response()->json([
+                'message' => 'No data found'
+            ]);
+        }
         return response()->json([
             'data' => $preorder
         ]);
@@ -930,8 +1000,14 @@ try {
     // $preorder = Preorder::whereStatut(TypeOfType::whereLibelle('rejected')->first()->id)->get();
 
     $preorder = DB::select("SELECT * FROM preorders WHERE statut = (
-        SELECT id FROM type_of_types WHERE libelle = 'rejected' LIMIT 1
+        SELECT id FROM type_of_types WHERE libelle = 'rejected' AND deleted = false LIMIT 1
     )");
+
+    if(count($preorder) == 0){
+        return response()->json([
+            'message' => 'No data found'
+        ]);
+    }
 
     return response()->json([
         'data' => $preorder
@@ -1133,6 +1209,7 @@ public function rejectPreorderAnswer($uid, Request $request){
 /**
  * @OA\Get(
  *     path="/api/preorder/getAuthPreorderValidated",
+          * security={{"bearerAuth": {}}},
  *     summary="Retrieve the validated preorder for the authenticated user",
  *     description="This endpoint retrieves the validated preorder for the authenticated user. It returns a JSON response containing the preorder data.",
  *     tags={"Preorder"},
@@ -1170,6 +1247,13 @@ public function getAuthPreorderValidated(){
           AND user_id = ?
     ", [Auth::user()->id]);
 
+
+    if(count($preorder) == 0){
+        return response()->json([
+            'message' => 'No data found'
+        ]);
+    }
+
         return response()->json([
             'data' => $preorder
         ]);
@@ -1180,5 +1264,393 @@ public function getAuthPreorderValidated(){
         ],500);
     }
 }
+
+
+/**
+ * @OA\Post(
+ *     path="/api/review/write/{PreordersAnswerUid}",
+ *     summary="Chat with a seller regarding a pre-order response",
+ *     tags={"Preorder"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="PreordersAnswerUid",
+ *         in="path",
+ *         required=true,
+ *         description="Uid of preorder response",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="multipart/form-data",
+ *             @OA\Schema(
+ *                 @OA\Property(property="content", type="string", description="Contenu de la réponse"),
+ *                 @OA\Property(property="files[]", type="array", @OA\Items(type="file"))
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Not Found",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="Forbidden",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string")
+ *         )
+ *     )
+ * )
+ */
+public function write(Request $request, $PreordersAnswerUid){
+    try{
+        $validator = Validator::make($request->all(), [
+            'content' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
+        }
+
+        if(!PreorderAnswers::whereUid($PreordersAnswerUid)->first()){
+            return response()->json([
+                'message' => 'Preorder answer not found'
+            ],404);
+        }
+
+        if(PreorderAnswers::whereUid($PreordersAnswerUid)->first()->statut !=TypeOfType::whereLibelle('validated')->first()->id ){
+            return response()->json([
+                'message' => 'Statut of preorder answer must be validated. Please, check it !'
+            ],403);
+        }
+
+        $service = new Service();
+        $review = new Review();
+        $review->user_id = Auth::user()->id;
+        $review->preorder_answer_uid = $PreordersAnswerUid;
+        $review->content = $request->input('content');
+        $review->uid = $service->generateUid($review);
+        $randomString = $service->generateRandomAlphaNumeric(7,$review,'filecode');
+        $review->filecode = $randomString;
+
+        if ($request->hasFile('files')) {
+            $service->uploadFiles($request,$randomString,"preorder");
+        }
+
+        $review->save();
+
+        $title = "Confirmation of Receipt of a Response";
+        $body = "You have received a response on one of your submissions in relation to a pre-order";
+
+        $r = PreorderAnswers::whereUid($PreordersAnswerUid)->first();
+
+        $receiver_id= $r->user->id;
+
+       $message = new ChatMessageController();
+      $mes =  $message->sendNotification($receiver_id,$title,$body, 'comment submited successfully !');
+
+      if($mes){
+        return response()->json([
+              'message' =>$mes->original['message']
+        ]);
+      }
+
+    }catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+
+/**
+ * @OA\Get(
+ *     path="/api/preorder/merchantAffectedByPreorder",
+ *     summary="Get pre-orders that concern the merchant",
+ *     tags={"Preorder"},
+          * security={{"bearerAuth": {}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="data", type="array", @OA\Items(ref="")),
+ *             @OA\Property(property="nombre", type="integer")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="error", type="string")
+ *         )
+ *     )
+ * )
+ */
+public function merchantAffectedByPreorder(){
+    try{
+
+            $user = Auth::user();
+
+            $categories = Ad::where('owner_id', $user->id)
+                            ->where('deleted', false)
+                            ->pluck('category_id');
+
+            $validatedStatus = TypeOfType::where('libelle', 'validated')->first()->id;
+
+            $preorders = Preorder::where('statut', $validatedStatus)
+                         ->whereIn('category_id', $categories)
+                         ->get();
+
+                         if(count($preorders) == 0){
+                            return response()->json([
+                                'message' => 'No data found'
+                            ]);
+                        }
+
+            return response()->json([
+                'data' => $preorders,
+                'nombre' => $preorders->count()
+            ]);
+
+    }catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+/**
+ * @OA\Get(
+ *     path="/api/preorder/getValidatedPreordersWithAnswers",
+ *     summary="Get pre-orders validated with responses",
+ *     tags={"Preorder"},
+          * security={{"bearerAuth": {}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="preorder_answers", type="array", @OA\Items(ref=""))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="error", type="string")
+ *         )
+ *     )
+ * )
+ */
+public function getValidatedPreordersWithAnswers()
+    {
+        try{
+            $user = Auth::user();
+
+            $validatedStatus = TypeOfType::where('libelle', 'validated')->first()->id;
+
+            $preorders = Preorder::where('user_id', $user->id)
+                                 ->where('statut', $validatedStatus)
+                                 ->get();
+
+            $preorderAnswers = PreorderAnswers::whereIn('preorder_id', $preorders->pluck('id'))
+                                             ->where('statut', $validatedStatus)
+                                             ->get();
+
+                                             
+
+            return response()->json([
+                'preorders' => $preorders,
+                'preorder_answers' => $preorderAnswers
+            ]);
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+
+    }
+
+    /**
+ * @OA\Get(
+ *     path="/api/preorder/getPreordersAnswerSortedByDeliveryTime",
+ *     summary="Get pre-orders validated with responses filtered by delivery time",
+ *          security={{"bearerAuth": {}}},
+ *     tags={"Preorder"},
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="preorder_answers", type="array", @OA\Items(ref=""))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="error", type="string")
+ *         )
+ *     )
+ * )
+ */
+    public function getPreordersAnswerSortedByDeliveryTime()
+    {
+        try{
+            $user = Auth::user();
+
+            $validatedStatus = TypeOfType::where('libelle', 'validated')->first()->id;
+
+            $preorders = Preorder::where('user_id', $user->id)
+                                 ->where('statut', $validatedStatus)
+                                 ->get();
+
+            $preorderAnswers = PreorderAnswers::whereIn('preorder_id', $preorders->pluck('id'))
+                                             ->where('statut', $validatedStatus)
+                                             ->orderBy('delivery_time')
+                                             ->get();
+
+            return response()->json([
+                // 'preorders' => $preorders,
+                'preorder_answers' => $preorderAnswers
+            ]);
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+      /**
+ * @OA\Get(
+ *     path="/api/preorder/getPreordersAnswerSortedByPrice",
+ *     summary="Get pre-orders validated with responses filtered by price",
+ *          security={{"bearerAuth": {}}},
+ *     tags={"Preorder"},
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="preorder_answers", type="array", @OA\Items(ref=""))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="error", type="string")
+ *         )
+ *     )
+ * )
+ */
+
+    public function getPreordersAnswerSortedByPrice()
+    {
+        try{
+            $user = Auth::user();
+
+            $validatedStatus = TypeOfType::where('libelle', 'validated')->first()->id;
+
+            $preorders = Preorder::where('user_id', $user->id)
+                                 ->where('statut', $validatedStatus)
+                                 ->get();
+
+            $preorderAnswers = PreorderAnswers::whereIn('preorder_id', $preorders->pluck('id'))
+                                             ->where('statut', $validatedStatus)
+                                             ->orderBy('price')
+                                             ->get();
+
+            return response()->json([
+                // 'preorders' => $preorders,
+                'preorder_answers' => $preorderAnswers
+            ]);
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+
+    /**
+ * @OA\Get(
+ *     path="/api/review/answerReviews/{preorderAnswerUid}",
+ *     summary="Get reviews for a specific preorder answer",
+ *     tags={"Review"},
+ * security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="preorderAnswerUid",
+ *         in="path",
+ *         required=true,
+ *         description="Uid of preorder answer",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="data", type="array", @OA\Items(ref=""))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Not Found",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string")
+ *         )
+ *     )
+ * )
+ */
+    public function answerReviews($preorderAnswerUid){
+        try{
+
+            $reviews = Review::whereDeleted(0)->where('preorder_answer_uid',$preorderAnswerUid)->with('file')->get();
+            return response()->json([
+                'data' => $reviews
+            ]);
+
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 
 }

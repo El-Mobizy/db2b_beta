@@ -62,6 +62,7 @@
 </head>
 <body>
     <div class="container">
+    <img class="logo" src="{{$message->embed(public_path('image/DB2B.jpg')) }}" alt="Logo">
         <hr class="separator">
         <div class="email-title">{{ $mail['title'] }}</div>
         <div class="email-body"><span>{{ $mail['body'] }}</span></div>

@@ -11,14 +11,18 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\RightController;
 use App\Http\Controllers\Service;
+use App\Http\Controllers\ShopController;
 use App\Http\Controllers\TypeOfTypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebNotificationController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+        $person = DB::selectOne($personQuery, ['userId' => $request->user()->id]);
+    return [$request->user(),$person];
 })->middleware('auth:sanctum');
 
 
@@ -53,6 +57,11 @@ Route::prefix('users')->group(function () {
             Route::post('/createPreorder', [PreorderController::class, 'createPreorder'])->name('preorder.createPreorder');
             Route::post('/validatePreorder/{uid}', [PreorderController::class, 'validatePreorder'])->name('preorder.validatePreorder');
             Route::post('/rejectPreorder/{uid}', [PreorderController::class, 'rejectPreorder'])->name('preorder.rejectPreorder');
+            Route::get('/merchantAffectedByPreorder', [PreorderController::class, 'merchantAffectedByPreorder'])->name('preorder.merchantAffectedByPreorder');
+            Route::get('/getValidatedPreordersWithAnswers', [PreorderController::class, 'getValidatedPreordersWithAnswers'])->name('preorder.getValidatedPreordersWithAnswers');
+            Route::get('/getPreordersAnswerSortedByPrice', [PreorderController::class, 'getPreordersAnswerSortedByPrice'])->name('preorder.getPreordersAnswerSortedByPrice');
+            Route::get('/getPreordersAnswerSortedByDeliveryTime', [PreorderController::class, 'getPreordersAnswerSortedByDeliveryTime'])->name('preorder.getPreordersAnswerSortedByDeliveryTime');
+        
         });
 
         Route::prefix('preorder_answer')->group(function () {
@@ -61,7 +70,11 @@ Route::prefix('users')->group(function () {
             Route::post('/rejectPreorderAnswer/{uid}', [PreorderController::class, 'rejectPreorderAnswer'])->name('preorder.rejectPreorderAnswer');
         });
 
-        
+        Route::prefix('review')->group(function () {
+            Route::post('/write/{PreordersAnswerUid}', [PreorderController::class, 'write'])->name('review.write');
+            Route::get('/answerReviews/{PreordersAnswerUid}', [PreorderController::class, 'answerReviews'])->name('preorder.answerReviews');
+          
+        });
 
     });
     Route::prefix('category')->group(function () {
@@ -97,13 +110,13 @@ Route::prefix('users')->group(function () {
         Route::get('/all', [FavoriteController::class, 'all'])->name('favorite.all');
     });
 
-    Route::prefix('right')->group(function () {
-        Route::get('/index', [RightController::class, 'index']);
-        Route::post('/store', [RightController::class, 'store']);
-        Route::get('/show/{id}', [RightController::class, 'show']);
-        Route::put('/update/{id}', [RightController::class, 'update']);
-        Route::delete('/destroy/{id}', [RightController::class, 'destroy']);
-    });
+    // Route::prefix('right')->group(function () {
+    //     Route::get('/index', [RightController::class, 'index']);
+    //     Route::post('/store', [RightController::class, 'store']);
+    //     Route::get('/show/{id}', [RightController::class, 'show']);
+    //     Route::put('/update/{id}', [RightController::class, 'update']);
+    //     Route::delete('/destroy/{id}', [RightController::class, 'destroy']);
+    // });
 
     Route::prefix('typeoftype')->group(function () {
         Route::post('/store', [TypeOfTypeController::class, 'store']);
@@ -140,4 +153,14 @@ Route::prefix('users')->group(function () {
         Route::get('/getSpecificPreorderAnswer/{uid}', [PreorderController::class, 'getSpecificPreorderAnswer'])->name('preorder.getSpecificPreorderAnswer');
     });
 
+    
+    Route::prefix('shop')->group(function () {
+        Route::post('/updateShop/{uid}', [ShopController::class, 'updateShop'])->name('shop.updateShop');
+        Route::get('/showShop/{uid}', [ShopController::class, 'showShop'])->name('shop.showShop');
+        Route::post('/addShopFile/{filecodeShop}', [ShopController::class, 'addShopFile'])->name('preorder.addShopFile');
+        Route::post('/updateShopFile/{uid}', [ShopController::class, 'updateShopFile'])->name('shop.updateShopFile');
+        Route::post('/addCategoryToSHop/{shopId}', [ShopController::class, 'addCategoryToSHop'])->name('shop.addCategoryToSHop');
+        Route::post('/becomeMerchant/{clientId}', [ShopController::class, 'becomeMerchant'])->name('shop.becomeMerchant');
+        Route::get('/catalogueClient/{clientUid}', [ShopController::class, 'catalogueClient'])->name('shop.catalogueClient');
+    });
 

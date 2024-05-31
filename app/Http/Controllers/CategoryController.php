@@ -64,11 +64,9 @@ class CategoryController extends Controller
 
             $service = new Service();
            
-            $randomString = $service->generateRandomAlphaNumeric(7);
-            $exist = Category::where('filecode',$randomString)->first();
-            while($exist){
-                $randomString = $service->generateRandomAlphaNumeric(7);
-            }
+
+            $exist = new Category();
+                $randomString = $service->generateRandomAlphaNumeric(7,$exist,'filecode');
             $ulid = Uuid::uuid1();
             $ulidCategory = $ulid->toString();
             $title =  htmlspecialchars($request->input('title'));
