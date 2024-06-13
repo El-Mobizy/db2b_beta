@@ -5,7 +5,13 @@ use App\Http\Controllers\WebNotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    $mail = [
+        'title' => 'Test Email',
+        'body' => 'hola'
+    ];
+    return view('notification.login',[
+        'mail' => $mail
+    ]);
 });
 
 Route::get('/test', function () {

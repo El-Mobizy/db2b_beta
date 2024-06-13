@@ -257,6 +257,15 @@
                                         "type": "integer",
                                         "example": 1
                                     },
+                                    "shop_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "double",
+                                        "example": 1
+                                    },
                                     "value_entered[]": {
                                         "type": "array",
                                         "items": {
@@ -357,6 +366,11 @@
                                     },
                                     "category_id": {
                                         "type": "integer",
+                                        "example": 1
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
                                         "example": 1
                                     },
                                     "value_entered[]": {
@@ -603,6 +617,354 @@
                 ]
             }
         },
+        "/api/cart/addToCart": {
+            "post": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Add a product to the cart",
+                "operationId": "d28260d393ac0530cca1b17ee434d954",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ad_id": {
+                                        "description": "The ID of the product to add to the cart",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Product added to the cart successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product add to cart successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/cart/removeToCart": {
+            "delete": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Remove a product from the cart",
+                "operationId": "12d0dba4faf906b44fce2926dcc77dc7",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ad_id": {
+                                        "description": "The ID of the product to remove from the cart",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Product removed from the cart successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ad remove to cart successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/cart/getUserCart": {
+            "get": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Get the user's cart",
+                "operationId": "ccf4cea20083d292d6a199279f67d09b",
+                "responses": {
+                    "200": {
+                        "description": "User's cart retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "files": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "file_name": {
+                                                                    "description": "The name of the file",
+                                                                    "type": "string"
+                                                                },
+                                                                "file_path": {
+                                                                    "description": "The path of the file",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/cart/incrementQuantity": {
+            "post": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Increment the quantity of a product in the cart",
+                "operationId": "ca7469380058981c7073aa844e4f264a",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ad_id": {
+                                        "description": "The ID of the product to increment the quantity of",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Quantity incremented successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Quantity incremented successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/cart/decrementQuantity": {
+            "post": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Decrement the quantity of a product in the cart",
+                "operationId": "f0ec31585a76e45fd58b1641b5abc5b2",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ad_id": {
+                                        "description": "The ID of the product to decrement the quantity of",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Quantity decremented successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Quantity decremented successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/cart/getCartItem/{ad_id}": {
+            "get": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Get a cart item by ad ID",
+                "operationId": "5e669f1deff20c0a2a76afc6372921f5",
+                "parameters": [
+                    {
+                        "name": "ad_id",
+                        "in": "query",
+                        "description": "The ID of the ad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cart item retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "catItem": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "user_id": {
+                                                    "type": "integer"
+                                                },
+                                                "ad_id": {
+                                                    "type": "integer"
+                                                },
+                                                "quantity": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "userId": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
         "/api/category/add": {
             "post": {
                 "tags": [
@@ -771,62 +1133,6 @@
                 }
             }
         },
-        "/api/country/add": {
-            "post": {
-                "tags": [
-                    "Country"
-                ],
-                "summary": "Ajouter un pays.",
-                "operationId": "2edc4628d1918806a669eb332b76430a",
-                "requestBody": {
-                    "description": "Données requises pour ajouter un pays.",
-                    "required": true,
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "fullname",
-                                    "shortcode",
-                                    "callcode",
-                                    "file"
-                                ],
-                                "properties": {
-                                    "fullname": {
-                                        "type": "string",
-                                        "example": "Nom complet du pays"
-                                    },
-                                    "shortcode": {
-                                        "type": "string",
-                                        "example": "Code court du pays"
-                                    },
-                                    "callcode": {
-                                        "type": "string",
-                                        "example": "Code d'appel du pays"
-                                    },
-                                    "files[]": {
-                                        "description": "Fichier d'image du drapeau du pays (jpeg, jpg, png)",
-                                        "type": "string",
-                                        "format": "binary"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Succès. Le pays a été ajouté avec succès."
-                    },
-                    "400": {
-                        "description": "Requête invalide. Veuillez fournir toutes les données requises et vérifier les contraintes de validation."
-                    },
-                    "500": {
-                        "description": "Erreur de serveur. Une erreur s'est produite lors du traitement de la requête."
-                    }
-                }
-            }
-        },
         "/api/country/all": {
             "get": {
                 "tags": [
@@ -856,6 +1162,27 @@
                     },
                     "500": {
                         "description": "Serveur error."
+                    }
+                }
+            }
+        },
+        "/api/country/load": {
+            "post": {
+                "tags": [
+                    "Country"
+                ],
+                "summary": "Load countries from JSON data",
+                "description": "This endpoint loads country data from a JSON file and saves it to the database",
+                "operationId": "60b777f0b592482d5d589fa7cd5f040a",
+                "responses": {
+                    "200": {
+                        "description": "Countries loaded successfully"
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "500": {
+                        "description": "Server error"
                     }
                 }
             }
@@ -954,6 +1281,127 @@
                 ]
             }
         },
+        "/api/favorite/GetFavoritesAd": {
+            "get": {
+                "tags": [
+                    "Favorite"
+                ],
+                "summary": "Retrieve favorite ads for the current user",
+                "description": "Retrieve a list of favorite ads for the currently authenticated user",
+                "operationId": "207974cefca86f2b808cc11a36c52805",
+                "responses": {
+                    "200": {
+                        "description": "A list of favorite ads",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/favorite/RemoveAdFromFavoriteList/{id}": {
+            "delete": {
+                "tags": [
+                    "Favorite"
+                ],
+                "summary": "Remove an ad from the favorite list",
+                "operationId": "ce5497bb2e0f331be2e729a1c4525ff9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the ad to remove from the favorite list",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ad removed from favorite successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ad remove from favorite successfully !"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ad not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized to remove the ad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You can't remove an ad from another favorite list"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/file/getFilesByFileCode/{file}/{returnSingleFile}": {
             "get": {
                 "tags": [
@@ -1034,6 +1482,753 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/order/CreateAnOrder": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Create an order",
+                "description": "Create an order for the authenticated user",
+                "operationId": "006a66136ece729caaa3a74f098e0328",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {}
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Order created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Success message",
+                                            "type": "string",
+                                            "example": "Order created successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Cart is empty",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message",
+                                            "type": "string",
+                                            "example": "Cart is empty"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message",
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message",
+                                            "type": "string",
+                                            "example": "Internal Server Error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/order/orderSingleItem/{cartItemId}": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Order a single item from the cart",
+                "description": "Create an order for a single item in the user's cart",
+                "operationId": "cf446867461ec719889ba2bdca49df40",
+                "parameters": [
+                    {
+                        "name": "cartItemId",
+                        "in": "path",
+                        "description": "ID of the cart item to be ordered",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "someParameter": {
+                                        "description": "Some parameter that might be required for the request",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Order created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order created successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Item not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Item not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/order/viewOrder/{orderId}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "View Order Details",
+                "description": "Retrieve the details of a specific order by its ID.",
+                "operationId": "viewOrder",
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "in": "path",
+                        "description": "ID of the order to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Order retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "amount": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 150
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "pending"
+                                                },
+                                                "uid": {
+                                                    "type": "string",
+                                                    "example": "order_12345"
+                                                },
+                                                "order_details_deleted": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "order_id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "product_id": {
+                                                                "type": "integer",
+                                                                "example": 10
+                                                            },
+                                                            "quantity": {
+                                                                "type": "integer",
+                                                                "example": 2
+                                                            },
+                                                            "price": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 75
+                                                            },
+                                                            "final_price": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 150
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Order not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An unexpected error occurred."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/order/listOrders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Get a list of orders",
+                "description": "Get a list of orders for the authenticated user",
+                "operationId": "56e1de6cd64d83693fd442b18758fbd6",
+                "responses": {
+                    "200": {
+                        "description": "List of orders",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message",
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message",
+                                            "type": "string",
+                                            "example": "Internal Server Error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/order/cancelOrder/{orderId}": {
+            "delete": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Cancel an order",
+                "description": "Cancel an order by its ID",
+                "operationId": "b013927ccd33a60b95b640a2ae6c82ff",
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "in": "path",
+                        "description": "ID of the order to cancel",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Order canceled successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Success message",
+                                            "type": "string",
+                                            "example": "Order canceled successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message",
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message",
+                                            "type": "string",
+                                            "example": "Internal Server Error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/order/deleteOrderDetail/{orderDetailId}": {
+            "post": {
+                "tags": [
+                    "Order Detail"
+                ],
+                "summary": "Delete an order detail",
+                "description": "Delete a specific order detail by ID",
+                "operationId": "deleteOrderDetail",
+                "parameters": [
+                    {
+                        "name": "orderDetailId",
+                        "in": "path",
+                        "description": "ID of the order detail to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Order detail deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order detail deleted from Order successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Order detail not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "This order detail not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Internal server error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/order/updateOrderDetail/{orderDetailId}": {
+            "post": {
+                "tags": [
+                    "Order Detail"
+                ],
+                "summary": "Update an order detail",
+                "description": "Update a specific order detail by ID",
+                "operationId": "updateOrderDetail",
+                "parameters": [
+                    {
+                        "name": "orderDetailId",
+                        "in": "path",
+                        "description": "ID of the order detail to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Order detail updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order detail updated from Order successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Order detail not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "This order detail not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Internal server error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/permission/index": {
+            "get": {
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Get all permissions",
+                "operationId": "2306a1f461cca99b72b7b4de8fa9ac21",
+                "responses": {
+                    "200": {
+                        "description": "List of permissions"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/permission/store": {
+            "post": {
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Create a new permission ",
+                "operationId": "aaa9a1489978d8237d358f1010932130",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "create"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission  created successfully"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/permission/show/{id}": {
+            "get": {
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Get a specific permission by ID",
+                "operationId": "1cae0ef6ddb328b988765a8129134b9d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the permission",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permission details"
+                    },
+                    "404": {
+                        "description": "Permission not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/permission/indexbycategorie": {
+            "get": {
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Get all permissions groupe by categorie",
+                "operationId": "d6606b4331cf95c60b312c1d0977f8fa",
+                "responses": {
+                    "200": {
+                        "description": "List of permissions groupe by category"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/preorder/createPreorder": {
@@ -2311,7 +3506,7 @@
         "/api/review/write/{PreordersAnswerUid}": {
             "post": {
                 "tags": [
-                    "Preorder"
+                    "Review"
                 ],
                 "summary": "Chat with a seller regarding a pre-order response",
                 "operationId": "08b4f107b9d0e5dcbc5bce6885ee671a",
@@ -2417,13 +3612,24 @@
                 ]
             }
         },
-        "/api/preorder/merchantAffectedByPreorder": {
+        "/api/preorder/merchantAffectedByPreorder/{perPage}": {
             "get": {
                 "tags": [
                     "Preorder"
                 ],
                 "summary": "Get pre-orders that concern the merchant",
-                "operationId": "c187e643965607d8def5204be0eee7d2",
+                "operationId": "e690a79e307b34857d8af62fb8b298f1",
+                "parameters": [
+                    {
+                        "name": "perPage",
+                        "in": "path",
+                        "description": "ID of the merchant or related entity",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2469,13 +3675,33 @@
                 ]
             }
         },
-        "/api/preorder/getValidatedPreordersWithAnswers": {
+        "/api/preorder/getValidatedPreordersWithAnswers/{preorderUid}/{perPage}": {
             "get": {
                 "tags": [
                     "Preorder"
                 ],
                 "summary": "Get pre-orders validated with responses",
-                "operationId": "29f3e086c5cd0ef0254be6656b076bc4",
+                "operationId": "b8eb4ac4ccd4bf12f7b981cb9b97a94f",
+                "parameters": [
+                    {
+                        "name": "preorderUid",
+                        "in": "path",
+                        "description": "Uid of preorder response",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "perPage",
+                        "in": "path",
+                        "description": "ID of the merchant or related entity",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2518,13 +3744,33 @@
                 ]
             }
         },
-        "/api/preorder/getPreordersAnswerSortedByDeliveryTime": {
+        "/api/preorder/getPreordersAnswerSortedByDeliveryTime/{preorderUid}/{perPage}": {
             "get": {
                 "tags": [
                     "Preorder"
                 ],
                 "summary": "Get pre-orders validated with responses filtered by delivery time",
-                "operationId": "fe23c75599518ff326838f4996b52801",
+                "operationId": "9fcd0b772ab83fbf4bfb0949530047db",
+                "parameters": [
+                    {
+                        "name": "preorderUid",
+                        "in": "path",
+                        "description": "Uid of preorder response",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "perPage",
+                        "in": "path",
+                        "description": "ID of the merchant or related entity",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2567,13 +3813,33 @@
                 ]
             }
         },
-        "/api/preorder/getPreordersAnswerSortedByPrice": {
+        "/api/preorder/getPreordersAnswerSortedByPrice/{preorderUid}/{perPage}": {
             "get": {
                 "tags": [
                     "Preorder"
                 ],
                 "summary": "Get pre-orders validated with responses filtered by price",
-                "operationId": "75056e6d4ab74365c19e354db7b1e78b",
+                "operationId": "e2ffca377cb492f0ff057cac8c7f15e4",
+                "parameters": [
+                    {
+                        "name": "preorderUid",
+                        "in": "path",
+                        "description": "UID of the preorder",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "perPage",
+                        "in": "path",
+                        "description": "Number of results per page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2682,6 +3948,132 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/role/index": {
+            "get": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Get all roles",
+                "operationId": "b3d674de4d1bfdce32734bddc8628891",
+                "responses": {
+                    "200": {
+                        "description": "List of roles"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/role/store": {
+            "post": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Create a new role ",
+                "operationId": "217d536f741ea073dee6d97e5bb36df9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "traveler"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Role  created successfully"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/role/show/{id}": {
+            "get": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Get a specific role by ID",
+                "operationId": "a40324f1b443d45a408830e2695bbeb9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the role",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Role details"
+                    },
+                    "404": {
+                        "description": "Role not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/role/destroy/{id}": {
+            "delete": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Delete a role by ID",
+                "operationId": "fa71958128495cee0ebb0097bad4087f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the role",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Role deleted successfully"
+                    },
+                    "404": {
+                        "description": "Role not found"
                     }
                 },
                 "security": [
@@ -2869,25 +4261,50 @@
                 }
             }
         },
-        "/api/shop/becomeMerchant/{clientId}": {
+        "/api/shop/becomeMerchant": {
             "post": {
                 "tags": [
                     "Shop"
                 ],
                 "summary": "Convert client to merchant",
                 "description": "This endpoint allows a client to become a merchant.",
-                "operationId": "22208c4364186e9bd0f6de86d7391b5f",
-                "parameters": [
-                    {
-                        "name": "clientId",
-                        "in": "path",
-                        "description": "ID of the client",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
+                "operationId": "dd3658025a6e486627935b4a25de2be1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "description",
+                                    "files[]"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "description": "Title of the shop",
+                                        "type": "string",
+                                        "example": "My Shop"
+                                    },
+                                    "description": {
+                                        "description": "Description of the shop",
+                                        "type": "string",
+                                        "maxLength": 500,
+                                        "example": "This is my shop description"
+                                    },
+                                    "files[]": {
+                                        "description": "Array of images",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
                         }
                     }
-                ],
+                },
                 "responses": {
                     "200": {
                         "description": "Shop created successfully",
@@ -2913,7 +4330,26 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "You already is merchant"
+                                            "example": "You already are a merchant"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The data provided is not valid."
+                                        },
+                                        "errors": {
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2937,7 +4373,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/shop/updateShop/{uid}": {
@@ -3043,7 +4484,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/shop/showShop/{uid}": {
@@ -3113,7 +4559,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/shop/addShopFile/{filecodeShop}": {
@@ -3187,7 +4638,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/shop/updateShopFile/{uid}": {
@@ -3276,7 +4732,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/shop/addCategoryToSHop/{shopId}": {
@@ -3369,37 +4830,54 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/api/shop/catalogueClient/{clientUid}": {
+        "/api/shop/AdMerchant/{shopId}/{perPage}": {
             "get": {
                 "tags": [
                     "Shop"
                 ],
-                "summary": "Get catalogue for a client",
-                "operationId": "15766898058576d839899b1e8368ffa0",
+                "summary": "Get ads by merchant",
+                "description": "Retrieve a paginated list of ads for a specific shop by the authenticated merchant.",
+                "operationId": "54b21d6b875c74e537f55bab66f1c2d2",
                 "parameters": [
                     {
-                        "name": "clientUid",
+                        "name": "shopId",
                         "in": "path",
-                        "description": "Unique identifier of the client",
+                        "description": "ID of the shop",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "description": "Number of results per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Client's catalogue retrieved successfully",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "data": {
                                             "type": "array",
-                                            "items": {}
+                                            "items": {
+                                                "$ref": ""
+                                            }
                                         }
                                     },
                                     "type": "object"
@@ -3408,14 +4886,14 @@
                         }
                     },
                     "404": {
-                        "description": "Client not found",
+                        "description": "Shop not found",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "error": {
+                                        "message": {
                                             "type": "string",
-                                            "example": "Client not found"
+                                            "example": "Shop not found"
                                         }
                                     },
                                     "type": "object"
@@ -3424,14 +4902,13 @@
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
-                                            "type": "string",
-                                            "example": "Server error message"
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -3439,7 +4916,58 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shop/userShop": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Get user's shop",
+                "description": "Retrieve the shop details for the authenticated user",
+                "operationId": "getUserShop",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred while retrieving the shop details."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/users/validateEmail": {
@@ -3512,7 +5040,7 @@
         "/api/users/restrictedUser": {
             "post": {
                 "tags": [
-                    "Authentification"
+                    "Authentication"
                 ],
                 "summary": "Ajouter un utilisateur restreint",
                 "description": "Ajoute un utilisateur restreint à la base de données avec son email et adresse IP.",
@@ -3597,7 +5125,7 @@
         "/api/users/login": {
             "post": {
                 "tags": [
-                    "Authentification"
+                    "Authentication"
                 ],
                 "summary": "Connexion de l'utilisateur",
                 "description": "Authentifie l'utilisateur et renvoie un jeton d'accès en cas de succès.",
@@ -3704,7 +5232,7 @@
         "/api/users/register": {
             "post": {
                 "tags": [
-                    "Authentification"
+                    "Authentication"
                 ],
                 "summary": "Enregistrer un nouvel utilisateur",
                 "description": "Crée un nouvel utilisateur avec l'email, le numéro de téléphone et le mot de passe fournis.",
@@ -3805,7 +5333,7 @@
         "/api/users/logout": {
             "post": {
                 "tags": [
-                    "Authentification"
+                    "Authentication"
                 ],
                 "summary": "Déconnexion de l'utilisateur",
                 "description": "Déconnecte l'utilisateur authentifié.",
@@ -3870,7 +5398,7 @@
         "/api/user": {
             "get": {
                 "tags": [
-                    "Authentification"
+                    "Authentication"
                 ],
                 "summary": "Obtenir les informations de l'utilisateur authentifié",
                 "description": "Renvoie les informations de l'utilisateur authentifié.",
@@ -3934,7 +5462,7 @@
         "/api/users/getUser": {
             "get": {
                 "tags": [
-                    "Utilisateurs"
+                    "Users"
                 ],
                 "summary": "Obtenir la liste des utilisateurs",
                 "description": "Renvoie la liste de tous les utilisateurs enregistrés dans le système.",
@@ -3983,7 +5511,7 @@
         "/api/users/getUserLogin": {
             "get": {
                 "tags": [
-                    "Utilisateurs"
+                    "Users"
                 ],
                 "summary": "Obtenir la liste des utilisateurs connectés",
                 "description": "Renvoie la liste de tous les utilisateurs connectés au système.",
@@ -4032,7 +5560,7 @@
         "/api/users/getUserLogout": {
             "get": {
                 "tags": [
-                    "Utilisateurs"
+                    "Users"
                 ],
                 "summary": "Obtenir la liste des utilisateurs déconnectés",
                 "description": "Renvoie la liste de tous les utilisateurs déconnectés du système.",
@@ -4081,7 +5609,7 @@
         "/api/users/updatePassword": {
             "post": {
                 "tags": [
-                    "Authentification"
+                    "Authentication"
                 ],
                 "summary": "Mettre à jour le mot de passe de l'utilisateur",
                 "description": "Permet à l'utilisateur de mettre à jour son mot de passe.",
@@ -4154,6 +5682,419 @@
                                         "error": {
                                             "description": "Détails de l'erreur serveur",
                                             "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/password_recovery_start_step": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Start the password recovery process",
+                "operationId": "4dd79f72520ba36f75296add7f5464b3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email sent successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Email not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "example": "The email field is required."
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/password_recovery_end_step": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Complete the password recovery process by setting a new password",
+                "operationId": "7257cfa7699b2ba53639db6e57856d1c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "new_password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newSecurePassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password changed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password changed successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Email not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "example": "The email field is required."
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/verification_code": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Vérification du code de vérification",
+                "description": "Vérifie le code de vérification envoyé par l'utilisateur.",
+                "operationId": "cc4b0bf36d50d7f0890f21e2c28d0d46",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "description": "Le code de vérification à vérifier."
+                                    }
+                                },
+                                "required": "code"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Échec de la vérification",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "description": "Le code d'état de la réponse.",
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "description": "Le message indiquant que la vérification a échoué.",
+                                            "type": "string",
+                                            "example": "Check failed"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "description": "Le code d'état de la réponse.",
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "description": "Le message d'erreur détaillé.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Réponse par défaut pour les autres cas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "description": "Le code d'état de la réponse.",
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "description": "Le message indiquant que la vérification a réussi.",
+                                            "type": "string",
+                                            "example": "Verification passed"
+                                        },
+                                        "verification": {
+                                            "description": "Le code de vérification vérifié.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/new_code/{id}": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Generate a new code for user",
+                "operationId": "10a0d0dd091b9fba3f38528b37c1c465",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Code sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Code sent successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "This id does not exist",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "This id does not exist"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal Server Error"
                                         }
                                     },
                                     "type": "object"

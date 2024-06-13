@@ -9,81 +9,129 @@ use App\Models\Shop;
 use App\Models\ShopHasCategory;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ShopController extends Controller
 {
 
-        /**
-     * @OA\Post(
-     *     path="/api/shop/becomeMerchant/{clientId}",
-     *     tags={"Shop"},
-     *     summary="Convert client to merchant",
-     *     description="This endpoint allows a client to become a merchant.",
-     *     @OA\Parameter(
-     *         name="clientId",
-     *         in="path",
-     *         description="ID of the client",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Shop created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="message",
-     *                 type="string",
-     *                 example="Shop created successfully"
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Client is already a merchant",
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="message",
-     *                 type="string",
-     *                 example="You already is merchant"
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="error",
-     *                 type="string",
-     *                 example="Error message"
-     *             )
-     *         )
-     *     )
-     * )
-     */
+ /**
+ * @OA\Post(
+ *     path="/api/shop/becomeMerchant",
+ *     tags={"Shop"},
+ *     security={{"bearerAuth": {}}},
+ *     summary="Convert client to merchant",
+ *     description="This endpoint allows a client to become a merchant.",
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="multipart/form-data",
+ *             @OA\Schema(
+ *                 @OA\Property(
+ *                     property="title",
+ *                     type="string",
+ *                     description="Title of the shop",
+ *                     example="My Shop"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="description",
+ *                     type="string",
+ *                     description="Description of the shop",
+ *                     maxLength=500,
+ *                     example="This is my shop description"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="files[]",
+ *                     type="array",
+ *                     description="Array of images",
+ *                     @OA\Items(
+ *                         type="string",
+ *                         format="binary"
+ *                     )
+ *                 ),
+ *                 required={"title", "description", "files[]"}
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Shop created successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Shop created successfully"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Client is already a merchant",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="You already are a merchant"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Validation error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="The data provided is not valid."
+ *             ),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Error message"
+ *             )
+ *         )
+ *     )
+ * )
+ */
 
-    public function becomeMerchant($clientId, Request $request){
+
+    public function becomeMerchant( Request $request){
         try{
-            $client = Client::where('id',$clientId)->first();
+
+
+            $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+            $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
+    
+            $client = Client::where('person_id',$person->id)->first();
+            // $client = Client::where('id',$clientId)->first();
             if($client->is_merchant == 1){
                 return response()->json([
                     'message' =>'You already is merchant'
                   ]);
             }
-            $shop = new UserController();
-            $createShop = $shop->createShop($client->id, $request);
-            $client->update(['is_merchant' => 1]);
+            $createShop = $this->createShop($client->id, $request);
             if($createShop){
                 return response()->json([
-                    'message' =>$createShop->original['message']
-                  ]);
+                    'message' =>$createShop->original['message'],
+                    'error' =>$createShop
+                ]);
             }
+            $client->update(['is_merchant' => 1]);
 
             return response()->json([
                 'message' =>'Shop created successffuly'
-              ]); 
+              ]);
         }catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()
@@ -91,10 +139,56 @@ class ShopController extends Controller
         }
     }
 
+
+    public function createShop($clientId, Request $request){
+        try{
+
+            $validator = Validator::make($request->all(), [
+                'title' => 'required|string|unique:shops,title',
+                'description' => ['required','max:500'],
+                'files'
+            ]);
+            
+            if ($validator->fails()) {
+                return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
+            }
+            // return $request;
+
+            if(Shop::where('client_id', $clientId)->whereDeleted(0)->exists()){
+                return response()->json([
+                    'message' => 'You already have a shop !'
+                ]);
+            }
+
+            $client = Client::find($clientId);
+
+            $url = url("/api/shop/catalogueClient/$client->uid");
+
+            $service = new Service();
+            $shop = new Shop();
+            $shop->uid = $service->generateUid($shop);
+            $shop->title = $request->input('title');
+            $shop->description =  $request->input('description');
+            $shop->shop_url = $url;
+            $shop->client_id = $clientId;
+            $randomString = $service->generateRandomAlphaNumeric(7,$shop,'filecode');
+            $shop->filecode = $randomString;
+            if($request->hasFile('files')){
+                $service->uploadFiles($request,$randomString,"shop");
+            }
+            $shop->save();
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
     /**
      * @OA\Post(
      *     path="/api/shop/updateShop/{uid}",
      *     tags={"Shop"},
+     *     security={{"bearerAuth": {}}},
      *     summary="Update shop details",
      *     description="This endpoint allows updating the details of an existing shop.",
      *     @OA\Parameter(
@@ -171,7 +265,7 @@ class ShopController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'title' => 'required',
-                'description' => 'required'
+                'description' => ['required','max:500']
             ]);
 
             if ($validator->fails()) {
@@ -208,6 +302,7 @@ class ShopController extends Controller
      * @OA\Get(
      *     path="/api/shop/showShop/{uid}",
      *     tags={"Shop"},
+     *     security={{"bearerAuth": {}}},
      *     summary="Show shop details",
      *     description="This endpoint returns the details of a shop by its UID.",
      *     @OA\Parameter(
@@ -254,9 +349,27 @@ class ShopController extends Controller
      * )
      */
 
-    public function showShop($uid){
+    public function showShop($uid,Request $request){
         try{
-            $shop = Shop::whereUid($uid)->whereDeleted(0)->first();
+
+            if (!Auth::user()) {
+                return response()->json([
+                    'message' => 'UNAUTHENFICATED'
+                ]);
+            }
+
+            $service = new AdController();
+
+            $checkShop = $service->checkShop(Shop::whereUid($uid)->first()->id);
+            if($checkShop){
+                return $checkShop;
+            }
+
+            $shop = Shop::whereUid($uid)
+            ->with('files')
+            ->with('ads')
+            ->whereDeleted(0)
+            ->first();
             if(!$shop){
                 return response()->json([
                     'message' => 'Shop not found'
@@ -278,6 +391,7 @@ class ShopController extends Controller
      * @OA\Post(
      *     path="/api/shop/addShopFile/{filecodeShop}",
      *     tags={"Shop"},
+     *     security={{"bearerAuth": {}}},
      *     summary="Add a file to the shop",
      *     description="This endpoint allows you to add a file to a shop using the shop's file code.",
      *     @OA\Parameter(
@@ -330,7 +444,7 @@ class ShopController extends Controller
         try{
 
             $request->validate([
-                'files' => 'required'
+                'files' => ['required','size:1024']
             ]);
 
             $service = new Service();
@@ -353,6 +467,7 @@ class ShopController extends Controller
  *     path="/api/shop/updateShopFile/{uid}",
  *     summary="Update shop file",
  *     tags={"Shop"},
+ *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(
  *         name="uid",
  *         in="path",
@@ -443,6 +558,7 @@ class ShopController extends Controller
  *     path="/api/shop/addCategoryToSHop/{shopId}",
  *     summary="Add category to shop",
  *     tags={"Shop"},
+ *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(
  *         name="shopId",
  *         in="path",
@@ -513,6 +629,12 @@ class ShopController extends Controller
                 'categoryIds' => 'required'
             ]);
 
+            if(!Shop::find($shopId)){
+                return response()->json([
+                    'message' =>"Shop not found"
+                ],404);
+            }
+
             $countCategory = ShopHasCategory::where('shop_id',$shopId)->whereDeleted(0)->count();
 
             $limit = 3;
@@ -550,70 +672,87 @@ class ShopController extends Controller
     }
 
 
-    /**
+/**
  * @OA\Get(
- *     path="/api/shop/catalogueClient/{clientUid}",
- *     summary="Get catalogue for a client",
+ *     path="/api/shop/AdMerchant/{shopId}/{perPage}",
+ *     summary="Get ads by merchant",
  *     tags={"Shop"},
+ *     description="Retrieve a paginated list of ads for a specific shop by the authenticated merchant.",
  *     @OA\Parameter(
- *         name="clientUid",
+ *         name="shopId",
  *         in="path",
- *         description="Unique identifier of the client",
  *         required=true,
- *         @OA\Schema(
- *             type="string"
- *         )
+ *         description="ID of the shop",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Parameter(
+ *         name="perPage",
+ *         in="query",
+ *         required=false,
+ *         description="Number of results per page",
+ *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(
  *         response=200,
- *         description="Client's catalogue retrieved successfully",
+ *         description="Successful operation",
  *         @OA\JsonContent(
+ *             type="object",
  *             @OA\Property(
  *                 property="data",
  *                 type="array",
- *                 @OA\Items(
- *                     @OA\Schema(ref="")
- *                 )
+ *                 @OA\Items(ref="")
  *             )
  *         )
  *     ),
  *     @OA\Response(
  *         response=404,
- *         description="Client not found",
+ *         description="Shop not found",
  *         @OA\JsonContent(
+ *             type="object",
  *             @OA\Property(
- *                 property="error",
+ *                 property="message",
  *                 type="string",
- *                 example="Client not found"
+ *                 example="Shop not found"
  *             )
  *         )
  *     ),
  *     @OA\Response(
  *         response=500,
- *         description="Internal Server Error",
+ *         description="Internal server error",
  *         @OA\JsonContent(
+ *             type="object",
  *             @OA\Property(
  *                 property="error",
- *                 type="string",
- *                 example="Server error message"
+ *                 type="string"
  *             )
  *         )
- *     )
+ *     ),
+ *     security={
+ *         {"bearerAuth": {}}
+ *     }
  * )
  */
-    public function catalogueClient($clientUid){
+    public function AdMerchant($shopId,$perPage){
         try{
-            $client = Client::whereUid($clientUid)->first();
-            // $clientId = $client->id;
 
-            $personQuery = "SELECT * FROM person WHERE id = :clientId";
-            $person = DB::selectOne($personQuery, ['clientId' => $client->person_id]);
+            if(!Shop::whereId($shopId)->first()){
+                return response()->json([
+                    'message' => "Shop not found"
+                ]) ;
+            }
 
-            $userQuery = "SELECT * FROM users WHERE id = :clientId";
-            $user = DB::selectOne($userQuery, ['clientId' => $person->user_id]);
+            if($perPage > 50){
+                $perPage = 50;
+            }
 
-            $ad = Ad::whereDeleted(0)->where('owner_id',$user->id)->with('file')->with('category')->get();
-   
+            $ad = Ad::whereDeleted(0)
+            ->where('owner_id',Auth::user()->id)
+            ->where('shop_id',$shopId)
+            ->with('file')
+            ->with('category')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+
             return response()->json([
                 'data' => $ad
             ]) ;
@@ -623,4 +762,63 @@ class ShopController extends Controller
             ],500);
         }
     }
+
+    
+    /**
+ * @OA\Get(
+ *     path="/api/shop/userShop",
+ *     summary="Get user's shop",
+ *     description="Retrieve the shop details for the authenticated user",
+ *     operationId="getUserShop",
+ *     tags={"Shop"},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successful response",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(ref="")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="An error occurred while retrieving the shop details."
+ *             )
+ *         )
+ *     ),
+ *     security={
+ *         {"bearerAuth": {}}
+ *     }
+ * )
+ */
+
+    public function userShop(){
+        try {
+            $service = new Service();
+            $clientId = $service->returnClientIdAuth();
+            $userShop = Shop::where('client_id',$clientId)
+            ->whereDeleted(0)
+            ->with('files')
+            ->get();
+
+            if(count(  $userShop) === 0){
+                return response()->json([
+                    'message'  => "No shop found",
+                ]);
+            }
+            return response()->json([
+                'data'  => $userShop,
+            ]);
+        } catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ],500);
+        }
+    }
+
+
 }

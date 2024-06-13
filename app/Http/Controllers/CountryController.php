@@ -7,44 +7,46 @@ use Exception;
 use Illuminate\Http\Request;
 use Ramsey\Uuid\Uuid;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
 
 class CountryController extends Controller
 {
   
 
-    /**
-     * @OA\Post(
-     *      path="/api/country/add",
-     *      summary="Ajouter un pays.",
-     *      tags={"Country"},
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Données requises pour ajouter un pays.",
-     *          @OA\MediaType(
-     *              mediaType="multipart/form-data",
-     *              @OA\Schema(
-     *                  required={"fullname", "shortcode", "callcode", "file"},
-     *                  @OA\Property(property="fullname", type="string", example="Nom complet du pays"),
-     *                  @OA\Property(property="shortcode", type="string", example="Code court du pays"),
-     *                  @OA\Property(property="callcode", type="string", example="Code d'appel du pays"),
-     *                  @OA\Property(property="files[]", type="string", format="binary", description="Fichier d'image du drapeau du pays (jpeg, jpg, png)")
-     *              )
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Succès. Le pays a été ajouté avec succès."
-     *      ),
-     *      @OA\Response(
-     *          response=400,
-     *          description="Requête invalide. Veuillez fournir toutes les données requises et vérifier les contraintes de validation."
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Erreur de serveur. Une erreur s'est produite lors du traitement de la requête."
-     *      )
-     * )
-     */
+    // /**
+    //  * @OA\Post(
+    //  *      path="/api/country/add",
+    //  *      summary="Ajouter un pays.",
+    //  *      tags={"Country"},
+    //  *      @OA\RequestBody(
+    //  *          required=true,
+    //  *          description="Données requises pour ajouter un pays.",
+    //  *          @OA\MediaType(
+    //  *              mediaType="multipart/form-data",
+    //  *              @OA\Schema(
+    //  *                  required={"fullname", "shortcode", "callcode", "file"},
+    //  *                  @OA\Property(property="fullname", type="string", example="Nom complet du pays"),
+    //  *                  @OA\Property(property="shortcode", type="string", example="Code court du pays"),
+    //  *                  @OA\Property(property="callcode", type="string", example="Code d'appel du pays"),
+    //  *                  @OA\Property(property="files[]", type="string", format="binary", description="Fichier d'image du drapeau du pays (jpeg, jpg, png)")
+    //  *              )
+    //  *          )
+    //  *      ),
+    //  *      @OA\Response(
+    //  *          response=200,
+    //  *          description="Succès. Le pays a été ajouté avec succès."
+    //  *      ),
+    //  *      @OA\Response(
+    //  *          response=400,
+    //  *          description="Requête invalide. Veuillez fournir toutes les données requises et vérifier les contraintes de validation."
+    //  *      ),
+    //  *      @OA\Response(
+    //  *          response=500,
+    //  *          description="Erreur de serveur. Une erreur s'est produite lors du traitement de la requête."
+    //  *      )
+    //  * )
+    //  */
 
     public function add(Request $request)
     {
@@ -133,43 +135,70 @@ class CountryController extends Controller
 
  }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+ private function getData(): mixed
+{
+    $path = storage_path('country.json');
+
+    $data = file_get_contents($path);
+
+    return json_decode($data, false, 512, JSON_THROW_ON_ERROR);
+}
+
+
+/**
+ * @OA\Post(
+ *     path="/api/country/load",
+ *     summary="Load countries from JSON data",
+ *     description="This endpoint loads country data from a JSON file and saves it to the database",
+ *     tags={"Country"},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Countries loaded successfully"
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad request"
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Server error"
+ *     )
+ * )
+ */
+
+    public function load()
     {
-        //
+        // Récupérer les données du fichier JSON
+        $countryRaw = $this->getData();
+
+        DB::transaction(function() use ($countryRaw) {
+            foreach ($countryRaw as $country) {
+                $countryNew = new Country();
+                $countryNew->fullname = $country->fullname;
+                $countryNew->flag = $country->flag;
+                $countryNew->shortcode = $country->shortcode;
+                
+                if ($country->callcode !== null) {
+                    $countryNew->callcode = $country->callcode;
+                }
+                
+                if ($country->symbol !== null) {
+                    $countryNew->symbol = $country->symbol;
+                }
+                
+                if ($country->currency !== null) {
+                    $countryNew->currency = $country->currency;
+                }
+                
+                $countryNew->banned = $country->banned !== 0;
+                
+                $countryNew->save();
+            }
+        });
+
+        return response()->json([
+            'message' => 'Country generate successfuly'
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Country $country)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Country $country)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Country $country)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Country $country)
-    {
-        //
-    }
 }

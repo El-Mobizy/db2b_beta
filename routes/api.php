@@ -2,14 +2,18 @@
 
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\AttributeGroupController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryAttributesController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\DeliveryAgencyController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\RightController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\Service;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\TypeOfTypeController;
@@ -38,13 +42,36 @@ Route::prefix('users')->group(function () {
     Route::post('/updatePassword', [UserController::class, 'updatePassword'])->name('updatePassword');
     Route::post('/password_recovery_start_step', [UserController::class, 'password_recovery_start_step'])->name('password_recovery_start_step');
     Route::post('/password_recovery_end_step', [UserController::class, 'password_recovery_end_step'])->name('password_recovery_end_step');
+    Route::post('/new_code/{id}', [UserController::class, 'new_code'])->name('new_code');
+    Route::post('/verification_code', [UserController::class, 'verification_code'])->name('verification_code');
 });
 
 
     Route::group(['middleware' => 'auth:api'], function () {
+
+        Route::prefix('cart')->group(function () {
+            Route::post('/addToCart', [CartController::class, 'addToCart'])->name('cart.addToCart');
+            Route::delete('/removeToCart', [CartController::class, 'removeToCart'])->name('cart.removeToCart');
+            Route::get('/getUserCart', [CartController::class, 'getUserCart'])->name('cart.getUserCart');
+            Route::post('/incrementQuantity', [CartController::class, 'incrementQuantity'])->name('cart.incrementQuantity');
+            Route::post('/decrementQuantity', [CartController::class, 'decrementQuantity'])->name('cart.decrementQuantity');
+            Route::get('/getCartItem/{ad_id}', [CartController::class, 'getCartItem'])->name('cart.getCartItem');
+        });
+
+        Route::prefix('order')->group(function () {
+            Route::post('/CreateAnOrder', [OrderController::class, 'CreateAnOrder'])->name('order.CreateAnOrder');
+            Route::post('/orderSingleItem/{cartItemId}', [OrderController::class, 'orderSingleItem'])->name('order.orderSingleItem');
+            Route::get('/viewOrder/{orderId}', [OrderController::class, 'viewOrder'])->name('order.viewOrder');
+            Route::get('/listOrders', [OrderController::class, 'listOrders'])->name('order.listOrders');
+            Route::delete('/cancelOrder/{orderId}', [OrderController::class, 'cancelOrder'])->name('order.cancelOrder');
+            Route::post('/deleteOrderDetail/{orderDetailId}', [OrderController::class, 'deleteOrderDetail'])->name('order.deleteOrderDetail');
+            Route::post('/updateOrderDetail/{orderDetailId}', [OrderController::class, 'updateOrderDetail'])->name('order.updateOrderDetail');
+        });
+
         Route::get('/user', [UserController::class, 'userAuth']);
 
         Route::prefix('users')->group(function () {
+            Route::post('/new_code/{id}', [UserController::class, 'new_code'])->name('new_code');
         });
 
         Route::prefix('ad')->group(function () {
@@ -57,10 +84,10 @@ Route::prefix('users')->group(function () {
             Route::post('/createPreorder', [PreorderController::class, 'createPreorder'])->name('preorder.createPreorder');
             Route::post('/validatePreorder/{uid}', [PreorderController::class, 'validatePreorder'])->name('preorder.validatePreorder');
             Route::post('/rejectPreorder/{uid}', [PreorderController::class, 'rejectPreorder'])->name('preorder.rejectPreorder');
-            Route::get('/merchantAffectedByPreorder', [PreorderController::class, 'merchantAffectedByPreorder'])->name('preorder.merchantAffectedByPreorder');
-            Route::get('/getValidatedPreordersWithAnswers', [PreorderController::class, 'getValidatedPreordersWithAnswers'])->name('preorder.getValidatedPreordersWithAnswers');
-            Route::get('/getPreordersAnswerSortedByPrice', [PreorderController::class, 'getPreordersAnswerSortedByPrice'])->name('preorder.getPreordersAnswerSortedByPrice');
-            Route::get('/getPreordersAnswerSortedByDeliveryTime', [PreorderController::class, 'getPreordersAnswerSortedByDeliveryTime'])->name('preorder.getPreordersAnswerSortedByDeliveryTime');
+            Route::get('/merchantAffectedByPreorder/{perPage}', [PreorderController::class, 'merchantAffectedByPreorder'])->name('preorder.merchantAffectedByPreorder');
+            Route::get('/getValidatedPreordersWithAnswers/{preorderUid}/{perPage}', [PreorderController::class, 'getValidatedPreordersWithAnswers'])->name('preorder.getValidatedPreordersWithAnswers');
+            Route::get('/getPreordersAnswerSortedByPrice/{preorderUid}/{perPage}', [PreorderController::class, 'getPreordersAnswerSortedByPrice'])->name('preorder.getPreordersAnswerSortedByPrice');
+            Route::get('/getPreordersAnswerSortedByDeliveryTime/{preorderUid}/{perPage}', [PreorderController::class, 'getPreordersAnswerSortedByDeliveryTime'])->name('preorder.getPreordersAnswerSortedByDeliveryTime');
         
         });
 
@@ -85,6 +112,7 @@ Route::prefix('users')->group(function () {
     });
 
     Route::prefix('country')->group(function () {
+        Route::post('/load', [CountryController::class, 'load'])->name('country.load');
         Route::post('/add', [CountryController::class, 'add'])->name('country.add');
         Route::get('/all', [CountryController::class, 'getAllCountries'])->name('country.all');
     });
@@ -153,14 +181,32 @@ Route::prefix('users')->group(function () {
         Route::get('/getSpecificPreorderAnswer/{uid}', [PreorderController::class, 'getSpecificPreorderAnswer'])->name('preorder.getSpecificPreorderAnswer');
     });
 
-    
+
     Route::prefix('shop')->group(function () {
         Route::post('/updateShop/{uid}', [ShopController::class, 'updateShop'])->name('shop.updateShop');
         Route::get('/showShop/{uid}', [ShopController::class, 'showShop'])->name('shop.showShop');
         Route::post('/addShopFile/{filecodeShop}', [ShopController::class, 'addShopFile'])->name('preorder.addShopFile');
         Route::post('/updateShopFile/{uid}', [ShopController::class, 'updateShopFile'])->name('shop.updateShopFile');
         Route::post('/addCategoryToSHop/{shopId}', [ShopController::class, 'addCategoryToSHop'])->name('shop.addCategoryToSHop');
-        Route::post('/becomeMerchant/{clientId}', [ShopController::class, 'becomeMerchant'])->name('shop.becomeMerchant');
-        Route::get('/catalogueClient/{clientUid}', [ShopController::class, 'catalogueClient'])->name('shop.catalogueClient');
+        Route::post('/becomeMerchant', [ShopController::class, 'becomeMerchant'])->name('shop.becomeMerchant');
+        Route::get('/AdMerchant/{shopId}/{perPage}', [ShopController::class, 'AdMerchant'])->name('shop.AdMerchant');
+
+        Route::get('/userShop', [ShopController::class, 'userShop'])->name('shop.userShop');
     });
 
+    Route::prefix('role')->group(function () {
+        Route::post('/update/{id}', [RoleController::class, 'update'])->name('role.update');
+        Route::get('/show/{id}', [RoleController::class, 'show'])->name('role.show');
+        Route::post('/store', [RoleController::class, 'store'])->name('role.store');
+        Route::get('/index', [RoleController::class, 'index'])->name('role.index');
+    });
+
+    Route::prefix('permission')->group(function () {
+        Route::post('/update/{id}', [PermissionController::class, 'update'])->name('permission.update');
+        Route::get('/show/{id}', [PermissionController::class, 'show'])->name('permission.show');
+        Route::post('/store', [PermissionController::class, 'store'])->name('permission.store');
+        Route::get('/index', [PermissionController::class, 'index'])->name('permission.index');
+    });
+
+
+    Route::get('/returnClientIdAuth', [Service::class, 'returnClientIdAuth'])->name('service.returnClientIdAuth');

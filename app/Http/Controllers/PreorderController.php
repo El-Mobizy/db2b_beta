@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\NotificationEmailwithoutfile;
 use App\Mail\NotificationEmail;
 use App\Models\Ad;
+use App\Models\Client;
 use App\Models\Review;
 use Ramsey\Uuid\Type\Integer;
 use Ramsey\Uuid\Uuid;
@@ -113,10 +114,10 @@ class PreorderController extends Controller
 
             $preorder->save();
 
-          
+
                 $title= "Confirmation of your pre-order shipment";
                 $body ="Your pre-order has been registered, please wait while an administrator analyzes it. We'll let you know what happens next. Thank you!";
-               
+
 
                $message = new ChatMessageController();
               $mes =  $message->sendNotification(Auth::user()->id,$title,$body, 'preorder created successfully !');
@@ -206,6 +207,15 @@ class PreorderController extends Controller
                     'message' => 'Statut of preorder must be validated. Please, check it !'
                 ],403);
             }
+
+          $a = new AdController();
+          $checkIfmerchant = $a->checkMerchant();
+
+          if($checkIfmerchant ==0){
+              return response()->json([
+                  'message' => 'You are not merchant'
+                  ],200);
+                  }
 
 
         $service = new Service();
@@ -1243,7 +1253,7 @@ public function getAuthPreorderValidated(){
         $preorder = DB::select("
         SELECT *
         FROM preorders
-        WHERE statut = (SELECT id FROM type_of_types WHERE libelle = 'validated')
+        WHERE statut = (SELECT id FROM type_of_types WHERE libelle = 'validated') AND deleted = false
           AND user_id = ?
     ", [Auth::user()->id]);
 
@@ -1270,7 +1280,7 @@ public function getAuthPreorderValidated(){
  * @OA\Post(
  *     path="/api/review/write/{PreordersAnswerUid}",
  *     summary="Chat with a seller regarding a pre-order response",
- *     tags={"Preorder"},
+ *     tags={"Review"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(
  *         name="PreordersAnswerUid",
@@ -1385,31 +1395,38 @@ public function write(Request $request, $PreordersAnswerUid){
 
 
 /**
- * @OA\Get(
- *     path="/api/preorder/merchantAffectedByPreorder",
- *     summary="Get pre-orders that concern the merchant",
- *     tags={"Preorder"},
-          * security={{"bearerAuth": {}}},
- *     @OA\Response(
- *         response=200,
- *         description="OK",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="data", type="array", @OA\Items(ref="")),
- *             @OA\Property(property="nombre", type="integer")
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Bad Request",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="error", type="string")
- *         )
- *     )
- * )
- */
-public function merchantAffectedByPreorder(){
+* @OA\Get(
+*     path="/api/preorder/merchantAffectedByPreorder/{perPage}",
+*     summary="Get pre-orders that concern the merchant",
+*     tags={"Preorder"},
+*     security={{"bearerAuth": {}}},
+*     @OA\Parameter(
+*         name="perPage",
+*         in="path",
+*         required=true,
+*         description="ID of the merchant or related entity",
+*         @OA\Schema(type="integer")
+*     ),
+*     @OA\Response(
+*         response=200,
+*         description="OK",
+*         @OA\JsonContent(
+*             type="object",
+*             @OA\Property(property="data", type="array", @OA\Items(ref="")),
+*             @OA\Property(property="nombre", type="integer")
+*         )
+*     ),
+*     @OA\Response(
+*         response=400,
+*         description="Bad Request",
+*         @OA\JsonContent(
+*             type="object",
+*             @OA\Property(property="error", type="string")
+*         )
+*     )
+* )
+*/
+public function merchantAffectedByPreorder($perPage){
     try{
 
             $user = Auth::user();
@@ -1418,11 +1435,15 @@ public function merchantAffectedByPreorder(){
                             ->where('deleted', false)
                             ->pluck('category_id');
 
+                            // return [Auth::user()->id,$categories];
+
             $validatedStatus = TypeOfType::where('libelle', 'validated')->first()->id;
 
             $preorders = Preorder::where('statut', $validatedStatus)
                          ->whereIn('category_id', $categories)
-                         ->get();
+                         ->whereDeleted(0)
+                         ->orderBy('created_at', 'desc')
+                         ->paginate($perPage);
 
                          if(count($preorders) == 0){
                             return response()->json([
@@ -1444,10 +1465,25 @@ public function merchantAffectedByPreorder(){
 
 /**
  * @OA\Get(
- *     path="/api/preorder/getValidatedPreordersWithAnswers",
+ *     path="/api/preorder/getValidatedPreordersWithAnswers/{preorderUid}/{perPage}",
  *     summary="Get pre-orders validated with responses",
  *     tags={"Preorder"},
           * security={{"bearerAuth": {}}},
+         *    @OA\Parameter(
+ *         name="preorderUid",
+ *         in="path",
+ *         required=true,
+ *         description="Uid of preorder response",
+ *         @OA\Schema(type="string")
+ *     ),
+
+    *       @OA\Parameter(
+*         name="perPage",
+*         in="path",
+*         required=true,
+*         description="ID of the merchant or related entity",
+*         @OA\Schema(type="integer")
+*     ),
  *     @OA\Response(
  *         response=200,
  *         description="OK",
@@ -1466,7 +1502,7 @@ public function merchantAffectedByPreorder(){
  *     )
  * )
  */
-public function getValidatedPreordersWithAnswers()
+public function getValidatedPreordersWithAnswers($preorderUid,$perPage)
     {
         try{
             $user = Auth::user();
@@ -1475,13 +1511,16 @@ public function getValidatedPreordersWithAnswers()
 
             $preorders = Preorder::where('user_id', $user->id)
                                  ->where('statut', $validatedStatus)
+                                 ->whereDeleted(0)
+                                 ->where('uid', $preorderUid)
                                  ->get();
 
             $preorderAnswers = PreorderAnswers::whereIn('preorder_id', $preorders->pluck('id'))
+                                             ->whereDeleted(0)
                                              ->where('statut', $validatedStatus)
-                                             ->get();
+                                             ->orderBy('created_at', 'desc')
+                                             ->paginate($perPage);
 
-                                             
 
             return response()->json([
                 'preorders' => $preorders,
@@ -1497,10 +1536,24 @@ public function getValidatedPreordersWithAnswers()
 
     /**
  * @OA\Get(
- *     path="/api/preorder/getPreordersAnswerSortedByDeliveryTime",
+ *     path="/api/preorder/getPreordersAnswerSortedByDeliveryTime/{preorderUid}/{perPage}",
  *     summary="Get pre-orders validated with responses filtered by delivery time",
  *          security={{"bearerAuth": {}}},
  *     tags={"Preorder"},
+ *    @OA\Parameter(
+ *         name="preorderUid",
+ *         in="path",
+ *         required=true,
+ *         description="Uid of preorder response",
+ *         @OA\Schema(type="string")
+ *     ),
+ *    @OA\Parameter(
+*         name="perPage",
+*         in="path",
+*         required=true,
+*         description="ID of the merchant or related entity",
+*         @OA\Schema(type="integer")
+*     ),
  *     @OA\Response(
  *         response=200,
  *         description="OK",
@@ -1519,7 +1572,7 @@ public function getValidatedPreordersWithAnswers()
  *     )
  * )
  */
-    public function getPreordersAnswerSortedByDeliveryTime()
+    public function getPreordersAnswerSortedByDeliveryTime($preorderUid,$perPage)
     {
         try{
             $user = Auth::user();
@@ -1528,12 +1581,14 @@ public function getValidatedPreordersWithAnswers()
 
             $preorders = Preorder::where('user_id', $user->id)
                                  ->where('statut', $validatedStatus)
+                                 ->where('uid', $preorderUid)
                                  ->get();
 
             $preorderAnswers = PreorderAnswers::whereIn('preorder_id', $preorders->pluck('id'))
                                              ->where('statut', $validatedStatus)
                                              ->orderBy('delivery_time')
-                                             ->get();
+                                             ->orderBy('created_at', 'desc')
+                                             ->paginate($perPage);
 
             return response()->json([
                 // 'preorders' => $preorders,
@@ -1546,12 +1601,26 @@ public function getValidatedPreordersWithAnswers()
         }
     }
 
-      /**
+    /**
  * @OA\Get(
- *     path="/api/preorder/getPreordersAnswerSortedByPrice",
+ *     path="/api/preorder/getPreordersAnswerSortedByPrice/{preorderUid}/{perPage}",
  *     summary="Get pre-orders validated with responses filtered by price",
- *          security={{"bearerAuth": {}}},
+ *     security={{"bearerAuth": {}}},
  *     tags={"Preorder"},
+ *     @OA\Parameter(
+ *         name="preorderUid",
+ *         in="path",
+ *         required=true,
+ *         description="UID of the preorder",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Parameter(
+ *         name="perPage",
+ *         in="path",
+ *         required=true,
+ *         description="Number of results per page",
+ *         @OA\Schema(type="integer")
+ *     ),
  *     @OA\Response(
  *         response=200,
  *         description="OK",
@@ -1571,7 +1640,9 @@ public function getValidatedPreordersWithAnswers()
  * )
  */
 
-    public function getPreordersAnswerSortedByPrice()
+
+
+    public function getPreordersAnswerSortedByPrice($preorderUid,$perPage)
     {
         try{
             $user = Auth::user();
@@ -1580,12 +1651,14 @@ public function getValidatedPreordersWithAnswers()
 
             $preorders = Preorder::where('user_id', $user->id)
                                  ->where('statut', $validatedStatus)
+                                 ->where('uid', $preorderUid)
                                  ->get();
 
             $preorderAnswers = PreorderAnswers::whereIn('preorder_id', $preorders->pluck('id'))
                                              ->where('statut', $validatedStatus)
                                              ->orderBy('price')
-                                             ->get();
+                                             ->orderBy('created_at', 'desc')
+                                             ->paginate($perPage);
 
             return response()->json([
                 // 'preorders' => $preorders,

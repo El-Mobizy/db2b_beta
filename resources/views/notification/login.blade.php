@@ -1,25 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <style>
+        #div1{
+            background-color: white;
+            padding: 3%;
+        }
+        body{
+            margin : 10%
+        }
+
+
+        #div2{
+            background-color: aliceblue;
+            padding: 5%;
+            margin-left: 10%;
+            margin-right: 10%;
+            height: auto;
+            width: auto;
+        }
+        .container{
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .a{
+            width: 10em;
+        }
+      
+    </style>
+</head>
+<body>
+    <div id="div1"> 
+        
+        <div style="width: 100%; height:3cm;background-color : white">
+            <div class="container" >
+                <div class="a"></div>
+                <div class="a">    <img src="{{$message->embed(public_path('image/DB2B1.jpg')) }}"  style="width: 2cm; height:2cm"/>
+                </div>
+                <div class="a"></div>
+            </div>
+          
+        </div>
+        <br>
+
+        <div id="div2">
+            <p>
+
+                <h3 style="text-align: center;">{{ $mail ['title'] }}</h3>
+
+                <h1 style="text-align: center;">  {{$mail ['body'] }}</h1>
+
+                Soyez prudent <span style="color: red"> NE PARTAGEZ PAS CE CODE </span>.
+    
+            </p>
+        </div>
+
+        <div  class="" style="text-align: center; padding-top:5%;padding-left:50%">
+            <div class="a"></div>
+            <div class="a"  style="text-align: center;">
+                <div class="footer">
+        <p>
+                    Sent with ❤️  from db2b-shop
+                </p>
+        </div>
+            </div>
+            <div class="a"></div>
+        </div>
+      
+
+
+    </div>
+</body>
+</html>
 
 
 
-
-
-
-
-
-<form class="row g-3" method="POST" action="{{route('login')}}">
-    @csrf
-  <div class="col-auto">
-    <label for="staticEmail2" class="visually-hidden">Email</label>
-
-    <input type="text" class="form-control" name="username" placeholder="email">
-  </div>
-
-  <div class="col-auto">
-    <label for="inputPassword2" class="visually-hidden">Password</label>
-    <input type="password" class="form-control" name="password" placeholder="Password">
-  </div>
-
-  <div class="col-auto">
-    <button type="submit" class="btn btn-primary mb-3">Confirm identity</button>
-  </div>
-</form>

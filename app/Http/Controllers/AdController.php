@@ -302,6 +302,8 @@ class AdController extends Controller
  *                 @OA\Property(property="title", type="string", example="Ad title"),
  *                 @OA\Property(property="location_id", type="integer", example=1),
  *                 @OA\Property(property="category_id", type="integer", example=1),
+ *                 @OA\Property(property="shop_id", type="integer", example=1),
+ *  @OA\Property(property="price", type="double", example=1),
  *               @OA\Property(
  *                     property="value_entered[]",
  *                     type="array",
@@ -332,30 +334,45 @@ class AdController extends Controller
  public function storeAd(Request $request){
     try {
 
-        $personQuery = "SELECT * FROM person WHERE user_id = :userId";
-        $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
 
-        $client = Client::where('person_id',$person->id)->first();
+      $service = new Service();
 
-        if($client->is_merchant == false){
+      $checkAuth=$service->checkAuth();
+      if($checkAuth){
+         return $checkAuth;
+      }
+
+
+    
+
+        $checkIfmerchant = $this->checkMerchant();
+
+        if($checkIfmerchant ==0){
             return response()->json([
-                'data' =>'Permission denied! You cannot add a ad'
-            ],200);
-        }
+                'message' => 'You are not merchant'
+                ],200);
+                }
 
-        $shop = Shop::where('client_id',$client->id)->first();
+                $checkCategoryShop = $this->checkCategoryShop($checkIfmerchant,$request);
+                if($checkCategoryShop){
+                    return $checkCategoryShop;
+                }
 
-        $exist = ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->exists();
+                $checkShop = $this->checkShop($request->shop_id);
+                if($checkShop){
+                    return $checkShop;
+                }
 
-        if(!$exist){
-            return response()->json([
-                'data' =>'You can only add the categories added to your shop'
-            ],200);
-        }
 
         $this->validateRequest($request);
 
-        $service = new Service();
+        if ($request->price < 0) {
+            return response()->json([
+                'message' => 'The price must be greater than 0'
+                ],200);
+          }
+
+     
 
          $validateLocation=$service->validateLocation($request->location_id);
          if($validateLocation){
@@ -372,6 +389,8 @@ class AdController extends Controller
             return $checkFile;
          }
 
+         
+
     foreach($request->file('files') as $photo){
         $service->validateFile($photo);
     }
@@ -381,18 +400,100 @@ class AdController extends Controller
         return $checkAdAttribute;
      }
 
+        
+     $checkNumberProductStore = $this->checkNumberProductStore($request);
+
+
+     if($checkNumberProductStore === 0){
+        return response()->json([
+            'message' => "You've reached your limit of products on the store"
+        ],200);
+     }
+
+
          $ad = $this->createAd($request);
-      
+
+        //  return $ad;
+
+
 
         $file = new Service();
         $file->uploadFiles($request, $ad->file_code,'ad');
 
         $this->saveAdDetails($request, $ad);
 
+        $title= "Confirmation of Your Product Shipment";
+        $body ="Your pre-Product has been registered, please wait while an administrator analyzes it. We'll let you know what happens next. Thank you!";
+
+
+      $message = new ChatMessageController();
+      $mes =  $message->sendNotification(Auth::user()->id,$title,$body, 'ad added successfully !');
+
+      if($mes){
         return response()->json([
-            'message' => 'ad added successfully !'
+              'message' =>$mes->original['message']
         ]);
+      }
+
     } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+public function checkShop( $shop_id){
+    try {
+        $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+        $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
+
+        $client = Client::where('person_id',$person->id)->first();
+
+        if(!Shop::whereId($shop_id)->where('client_id',$client->id)->exists()){
+            return response()->json([
+                'message' => "Check if this shop is yours"
+            ]);
+        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+public function checkMerchant(){
+    try {
+        // return(Auth::user());
+        $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+        $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
+
+        $client = Client::where('person_id',$person->id)->first();
+
+
+        if($client->is_merchant == false){
+          return 0;
+        }
+
+        return $client->id;
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+public function checkCategoryShop($ownerId, Request $request){
+    try {
+        $shop = Shop::where('client_id',$ownerId)->first();
+
+        $exist = ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->exists();
+
+        if(!$exist){
+            return response()->json([
+                'message' =>'You can only add the categories added to your shop'
+            ],200);
+        }
+    } catch (\Exception $e) {
         return response()->json([
             'error' => $e->getMessage()
         ]);
@@ -422,6 +523,7 @@ class AdController extends Controller
  *                 @OA\Property(property="title", type="string", example="New ad title"),
  *                 @OA\Property(property="location_id", type="integer", example=1),
  *                 @OA\Property(property="category_id", type="integer", example=1),
+ * @OA\Property(property="price", type="float", example=1),
  *                 @OA\Property(property="value_entered[]", type="array", @OA\Items(type="string"))
  *             )
  *         )
@@ -446,6 +548,14 @@ class AdController extends Controller
  public function editAd(Request $request, $uid){
     try {
 
+        $service = new Service();
+
+        $checkAuth=$service->checkAuth();
+        if($checkAuth){
+           return $checkAuth;
+        }
+  
+
         $personQuery = "SELECT * FROM person WHERE user_id = :userId";
         $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
 
@@ -463,7 +573,7 @@ class AdController extends Controller
 
         if(!$exist){
             return response()->json([
-                'data' =>'You can only add the categories added to your shop'
+                'message' =>'You can only add the categories added to your shop'
             ],200);
         }
         $existAd = Ad::where('uid',$uid)->first();
@@ -474,6 +584,12 @@ class AdController extends Controller
         }
 
         $this->validateRequest($request);
+
+        if ($request->price < 0) {
+            return response()->json([
+                'message' => 'The price must be greater than 0'
+                ],200);
+          }
 
         $service = new Service();
 
@@ -558,7 +674,8 @@ class AdController extends Controller
                 'location_id' => 'required',
                 'category_id' => '',
                 'value_entered' => 'required|array',
-                'files' =>''
+                'files' =>'',
+                'price' => 'required'
             ])){
                 $e = new Exception();
                 return response()->json([
@@ -573,31 +690,57 @@ class AdController extends Controller
     private function createAd(Request $request){
 
         $title = htmlspecialchars($request->input('title'));
+        $price = htmlspecialchars($request->input('price'));
         $location_id = htmlspecialchars($request->input('location_id'));
         $category_id = htmlspecialchars($request->input('category_id'));
+        $shop_id = htmlspecialchars($request->input('shop_id'));
         $owner_id = Auth::user()->id;
         $statut = TypeOfType::whereLibelle('pending')->first()->id;
-        
+
 
         $service = new Service();
 
         $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();
         if($existUserAd){
-            throw new \Exception('You already added this ad');
+            return response()->json([
+                'message' =>'You already added this ad'
+            ],200);
         }
+
+  
+
 
         $ad = new Ad();
         $ad->title = $title;
+        $ad->ad_code = $service->generateRandomAlphaNumeric(7,$ad,'ad_code');
         $ad->location_id = $location_id;
         $ad->category_id = $category_id;
+        $ad->shop_id = $shop_id;
         $ad->owner_id = $owner_id;
         $ad->statut = $statut;
+        $ad->price = $price;
         $ad->uid = $service->generateUid($ad);
+
         $randomString = $service->generateRandomAlphaNumeric(7,$ad,'file_code');
         $ad->file_code = $randomString;
         $ad->save();
 
         return $ad;
+    }
+
+    private function checkNumberProductStore(Request $request){
+        try {
+            $n = Ad::where('shop_id',$request->shop_id)->where('owner_id',Auth::user()->id)->count();
+
+            if($n >=30 ){
+                return 0;
+            }
+
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     private function saveAdDetails(Request $request, Ad $ad){
@@ -646,11 +789,13 @@ class AdController extends Controller
 
     $title = htmlspecialchars($request->input('title'));
     $location_id = htmlspecialchars($request->input('location_id'));
-    $category_id = htmlspecialchars($request->input('category_id'));
+    $price = htmlspecialchars($request->input('price'));
     $owner_id = Auth::user()->id;
+
 
     $existAd->title = $title ?? $existAd->title;
     $existAd->location_id = $location_id ?? $existAd->location_id;
+    $existAd->price = $price ?? $existAd->price;
     // $existAd->category_id = $category_id ?? $existAd->category_id;
     $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();
         if($existUserAd){

@@ -58,7 +58,7 @@ class FavoriteController extends Controller
                 $request->validate([
                     'ad_id' => 'required',
                 ]);
-               
+
                 $ad_id = htmlspecialchars($request->input('ad_id'));
                 $user_id = Auth::user()->id;
                 $exist = Favorite::where('ad_id',$ad_id)->where('user_id',$user_id)->where('deleted',false)->exists();
@@ -100,23 +100,23 @@ class FavoriteController extends Controller
     }
 
 
-    // /**
-    //  * @OA\Get(
-    //  *     path="/api/favorite/GetFavoritesAd",
-    //  *     summary="Retrieve favorite ads for the current user",
-    //  *     description="Retrieve a list of favorite ads for the currently authenticated user",
-    //  *     tags={"Favorite"},
-    //  *     security={{"bearerAuth": {}}},
-    //  *     @OA\Response(
-    //  *         response=200,
-    //  *         description="A list of favorite ads",
-    //  *         @OA\JsonContent(
-    //  *             type="array",
-    //  *             @OA\Items(ref="")
-    //  *         )
-    //  *     )
-    //  * )
-    //  */
+    /**
+     * @OA\Get(
+     *     path="/api/favorite/GetFavoritesAd",
+     *     summary="Retrieve favorite ads for the current user",
+     *     description="Retrieve a list of favorite ads for the currently authenticated user",
+     *     tags={"Favorite"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="A list of favorite ads",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="")
+     *         )
+     *     )
+     * )
+     */
 
    
 
@@ -133,7 +133,7 @@ class FavoriteController extends Controller
             ads.location_id AS ad_location_id,
             ads.validated_by_id AS ad_validated_by_id,
             ads.title AS ad_title, 
-            ads.status AS ad_status, 
+            ads.statut AS ad_status, 
             ads.file_code AS ad_file_code, 
             ads.reject_reason AS ad_reject_reason, 
             ads.validated_on AS ad_validated_on, 
@@ -164,12 +164,60 @@ class FavoriteController extends Controller
     }
 
 
+    /**
+ * @OA\Delete(
+ *     path="/api/favorite/RemoveAdFromFavoriteList/{id}",
+ *     summary="Remove an ad from the favorite list",
+ *     tags={"Favorite"},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         description="ID of the ad to remove from the favorite list",
+ *         required=true,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Ad removed from favorite successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="ad remove from favorite successfully !")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Ad not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Not found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="Unauthorized to remove the ad",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="You can't remove an ad from another favorite list")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="An error message")
+ *         )
+ *     ),
+ *     security={
+ *         {"bearerAuth": {}}
+ *     }
+ * )
+ */
+
     public function RemoveAdFromFavoriteList($id)
     {
         try {
             $db = DB::connection()->getPdo();
             $user_id = Auth::user()->id;
-            $blur = Favorite::find($id);
+            $blur = Ad::find($id);
+
+            // return [Auth::user()->id, ]
 
             if(!$blur){
                 return response()->json([
@@ -177,22 +225,13 @@ class FavoriteController extends Controller
                 ]);
             }
 
-            if($blur->user_id != $user_id){
+            if( Favorite::where('user_id',$user_id)->where('ad_id',$blur->id)->first()->user_id != $user_id){
                 return response()->json([
                     'message' => "You can't remove an ad from another favorite list"
                 ]);
             }
 
-            if( $blur == true){
-                return response()->json([
-                    'message' => "You can't remove a ad that's already removed"
-                ]);
-            }
-            $query = "UPDATE favorites SET deleted = true WHERE id = :id";
-            $stmt = $db->prepare($query);
-            $stmt->bindValue(':id',$id);
-            $stmt->execute();
-
+         Favorite::where('user_id',$user_id)->where('ad_id',$blur->id)->first()->delete();
             return response()->json([
                 'message' => 'ad remove from favorite successfully !'
             ]);
@@ -204,43 +243,5 @@ class FavoriteController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function all(Request $request)
-    {
-        return Favorite::all();
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Favorite $favorite)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Favorite $favorite)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Favorite $favorite)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Favorite $favorite)
-    {
-        //
-    }
+   
 }

@@ -107,12 +107,12 @@ class FileController extends Controller
 
         if($returnSingleFile == 1){
             return response()->json([
-                'data' => File::whereReferencecode($filecode)->first()
+                'data' => File::whereReferencecode($filecode)->whereDeleted(0)->first()
             ]);
         }
 
         return response()->json([
-            'data' => File::whereReferencecode($filecode)->get()
+            'data' => File::whereReferencecode($filecode)->whereDeleted(0)->get()
         ]);
     }
 

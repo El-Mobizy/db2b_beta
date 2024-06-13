@@ -34,6 +34,7 @@ return new class extends Migration
             ['libelle' => 'pending','codereference' => 'STATUS_PENDING', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>4],
             ['libelle' => 'rejected','codereference' => 'STATUS_REJECTED', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>4],
             ['libelle' => 'incomplete','codereference' => 'STATUS_DRAFT', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>4],
+            ['libelle' => 'canceled','codereference' => 'STATUS_CANCELED', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>null],
         ]);
     }
 

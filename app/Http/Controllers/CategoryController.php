@@ -13,13 +13,6 @@ use PhpParser\Node\Stmt\TryCatch;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
 
 /**
          * @OA\Post(
@@ -61,6 +54,7 @@ class CategoryController extends Controller
                 'title' => 'required|unique:categories|max:255',
                 // 'files' => 'image|mimes:jpeg,jpg,png,gif'
             ]);
+
 
             $service = new Service();
            
@@ -260,7 +254,7 @@ class CategoryController extends Controller
             $db = DB::connection()->getPdo();
             $search = htmlspecialchars($request->input('search'));
             $s = '%'.$search.'%';
-            $query = "SELECT * FROM categories WHERE title LIKE :title";
+            $query = "SELECT * FROM categories WHERE title AND deleted = false LIKE :title";
             $stmt = $db->prepare($query);
             $stmt->bindValue(':title',$s);
             $stmt->execute();
@@ -286,3 +280,4 @@ class CategoryController extends Controller
         
     }
 }
+

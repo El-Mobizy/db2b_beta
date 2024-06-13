@@ -111,7 +111,7 @@ class UserController extends Controller
  *     path="/api/users/restrictedUser",
  *     summary="Ajouter un utilisateur restreint",
  *     description="Ajoute un utilisateur restreint à la base de données avec son email et adresse IP.",
- *     tags={"Authentification"},
+ *     tags={"Authentication"},
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\MediaType(
@@ -203,7 +203,7 @@ class UserController extends Controller
  *     path="/api/users/login",
  *     summary="Connexion de l'utilisateur",
  *     description="Authentifie l'utilisateur et renvoie un jeton d'accès en cas de succès.",
- *     tags={"Authentification"},
+ *     tags={"Authentication"},
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\MediaType(
@@ -380,18 +380,39 @@ class UserController extends Controller
 
                     if (!empty($authenticatedUser)) {
                         $token = Auth::attempt(['email' => $username, 'password' => $password]);
+                        $codes = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+                       
+                        if(User::where('code',$codes)->exists()){
+                            $codes = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+                        }
+                        $user->code = $codes;
+                        $user->save();
                         // dd('salut');
                         // if (!$token) {
                         //     $token = Auth::attempt(['phone' => $username, 'password' => $password]);
                         // }
 
-                        if (!$token) {  
+                        if (!$token) {
                             return response()->json(['message' => 'Unauthorized'], 200);
                         }
 
                         $user = Auth::user();
                         DB::update('UPDATE users SET connected = ? WHERE id = ?', [1, $user->id]);
 
+                        $title=  'Help us protect your account';
+                        $body =$codes;
+                        $message = new ChatMessageController();
+                        $mes =  $message->sendLoginConfirmationNotification(Auth::user()->id,$title,$body, 'code sent successfully !');
+            
+                        // $mes = $message->sendNotification(Auth::user()->id,$title,$body, 'code sent successfully !');
+            
+                        // if($mes){
+                        //     return response()->json([
+                        //           'message' =>$mes->original['message']
+                        //     ]);
+                        //   }
+
+                        unset($user->code);
                         return response()->json([
                             'user' => $user,
                             'access_token' => $token,
@@ -417,7 +438,7 @@ class UserController extends Controller
  *     path="/api/users/register",
  *     summary="Enregistrer un nouvel utilisateur",
  *     description="Crée un nouvel utilisateur avec l'email, le numéro de téléphone et le mot de passe fournis.",
- *     tags={"Authentification"},
+ *     tags={"Authentication"},
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\MediaType(
@@ -648,38 +669,7 @@ class UserController extends Controller
         }
     }
 
-    public function createShop($clientId, Request $request){
-        try{
-
-            if(Shop::where('client_id', $clientId)->whereDeleted(0)->exists()){
-                return response()->json([
-                    'message' => 'You already have a shop !'
-                ]);
-            }
-
-            $client = Client::find($clientId);
-
-            $url = url("/api/shop/catalogueClient/$client->uid");
-
-            $service = new Service();
-            $shop = new Shop();
-            $shop->uid = $service->generateUid($shop);
-            $shop->title = "Shop";
-            $shop->description = "XXXXXXXX";
-            $shop->shop_url = $url;
-            $shop->client_id = $clientId;
-            $randomString = $service->generateRandomAlphaNumeric(7,$shop,'filecode');
-            $shop->filecode = $randomString;
-            if($request->hasFile('files')){
-                $service->uploadFiles($request,$randomString,"shop");
-            }
-            $shop->save();
-        }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
+   
     
 
     /**
@@ -687,7 +677,7 @@ class UserController extends Controller
  *     path="/api/users/logout",
  *     summary="Déconnexion de l'utilisateur",
  *     description="Déconnecte l'utilisateur authentifié.",
- *     tags={"Authentification"},
+ *     tags={"Authentication"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Response(
  *         response=200,
@@ -752,7 +742,7 @@ class UserController extends Controller
  *     path="/api/user",
  *     summary="Obtenir les informations de l'utilisateur authentifié",
  *     description="Renvoie les informations de l'utilisateur authentifié.",
- *     tags={"Authentification"},
+ *     tags={"Authentication"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Response(
  *         response=200,
@@ -799,6 +789,7 @@ class UserController extends Controller
                     'Person detail' => $person,
                     'client detail' => $client
                 ];
+                unset(Auth::user()->code);
                 return response()->json([
                     'data' =>$data
                 ]);
@@ -813,7 +804,7 @@ class UserController extends Controller
  *     path="/api/users/getUser",
  *     summary="Obtenir la liste des utilisateurs",
  *     description="Renvoie la liste de tous les utilisateurs enregistrés dans le système.",
- *     tags={"Utilisateurs"},
+ *     tags={"Users"},
  *     @OA\Response(
  *         response=200,
  *         description="Liste des utilisateurs récupérée avec succès",
@@ -875,7 +866,7 @@ class UserController extends Controller
  *     path="/api/users/getUserLogin",
  *     summary="Obtenir la liste des utilisateurs connectés",
  *     description="Renvoie la liste de tous les utilisateurs connectés au système.",
- *     tags={"Utilisateurs"},
+ *     tags={"Users"},
  *     @OA\Response(
  *         response=200,
  *         description="Liste des utilisateurs connectés récupérée avec succès",
@@ -933,7 +924,7 @@ class UserController extends Controller
  *     path="/api/users/getUserLogout",
  *     summary="Obtenir la liste des utilisateurs déconnectés",
  *     description="Renvoie la liste de tous les utilisateurs déconnectés du système.",
- *     tags={"Utilisateurs"},
+ *     tags={"Users"},
  *     @OA\Response(
  *         response=200,
  *         description="Liste des utilisateurs déconnectés récupérée avec succès",
@@ -993,7 +984,7 @@ class UserController extends Controller
  *     path="/api/users/updatePassword",
  *     summary="Mettre à jour le mot de passe de l'utilisateur",
  *     description="Permet à l'utilisateur de mettre à jour son mot de passe.",
- *     tags={"Authentification"},
+ *     tags={"Authentication"},
  *     security={{"bearerAuth": {}}},
  *     @OA\RequestBody(
  *         required=true,
@@ -1100,6 +1091,59 @@ class UserController extends Controller
             return response()->json(['message' => 'Password updated successfully.'], 200);
         }
         
+
+ /**
+ * @OA\Post(
+ *     path="/api/users/password_recovery_start_step",
+ *     summary="Start the password recovery process",
+ *     tags={"Authentication"},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"email"},
+ *             @OA\Property(property="email", type="string", format="email", example="user@example.com")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Email sent successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=200),
+ *             @OA\Property(property="message", type="string", example="Email sent successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Email not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=404),
+ *             @OA\Property(property="message", type="string", example="Email not found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Validation Error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="The given data was invalid."),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object",
+ *                 @OA\AdditionalProperties(
+ *                     type="array",
+ *                     @OA\Items(type="string", example="The email field is required.")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Server Error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Internal server error")
+ *         )
+ *     )
+ * )
+ */
         public function password_recovery_start_step(Request $request){
             try{
         
@@ -1117,21 +1161,82 @@ class UserController extends Controller
                 // dd($user);
                 if($user){
 
+                    $title= "Recovery your password";
+                    $body ="Go to quotidishop.com to update your password";
+
+                   $message = new ChatMessageController();
+                  $mes =  $message->sendNotification(User::where('email',$email)->first()->id,$title,$body, 'Email sent successfully !');
+
+                  if($mes){
                     return response()->json([
-                        'status_code' => 200,
-                        'message' => "Email sent successfully"
-                     ]);
+                          'message' =>$mes->original['message']
+                    ]);
+                  }
                 }else{
                     return response()->json([
                         'status_code' => 404,
                         'message' => "Email not found"
                      ]);
                 }
-        
+
             } catch(Exception $e) {
                 return response()->json($e->getMessage());
             }
         }
+
+        /**
+ * @OA\Post(
+ *     path="/api/users/password_recovery_end_step",
+ *     summary="Complete the password recovery process by setting a new password",
+ *     tags={"Authentication"},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"email", "new_password"},
+ *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+ *             @OA\Property(property="new_password", type="string", format="password", example="newSecurePassword123")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Password changed successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=200),
+ *             @OA\Property(property="message", type="string", example="Password changed successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Email not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=404),
+ *             @OA\Property(property="message", type="string", example="Email not found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Validation Error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="The given data was invalid."),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object",
+ *                 @OA\AdditionalProperties(
+ *                     type="array",
+ *                     @OA\Items(type="string", example="The email field is required.")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Server Error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Internal server error")
+ *         )
+ *     )
+ * )
+ */
 
         public function password_recovery_end_step(Request $request){
             try {
@@ -1175,5 +1280,208 @@ class UserController extends Controller
                     return response()->json($e->getMessage());
                     }
         }
+
+
+        /**
+ * @OA\Post(
+ *     path="/api/users/verification_code",
+ *     tags={"Authentication"},
+ *     summary="Vérification du code de vérification",
+ *     description="Vérifie le code de vérification envoyé par l'utilisateur.",
+ *     requestBody={
+ *         "required": true,
+ *         "content": {
+ *             "application/json": {
+ *                 "schema": {
+ *                     "type": "object",
+ *                     "properties": {
+ *                         "code": {
+ *                             "type": "string",
+ *                             "description": "Le code de vérification à vérifier."
+ *                         }
+ *                     },
+ *                     "required": "code"
+ *                 }
+ *             }
+ *         }
+ *     },
+ *     @OA\Response(
+ *         response="200",
+ *         description="Échec de la vérification",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=200,
+ *                 description="Le code d'état de la réponse."
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Check failed",
+ *                 description="Le message indiquant que la vérification a échoué."
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response="500",
+ *         description="Erreur interne du serveur",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=500,
+ *                 description="Le code d'état de la réponse."
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 description="Le message d'erreur détaillé."
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response="default",
+ *         description="Réponse par défaut pour les autres cas",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=200,
+ *                 description="Le code d'état de la réponse."
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Verification passed",
+ *                 description="Le message indiquant que la vérification a réussi."
+ *             ),
+ *             @OA\Property(
+ *                 property="verification",
+ *                 type="string",
+ *                 description="Le code de vérification vérifié."
+ *             )
+ *         )
+ *     )
+ * )
+ */
+public function verification_code(Request $request)
+{
+    try {
+        $verification = $request->code;
+        $user = User::where('code', $verification)->first();
+     
+        if (!$user) {
+            return response()->json([
+                'status_code' => 200,
+                'message' => 'Code invalid',
+            ]);
+        }
+      
+        if ($request->code !== null) {
+            return response()->json([
+                'status_code' => 200,
+                'message' => 'Verification passed',
+            ]);
+        }
+
+        $user->code=0;
+        $user->save();
+
+     
+
+    } catch (Exception $e) {
+        return response()->json([
+            'status_code' => 500,
+            'message' => $e->getMessage(),
+        ]);
+    }
+}
+
+
+/**
+ * @OA\Post(
+ *     path="/api/users/new_code/{id}",
+ *     summary="Generate a new code for user",
+ *   security={{"bearerAuth": {}}},
+ *     tags={"Authentication"},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="User ID",
+ *         @OA\Schema(
+ *             type="integer"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Code sent successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=200),
+ *             @OA\Property(property="message", type="string", example="Code sent successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="This id does not exist",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=404),
+ *             @OA\Property(property="message", type="string", example="This id does not exist")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Internal Server Error")
+ *         )
+ *     )
+ * )
+ */
+public function new_code($id) {
+    try {
+
+        $user = User::find($id);
+
+        if(!$user){
+            return response()->json([
+                'message' => 'Check if user exist',
+            ],200);
+        }
+
+        // if(Auth::user()->id != $id){
+        //     return response()->json([
+        //         'message' => 'Check receiver identity',
+        //     ],200);
+        // }
+            $codes = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+            if($user->code !== null) {
+                $user->code = $codes;
+                $user->save();
+            
+            $title=  'Help us protect your account';
+            $body =$user->code;
+            $message = new ChatMessageController();
+            $mes =  $message->sendLoginConfirmationNotification(Auth::user()->id,$title,$body, 'code sent successfully !');
+            // dd('allo');
+
+          
+            if($mes){
+                return response()->json([
+                      'message' =>$mes->original['message']
+                ]);
+              }
+
+        } 
+        return response()->json([
+            'status_code' => 404,
+            'message' => 'This id does not exist'
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json(['message' =>$e->getMessage()], 500);
+    }
+}
 
 }

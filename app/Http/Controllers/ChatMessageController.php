@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Mail\login;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\NotificationEmailwithoutfile;
 use App\Mail\NotificationEmail;
@@ -20,6 +22,25 @@ class ChatMessageController extends Controller
 
             $receiver = User::find($reciever_id);
                Mail::to($receiver->email)->send(new NotificationEmailwithoutfile($mail));
+               return response()->json([
+                'message' =>$return
+            ],200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ],500);
+        }
+    }
+
+    public function sendLoginConfirmationNotification($reciever_id,$title,$body,$return){
+        try {
+            $mail = [
+                'title' => $title,
+                'body' =>$body
+               ];
+
+            $receiver = User::find($reciever_id);
+               Mail::to($receiver->email)->send(new login($mail));
                return response()->json([
                 'message' =>$return
             ],200);

@@ -19,9 +19,8 @@ return new class extends Migration
             $table->string('symbol')->nullable();
             $table->string('currency')->nullable();
             $table->boolean('banned')->default(0);
-            $table->uuid('uid')->unique();
             $table->boolean('deleted')->default(0);
-            $table->string('callcode');
+            $table->string('callcode')->nullable();
             $table->timestamps();
         });
     }

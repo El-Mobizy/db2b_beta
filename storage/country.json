@@ -1,0 +1,2492 @@
+[
+  {
+    "id": "0x01821BB1C5D1478DCA9044138D35DD40",
+    "fullname": "Greenland",
+    "shortcode": "GRL",
+    "flag": "\uD83C\uDDEC\uD83C\uDDF1",
+    "banned": 0,
+    "currency": "DKK",
+    "symbol": null,
+    "callcode": "299"
+  },
+  {
+    "id": "0x01821BB1C5D242B4F5610CE6FAA94BC2",
+    "fullname": "El Salvador",
+    "shortcode": "SLV",
+    "flag": "\uD83C\uDDF8\uD83C\uDDFB",
+    "banned": 0,
+    "currency": "SVC",
+    "symbol": "$",
+    "callcode": "503"
+  },
+  {
+    "id": "0x01821BB1C5D242B4F5610CE6FAA94BC3",
+    "fullname": "Georgia",
+    "shortcode": "GEO",
+    "flag": "\uD83C\uDDEC\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "GEL",
+    "symbol": "lari",
+    "callcode": "995"
+  },
+  {
+    "id": "0x01821BB1C5D242B4F5610CE6FAA94BC4",
+    "fullname": "Guyana",
+    "shortcode": "GUY",
+    "flag": "\uD83C\uDDEC\uD83C\uDDFE",
+    "banned": 0,
+    "currency": "GYD",
+    "symbol": null,
+    "callcode": "592"
+  },
+  {
+    "id": "0x01821BB1C5D3E9781CD916EACB94A4C2",
+    "fullname": "Montenegro",
+    "shortcode": "MNE",
+    "flag": "\uD83C\uDDF2\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "382"
+  },
+  {
+    "id": "0x01821BB1C5D3E9781CD916EACB94A4C3",
+    "fullname": "Greece",
+    "shortcode": "GRC",
+    "flag": "\uD83C\uDDEC\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "30"
+  },
+  {
+    "id": "0x01821BB1C5D3E9781CD916EACB94A4C4",
+    "fullname": "Botswana",
+    "shortcode": "BWA",
+    "flag": "\uD83C\uDDE7\uD83C\uDDFC",
+    "banned": 0,
+    "currency": "BWP",
+    "symbol": "P",
+    "callcode": "267"
+  },
+  {
+    "id": "0x01821BB1C5D3E9781CD916EACB94A4C5",
+    "fullname": "Sri Lanka",
+    "shortcode": "LKA",
+    "flag": "\uD83C\uDDF1\uD83C\uDDF0",
+    "banned": 0,
+    "currency": "LKR",
+    "symbol": "Rs",
+    "callcode": "94"
+  },
+  {
+    "id": "0x01821BB1C5D48AFD7AAB70549827A2BE",
+    "fullname": "Oman",
+    "shortcode": "OMN",
+    "flag": "\uD83C\uDDF4\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "OMR",
+    "symbol": "﷼",
+    "callcode": "968"
+  },
+  {
+    "id": "0x01821BB1C5D48AFD7AAB70549827A2BF",
+    "fullname": "Lithuania",
+    "shortcode": "LTU",
+    "flag": "\uD83C\uDDF1\uD83C\uDDF9",
+    "banned": 0,
+    "currency": "LTL",
+    "symbol": null,
+    "callcode": "370"
+  },
+  {
+    "id": "0x01821BB1C5D48AFD7AAB70549827A2C0",
+    "fullname": "Maldives",
+    "shortcode": "MDV",
+    "flag": "\uD83C\uDDF2\uD83C\uDDFB",
+    "banned": 0,
+    "currency": "MVR",
+    "symbol": null,
+    "callcode": "960"
+  },
+  {
+    "id": "0x01821BB1C5D48AFD7AAB70549827A2C1",
+    "fullname": "Portugal",
+    "shortcode": "PRT",
+    "flag": "\uD83C\uDDF5\uD83C\uDDF9",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "351"
+  },
+  {
+    "id": "0x01821BB1C5D5B7E46A24D48DA8449E94",
+    "fullname": "Samoa",
+    "shortcode": "WSM",
+    "flag": "\uD83C\uDDFC\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "SAT",
+    "symbol": null,
+    "callcode": "685"
+  },
+  {
+    "id": "0x01821BB1C5D5B7E46A24D48DA8449E95",
+    "fullname": "Sierra Leone",
+    "shortcode": "SLE",
+    "flag": "\uD83C\uDDF8\uD83C\uDDF1",
+    "banned": 0,
+    "currency": "SLL",
+    "symbol": null,
+    "callcode": "232"
+  },
+  {
+    "id": "0x01821BB1C5D5B7E46A24D48DA8449E96",
+    "fullname": "Brunei",
+    "shortcode": "BRN",
+    "flag": "\uD83C\uDDE7\uD83C\uDDF3",
+    "banned": 0,
+    "currency": "BND",
+    "symbol": "$",
+    "callcode": "673"
+  },
+  {
+    "id": "0x01821BB1C5D6BC95B051632DBA465AC9",
+    "fullname": "British Virgin Islands",
+    "shortcode": "VGB",
+    "flag": "\uD83C\uDDFB\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "1284"
+  },
+  {
+    "id": "0x01821BB1C5D6BC95B051632DBA465ACA",
+    "fullname": "Jamaica",
+    "shortcode": "JAM",
+    "flag": "\uD83C\uDDEF\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "JMD",
+    "symbol": "J$",
+    "callcode": "1876"
+  },
+  {
+    "id": "0x01821BB1C5D6BC95B051632DBA465ACB",
+    "fullname": "Northern Mariana Islands",
+    "shortcode": "MNP",
+    "flag": "\uD83C\uDDF2\uD83C\uDDF5",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "1670"
+  },
+  {
+    "id": "0x01821BB1C5D70F2976131482756C95B0",
+    "fullname": "San Marino",
+    "shortcode": "SMR",
+    "flag": "\uD83C\uDDF8\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "378"
+  },
+  {
+    "id": "0x01821BB1C5D70F2976131482756C95B1",
+    "fullname": "Malawi",
+    "shortcode": "MWI",
+    "flag": "\uD83C\uDDF2\uD83C\uDDFC",
+    "banned": 0,
+    "currency": "MWK",
+    "symbol": null,
+    "callcode": "265"
+  },
+  {
+    "id": "0x01821BB1C5D70F2976131482756C95B2",
+    "fullname": "Malaysia",
+    "shortcode": "MYS",
+    "flag": "\uD83C\uDDF2\uD83C\uDDFE",
+    "banned": 0,
+    "currency": "MYR",
+    "symbol": "RM",
+    "callcode": "60"
+  },
+  {
+    "id": "0x01821BB1C5D8FA94EBA2D43C6A1D5233",
+    "fullname": "American Samoa",
+    "shortcode": "ASM",
+    "flag": "\uD83C\uDDE6\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "1684"
+  },
+  {
+    "id": "0x01821BB1C5D8FA94EBA2D43C6A1D5234",
+    "fullname": "Chad",
+    "shortcode": "TCD",
+    "flag": "\uD83C\uDDF9\uD83C\uDDE9",
+    "banned": 0,
+    "currency": "XAF",
+    "symbol": null,
+    "callcode": "235"
+  },
+  {
+    "id": "0x01821BB1C5D8FA94EBA2D43C6A1D5235",
+    "fullname": "Taiwan",
+    "shortcode": "TWN",
+    "flag": "\uD83C\uDDF9\uD83C\uDDFC",
+    "banned": 0,
+    "currency": "TWD",
+    "symbol": "NT$",
+    "callcode": "886"
+  },
+  {
+    "id": "0x01821BB1C5D8FA94EBA2D43C6A1D5236",
+    "fullname": "Anguilla",
+    "shortcode": "AIA",
+    "flag": "\uD83C\uDDE6\uD83C\uDDEE",
+    "banned": 0,
+    "currency": "XCD",
+    "symbol": null,
+    "callcode": "1264"
+  },
+  {
+    "id": "0x01821BB1C5D91E146369ED0B3D312E0B",
+    "fullname": "Antigua and Barbuda",
+    "shortcode": "ATG",
+    "flag": "\uD83C\uDDE6\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "XCD",
+    "symbol": null,
+    "callcode": "1268"
+  },
+  {
+    "id": "0x01821BB1C5D91E146369ED0B3D312E0C",
+    "fullname": "Djibouti",
+    "shortcode": "DJI",
+    "flag": "\uD83C\uDDE9\uD83C\uDDEF",
+    "banned": 0,
+    "currency": "DJF",
+    "symbol": null,
+    "callcode": "253"
+  },
+  {
+    "id": "0x01821BB1C5D91E146369ED0B3D312E0D",
+    "fullname": "Christmas Island",
+    "shortcode": "CXR",
+    "flag": "\uD83C\uDDE8\uD83C\uDDFD",
+    "banned": 0,
+    "currency": "AUD",
+    "symbol": "$",
+    "callcode": "61"
+  },
+  {
+    "id": "0x01821BB1C5DAB0001F7776DDE7BDFD5D",
+    "fullname": "Ireland",
+    "shortcode": "IRL",
+    "flag": "\uD83C\uDDEE\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "353"
+  },
+  {
+    "id": "0x01821BB1C5DAB0001F7776DDE7BDFD5E",
+    "fullname": "Cuba",
+    "shortcode": "CUB",
+    "flag": "\uD83C\uDDE8\uD83C\uDDFA",
+    "banned": 0,
+    "currency": "CUP",
+    "symbol": "₱",
+    "callcode": "53"
+  },
+  {
+    "id": "0x01821BB1C5DAB0001F7776DDE7BDFD5F",
+    "fullname": "Mauritius",
+    "shortcode": "MUS",
+    "flag": "\uD83C\uDDF2\uD83C\uDDFA",
+    "banned": 0,
+    "currency": "MUR",
+    "symbol": null,
+    "callcode": "230"
+  },
+  {
+    "id": "0x01821BB1C5DAB0001F7776DDE7BDFD60",
+    "fullname": "Bulgaria",
+    "shortcode": "BGR",
+    "flag": "\uD83C\uDDE7\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "BGN",
+    "symbol": "лв",
+    "callcode": "359"
+  },
+  {
+    "id": "0x01821BB1C5DBA838DBA4677D9934627F",
+    "fullname": "Guadeloupe",
+    "shortcode": "GLP",
+    "flag": "\uD83C\uDDEC\uD83C\uDDF5",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "590"
+  },
+  {
+    "id": "0x01821BB1C5DBA838DBA4677D99346280",
+    "fullname": "Guinea-Bissau",
+    "shortcode": "GNB",
+    "flag": "\uD83C\uDDEC\uD83C\uDDFC",
+    "banned": 0,
+    "currency": "XAF",
+    "symbol": null,
+    "callcode": "245"
+  },
+  {
+    "id": "0x01821BB1C5DBA838DBA4677D99346281",
+    "fullname": "Egypt",
+    "shortcode": "EGY",
+    "flag": "\uD83C\uDDEA\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "EGP",
+    "symbol": "£",
+    "callcode": "20"
+  },
+  {
+    "id": "0x01821BB1C5DC0EEA753F7BF80D6AD306",
+    "fullname": "Martinique",
+    "shortcode": "MTQ",
+    "flag": "\uD83C\uDDF2\uD83C\uDDF6",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "596"
+  },
+  {
+    "id": "0x01821BB1C5DC0EEA753F7BF80D6AD307",
+    "fullname": "Bahamas",
+    "shortcode": "BHS",
+    "flag": "\uD83C\uDDE7\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "BSD",
+    "symbol": "$",
+    "callcode": "1242"
+  },
+  {
+    "id": "0x01821BB1C5DC0EEA753F7BF80D6AD308",
+    "fullname": "Germany",
+    "shortcode": "DEU",
+    "flag": "\uD83C\uDDE9\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "49"
+  },
+  {
+    "id": "0x01821BB1C5DD6AFA0DE7F3B57E9D3E39",
+    "fullname": "Libya",
+    "shortcode": "LBY",
+    "flag": "\uD83C\uDDF1\uD83C\uDDFE",
+    "banned": 0,
+    "currency": "LYD",
+    "symbol": null,
+    "callcode": "218"
+  },
+  {
+    "id": "0x01821BB1C5DD6AFA0DE7F3B57E9D3E3A",
+    "fullname": "Argentina",
+    "shortcode": "ARG",
+    "flag": "\uD83C\uDDE6\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "ARS",
+    "symbol": "$",
+    "callcode": "54"
+  },
+  {
+    "id": "0x01821BB1C5DD6AFA0DE7F3B57E9D3E3B",
+    "fullname": "Venezuela",
+    "shortcode": "VEN",
+    "flag": "\uD83C\uDDFB\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "VES",
+    "symbol": "Bs",
+    "callcode": "58"
+  },
+  {
+    "id": "0x01821BB1C5DE8CEA9A1D805E586B9B0F",
+    "fullname": "South Sudan",
+    "shortcode": "SSD",
+    "flag": "\uD83C\uDDF8\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "SSP",
+    "symbol": null,
+    "callcode": "211"
+  },
+  {
+    "id": "0x01821BB1C5DE8CEA9A1D805E586B9B10",
+    "fullname": "Comoros",
+    "shortcode": "COM",
+    "flag": "\uD83C\uDDF0\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "KMF",
+    "symbol": null,
+    "callcode": "269"
+  },
+  {
+    "id": "0x01821BB1C5DE8CEA9A1D805E586B9B11",
+    "fullname": "Bosnia and Herzegovina",
+    "shortcode": "BIH",
+    "flag": "\uD83C\uDDE7\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "BAM",
+    "symbol": "KM",
+    "callcode": "387"
+  },
+  {
+    "id": "0x01821BB1C5DE8CEA9A1D805E586B9B12",
+    "fullname": "Niger",
+    "shortcode": "NER",
+    "flag": "\uD83C\uDDF3\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "XOF",
+    "symbol": null,
+    "callcode": "227"
+  },
+  {
+    "id": "0x01821BB1C5DF2AB1DF1E2C8582024581",
+    "fullname": "Nicaragua",
+    "shortcode": "NIC",
+    "flag": "\uD83C\uDDF3\uD83C\uDDEE",
+    "banned": 0,
+    "currency": "NIO",
+    "symbol": "C$",
+    "callcode": "505"
+  },
+  {
+    "id": "0x01821BB1C5DF2AB1DF1E2C8582024582",
+    "fullname": "Zambia",
+    "shortcode": "ZMB",
+    "flag": "\uD83C\uDDFF\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "ZMW",
+    "symbol": null,
+    "callcode": "260"
+  },
+  {
+    "id": "0x01821BB1C5DF2AB1DF1E2C8582024583",
+    "fullname": "Saint Barthélemy",
+    "shortcode": "BLM",
+    "flag": "\uD83C\uDDE7\uD83C\uDDF1",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "£",
+    "callcode": "590"
+  },
+  {
+    "id": "0x01821BB1C5E0D626A0F9B7885AABA29A",
+    "fullname": "Dominica",
+    "shortcode": "DMA",
+    "flag": "\uD83C\uDDE9\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "XCD",
+    "symbol": "XCD",
+    "callcode": "1767"
+  },
+  {
+    "id": "0x01821BB1C5E0D626A0F9B7885AABA29B",
+    "fullname": "Guinea",
+    "shortcode": "GIN",
+    "flag": "\uD83C\uDDEC\uD83C\uDDF3",
+    "banned": 0,
+    "currency": "GNF",
+    "symbol": null,
+    "callcode": "224"
+  },
+  {
+    "id": "0x01821BB1C5E0D626A0F9B7885AABA29C",
+    "fullname": "DR Congo",
+    "shortcode": "COD",
+    "flag": "\uD83C\uDDE8\uD83C\uDDE9",
+    "banned": 0,
+    "currency": "CDF",
+    "symbol": null,
+    "callcode": "243"
+  },
+  {
+    "id": "0x01821BB1C5E0D626A0F9B7885AABA29D",
+    "fullname": "French Guiana",
+    "shortcode": "GUF",
+    "flag": "\uD83C\uDDEC\uD83C\uDDEB",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "594"
+  },
+  {
+    "id": "0x01821BB1C5E1A51CB59F7ACDA94CA8BF",
+    "fullname": "Saudi Arabia",
+    "shortcode": "SAU",
+    "flag": "\uD83C\uDDF8\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "SAR",
+    "symbol": "﷼",
+    "callcode": "966"
+  },
+  {
+    "id": "0x01821BB1C5E1A51CB59F7ACDA94CA8C0",
+    "fullname": "Central African Republic",
+    "shortcode": "CAF",
+    "flag": "\uD83C\uDDE8\uD83C\uDDEB",
+    "banned": 0,
+    "currency": "XAF",
+    "symbol": null,
+    "callcode": "236"
+  },
+  {
+    "id": "0x01821BB1C5E1A51CB59F7ACDA94CA8C1",
+    "fullname": "Andorra",
+    "shortcode": "AND",
+    "flag": "\uD83C\uDDE6\uD83C\uDDE9",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "376"
+  },
+  {
+    "id": "0x01821BB1C5E1A51CB59F7ACDA94CA8C2",
+    "fullname": "Saint Vincent and the Grenadines",
+    "shortcode": "VCT",
+    "flag": "\uD83C\uDDFB\uD83C\uDDE8",
+    "banned": 0,
+    "currency": "XCD",
+    "symbol": "$",
+    "callcode": "1784"
+  },
+  {
+    "id": "0x01821BB1C5E1A51CB59F7ACDA94CA8C3",
+    "fullname": "Estonia",
+    "shortcode": "EST",
+    "flag": "\uD83C\uDDEA\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": null,
+    "callcode": "372"
+  },
+  {
+    "id": "0x01821BB1C5E2F048A7631AA7D2F3EE77",
+    "fullname": "Faroe Islands",
+    "shortcode": "FRO",
+    "flag": "\uD83C\uDDEB\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "DKK",
+    "symbol": null,
+    "callcode": "298"
+  },
+  {
+    "id": "0x01821BB1C5E2F048A7631AA7D2F3EE78",
+    "fullname": "Vatican City",
+    "shortcode": "VAT",
+    "flag": "\uD83C\uDDFB\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": null,
+    "callcode": "3906698"
+  },
+  {
+    "id": "0x01821BB1C5E2F048A7631AA7D2F3EE79",
+    "fullname": "Austria",
+    "shortcode": "AUT",
+    "flag": "\uD83C\uDDE6\uD83C\uDDF9",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "43"
+  },
+  {
+    "id": "0x01821BB1C5E2F048A7631AA7D2F3EE7A",
+    "fullname": "Colombia",
+    "shortcode": "COL",
+    "flag": "\uD83C\uDDE8\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "COP",
+    "symbol": "$",
+    "callcode": "57"
+  },
+  {
+    "id": "0x01821BB1C5E2F048A7631AA7D2F3EE7B",
+    "fullname": "Senegal",
+    "shortcode": "SEN",
+    "flag": "\uD83C\uDDF8\uD83C\uDDF3",
+    "banned": 0,
+    "currency": "XOF",
+    "symbol": "CFA",
+    "callcode": "221"
+  },
+  {
+    "id": "0x01821BB1C5E39D806DD912D6078E9E94",
+    "fullname": "Singapore",
+    "shortcode": "SGP",
+    "flag": "\uD83C\uDDF8\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "SGD",
+    "symbol": "$",
+    "callcode": "65"
+  },
+  {
+    "id": "0x01821BB1C5E39D806DD912D6078E9E95",
+    "fullname": "Laos",
+    "shortcode": "LAO",
+    "flag": "\uD83C\uDDF1\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "LAK",
+    "symbol": "₭",
+    "callcode": "856"
+  },
+  {
+    "id": "0x01821BB1C5E39D806DD912D6078E9E96",
+    "fullname": "Cayman Islands",
+    "shortcode": "CYM",
+    "flag": "\uD83C\uDDF0\uD83C\uDDFE",
+    "banned": 0,
+    "currency": "KYD",
+    "symbol": "$",
+    "callcode": "1345"
+  },
+  {
+    "id": "0x01821BB1C5E39D806DD912D6078E9E97",
+    "fullname": "Eswatini",
+    "shortcode": "SWZ",
+    "flag": "\uD83C\uDDF8\uD83C\uDDFF",
+    "banned": 0,
+    "currency": null,
+    "symbol": null,
+    "callcode": "268"
+  },
+  {
+    "id": "0x01821BB1C5E39D806DD912D6078E9E98",
+    "fullname": "Sudan",
+    "shortcode": "SDN",
+    "flag": "\uD83C\uDDF8\uD83C\uDDE9",
+    "banned": 0,
+    "currency": "SDG",
+    "symbol": "£",
+    "callcode": "249"
+  },
+  {
+    "id": "0x01821BB1C5E433017B9009A979DE555B",
+    "fullname": "Tuvalu",
+    "shortcode": "TUV",
+    "flag": "\uD83C\uDDF9\uD83C\uDDFB",
+    "banned": 0,
+    "currency": "AUD",
+    "symbol": "$",
+    "callcode": "688"
+  },
+  {
+    "id": "0x01821BB1C5E433017B9009A979DE555C",
+    "fullname": "Syria",
+    "shortcode": "SYR",
+    "flag": "\uD83C\uDDF8\uD83C\uDDFE",
+    "banned": 0,
+    "currency": "SYP",
+    "symbol": "£",
+    "callcode": "963"
+  },
+  {
+    "id": "0x01821BB1C5E433017B9009A979DE555D",
+    "fullname": "United States Minor Outlying Islands",
+    "shortcode": "UMI",
+    "flag": "\uD83C\uDDFA\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "268"
+  },
+  {
+    "id": "0x01821BB1C5E433017B9009A979DE555E",
+    "fullname": "Liberia",
+    "shortcode": "LBR",
+    "flag": "\uD83C\uDDF1\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "LRD",
+    "symbol": "$",
+    "callcode": "231"
+  },
+  {
+    "id": "0x01821BB1C5E5C94FFBF8E4E967C2DBE3",
+    "fullname": "Marshall Islands",
+    "shortcode": "MHL",
+    "flag": "\uD83C\uDDF2\uD83C\uDDED",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "692"
+  },
+  {
+    "id": "0x01821BB1C5E5C94FFBF8E4E967C2DBE4",
+    "fullname": "Switzerland",
+    "shortcode": "CHE",
+    "flag": "\uD83C\uDDE8\uD83C\uDDED",
+    "banned": 0,
+    "currency": "CHF",
+    "symbol": "CHF",
+    "callcode": "41"
+  },
+  {
+    "id": "0x01821BB1C5E5C94FFBF8E4E967C2DBE5",
+    "fullname": "Iceland",
+    "shortcode": "ISL",
+    "flag": "\uD83C\uDDEE\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "ISK",
+    "symbol": "kr",
+    "callcode": "354"
+  },
+  {
+    "id": "0x01821BB1C5E5C94FFBF8E4E967C2DBE6",
+    "fullname": "Turks and Caicos Islands",
+    "shortcode": "TCA",
+    "flag": "\uD83C\uDDF9\uD83C\uDDE8",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "1649"
+  },
+  {
+    "id": "0x01821BB1C5E5C94FFBF8E4E967C2DBE7",
+    "fullname": "Zimbabwe",
+    "shortcode": "ZWE",
+    "flag": "\uD83C\uDDFF\uD83C\uDDFC",
+    "banned": 0,
+    "currency": "ZWL",
+    "symbol": null,
+    "callcode": "263"
+  },
+  {
+    "id": "0x01821BB1C5E61CF66F38976BCE2CBE9F",
+    "fullname": "Brazil",
+    "shortcode": "BRA",
+    "flag": "\uD83C\uDDE7\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "BRL",
+    "symbol": "R$",
+    "callcode": "55"
+  },
+  {
+    "id": "0x01821BB1C5E61CF66F38976BCE2CBEA0",
+    "fullname": "Rwanda",
+    "shortcode": "RWA",
+    "flag": "\uD83C\uDDF7\uD83C\uDDFC",
+    "banned": 0,
+    "currency": "RWF",
+    "symbol": null,
+    "callcode": "250"
+  },
+  {
+    "id": "0x01821BB1C5E61CF66F38976BCE2CBEA1",
+    "fullname": "Liechtenstein",
+    "shortcode": "LIE",
+    "flag": "\uD83C\uDDF1\uD83C\uDDEE",
+    "banned": 0,
+    "currency": "CHF",
+    "symbol": null,
+    "callcode": "423"
+  },
+  {
+    "id": "0x01821BB1C5E61CF66F38976BCE2CBEA2",
+    "fullname": "Uzbekistan",
+    "shortcode": "UZB",
+    "flag": "\uD83C\uDDFA\uD83C\uDDFF",
+    "banned": 0,
+    "currency": "UZS",
+    "symbol": "лв",
+    "callcode": "998"
+  },
+  {
+    "id": "0x01821BB1C5E61CF66F38976BCE2CBEA3",
+    "fullname": "Wallis and Futuna",
+    "shortcode": "WLF",
+    "flag": "\uD83C\uDDFC\uD83C\uDDEB",
+    "banned": 0,
+    "currency": "XPF",
+    "symbol": null,
+    "callcode": "681"
+  },
+  {
+    "id": "0x01821BB1C5E7BA2DB43E3B1037EB5147",
+    "fullname": "Slovakia",
+    "shortcode": "SVK",
+    "flag": "\uD83C\uDDF8\uD83C\uDDF0",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "421"
+  },
+  {
+    "id": "0x01821BB1C5E7BA2DB43E3B1037EB5148",
+    "fullname": "Montserrat",
+    "shortcode": "MSR",
+    "flag": "\uD83C\uDDF2\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "XCD",
+    "symbol": null,
+    "callcode": "1664"
+  },
+  {
+    "id": "0x01821BB1C5E7BA2DB43E3B1037EB5149",
+    "fullname": "United States",
+    "shortcode": "USA",
+    "flag": "\uD83C\uDDFA\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "1201"
+  },
+  {
+    "id": "0x01821BB1C5E7BA2DB43E3B1037EB514A",
+    "fullname": "Bangladesh",
+    "shortcode": "BGD",
+    "flag": "\uD83C\uDDE7\uD83C\uDDE9",
+    "banned": 0,
+    "currency": "BDT",
+    "symbol": null,
+    "callcode": "880"
+  },
+  {
+    "id": "0x01821BB1C5E89AC0A6C35088E12E126B",
+    "fullname": "Gibraltar",
+    "shortcode": "GIB",
+    "flag": "\uD83C\uDDEC\uD83C\uDDEE",
+    "banned": 0,
+    "currency": "GIP",
+    "symbol": "£",
+    "callcode": "350"
+  },
+  {
+    "id": "0x01821BB1C5E89AC0A6C35088E12E126C",
+    "fullname": "Aruba",
+    "shortcode": "ABW",
+    "flag": "\uD83C\uDDE6\uD83C\uDDFC",
+    "banned": 0,
+    "currency": "AWG",
+    "symbol": "ƒ",
+    "callcode": "297"
+  },
+  {
+    "id": "0x01821BB1C5E89AC0A6C35088E12E126D",
+    "fullname": "Panama",
+    "shortcode": "PAN",
+    "flag": "\uD83C\uDDF5\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "PAB",
+    "symbol": null,
+    "callcode": "507"
+  },
+  {
+    "id": "0x01821BB1C5E89AC0A6C35088E12E126E",
+    "fullname": "Philippines",
+    "shortcode": "PHL",
+    "flag": "\uD83C\uDDF5\uD83C\uDDED",
+    "banned": 0,
+    "currency": "PHP",
+    "symbol": "₱",
+    "callcode": "63"
+  },
+  {
+    "id": "0x01821BB1C5E89AC0A6C35088E12E126F",
+    "fullname": "Ecuador",
+    "shortcode": "ECU",
+    "flag": "\uD83C\uDDEA\uD83C\uDDE8",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "593"
+  },
+  {
+    "id": "0x01821BB1C5E9100E85CFC3F68D976375",
+    "fullname": "Russia",
+    "shortcode": "RUS",
+    "flag": "\uD83C\uDDF7\uD83C\uDDFA",
+    "banned": 0,
+    "currency": "RUB",
+    "symbol": "₽",
+    "callcode": "73"
+  },
+  {
+    "id": "0x01821BB1C5E9100E85CFC3F68D976376",
+    "fullname": "Mozambique",
+    "shortcode": "MOZ",
+    "flag": "\uD83C\uDDF2\uD83C\uDDFF",
+    "banned": 0,
+    "currency": "MZN",
+    "symbol": "MT",
+    "callcode": "258"
+  },
+  {
+    "id": "0x01821BB1C5E9100E85CFC3F68D976377",
+    "fullname": "Saint Helena, Ascension and Tristan da Cunha",
+    "shortcode": "SHN",
+    "flag": "\uD83C\uDDF8\uD83C\uDDED",
+    "banned": 0,
+    "currency": "SHP",
+    "symbol": "£",
+    "callcode": "290"
+  },
+  {
+    "id": "0x01821BB1C5E9100E85CFC3F68D976378",
+    "fullname": "Iran",
+    "shortcode": "IRN",
+    "flag": "\uD83C\uDDEE\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "IRR",
+    "symbol": "﷼",
+    "callcode": "98"
+  },
+  {
+    "id": "0x01821BB1C5E9100E85CFC3F68D976379",
+    "fullname": "Canada",
+    "shortcode": "CAN",
+    "flag": "\uD83C\uDDE8\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "CAD",
+    "symbol": "$",
+    "callcode": "1"
+  },
+  {
+    "id": "0x01821BB1C5EA74C2B04C9DECD9B2A525",
+    "fullname": "Afghanistan",
+    "shortcode": "AFG",
+    "flag": "\uD83C\uDDE6\uD83C\uDDEB",
+    "banned": 0,
+    "currency": "AFN",
+    "symbol": "؋",
+    "callcode": "93"
+  },
+  {
+    "id": "0x01821BB1C5EA74C2B04C9DECD9B2A526",
+    "fullname": "Spain",
+    "shortcode": "ESP",
+    "flag": "\uD83C\uDDEA\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "34"
+  },
+  {
+    "id": "0x01821BB1C5EA74C2B04C9DECD9B2A527",
+    "fullname": "Grenada",
+    "shortcode": "GRD",
+    "flag": "\uD83C\uDDEC\uD83C\uDDE9",
+    "banned": 0,
+    "currency": "XCD",
+    "symbol": null,
+    "callcode": "1473"
+  },
+  {
+    "id": "0x01821BB1C5EA74C2B04C9DECD9B2A528",
+    "fullname": "Mayotte",
+    "shortcode": "MYT",
+    "flag": "\uD83C\uDDFE\uD83C\uDDF9",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "262"
+  },
+  {
+    "id": "0x01821BB1C5EBEDA90E9498861D7B93D6",
+    "fullname": "Falkland Islands",
+    "shortcode": "FLK",
+    "flag": "\uD83C\uDDEB\uD83C\uDDF0",
+    "banned": 0,
+    "currency": "FKP",
+    "symbol": "£",
+    "callcode": "500"
+  },
+  {
+    "id": "0x01821BB1C5EBEDA90E9498861D7B93D7",
+    "fullname": "Romania",
+    "shortcode": "ROU",
+    "flag": "\uD83C\uDDF7\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "RON",
+    "symbol": "Lei",
+    "callcode": "40"
+  },
+  {
+    "id": "0x01821BB1C5EBEDA90E9498861D7B93D8",
+    "fullname": "Azerbaijan",
+    "shortcode": "AZE",
+    "flag": "\uD83C\uDDE6\uD83C\uDDFF",
+    "banned": 0,
+    "currency": "AZN",
+    "symbol": null,
+    "callcode": "994"
+  },
+  {
+    "id": "0x01821BB1C5EBEDA90E9498861D7B93D9",
+    "fullname": "Guernsey",
+    "shortcode": "GGY",
+    "flag": "\uD83C\uDDEC\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "44"
+  },
+  {
+    "id": "0x01821BB1C5EBEDA90E9498861D7B93DA",
+    "fullname": "Cambodia",
+    "shortcode": "KHM",
+    "flag": "\uD83C\uDDF0\uD83C\uDDED",
+    "banned": 0,
+    "currency": "KHR",
+    "symbol": "៛",
+    "callcode": "855"
+  },
+  {
+    "id": "0x01821BB1C5EBEDA90E9498861D7B93DB",
+    "fullname": "Suriname",
+    "shortcode": "SUR",
+    "flag": "\uD83C\uDDF8\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "SRD",
+    "symbol": "$",
+    "callcode": "597"
+  },
+  {
+    "id": "0x01821BB1C5ECCB1975B466D6075D347C",
+    "fullname": "Bouvet Island",
+    "shortcode": "BVT",
+    "flag": "\uD83C\uDDE7\uD83C\uDDFB",
+    "banned": 0,
+    "currency": "NOK",
+    "symbol": null,
+    "callcode": "47"
+  },
+  {
+    "id": "0x01821BB1C5ECCB1975B466D6075D347D",
+    "fullname": "Algeria",
+    "shortcode": "DZA",
+    "flag": "\uD83C\uDDE9\uD83C\uDDFF",
+    "banned": 0,
+    "currency": "DZD",
+    "symbol": null,
+    "callcode": "213"
+  },
+  {
+    "id": "0x01821BB1C5ECCB1975B466D6075D347E",
+    "fullname": "Armenia",
+    "shortcode": "ARM",
+    "flag": "\uD83C\uDDE6\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "AMD",
+    "symbol": null,
+    "callcode": "374"
+  },
+  {
+    "id": "0x01821BB1C5ECCB1975B466D6075D347F",
+    "fullname": "French Southern and Antarctic Lands",
+    "shortcode": "ATF",
+    "flag": "\uD83C\uDDF9\uD83C\uDDEB",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "262"
+  },
+  {
+    "id": "0x01821BB1C5ECCB1975B466D6075D3480",
+    "fullname": "Morocco",
+    "shortcode": "MAR",
+    "flag": "\uD83C\uDDF2\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "MAD",
+    "symbol": "د.إ",
+    "callcode": "212"
+  },
+  {
+    "id": "0x01821BB1C5ED53D88BE6555A73B24C1B",
+    "fullname": "Barbados",
+    "shortcode": "BRB",
+    "flag": "\uD83C\uDDE7\uD83C\uDDE7",
+    "banned": 0,
+    "currency": "BBD",
+    "symbol": "$",
+    "callcode": "1246"
+  },
+  {
+    "id": "0x01821BB1C5ED53D88BE6555A73B24C1C",
+    "fullname": "Angola",
+    "shortcode": "AGO",
+    "flag": "\uD83C\uDDE6\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "AOA",
+    "symbol": null,
+    "callcode": "244"
+  },
+  {
+    "id": "0x01821BB1C5ED53D88BE6555A73B24C1D",
+    "fullname": "Solomon Islands",
+    "shortcode": "SLB",
+    "flag": "\uD83C\uDDF8\uD83C\uDDE7",
+    "banned": 0,
+    "currency": "SDB",
+    "symbol": "$",
+    "callcode": "677"
+  },
+  {
+    "id": "0x01821BB1C5ED53D88BE6555A73B24C1E",
+    "fullname": "Mali",
+    "shortcode": "MLI",
+    "flag": "\uD83C\uDDF2\uD83C\uDDF1",
+    "banned": 0,
+    "currency": "XOF",
+    "symbol": null,
+    "callcode": "223"
+  },
+  {
+    "id": "0x01821BB1C5EEF1D3CD018C3E1F72D865",
+    "fullname": "New Caledonia",
+    "shortcode": "NCL",
+    "flag": "\uD83C\uDDF3\uD83C\uDDE8",
+    "banned": 0,
+    "currency": "XPF",
+    "symbol": null,
+    "callcode": "687"
+  },
+  {
+    "id": "0x01821BB1C5EEF1D3CD018C3E1F72D866",
+    "fullname": "Belgium",
+    "shortcode": "BEL",
+    "flag": "\uD83C\uDDE7\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "32"
+  },
+  {
+    "id": "0x01821BB1C5EEF1D3CD018C3E1F72D867",
+    "fullname": "Fiji",
+    "shortcode": "FJI",
+    "flag": "\uD83C\uDDEB\uD83C\uDDEF",
+    "banned": 0,
+    "currency": "FJD",
+    "symbol": "$",
+    "callcode": "679"
+  },
+  {
+    "id": "0x01821BB1C5EEF1D3CD018C3E1F72D868",
+    "fullname": "Latvia",
+    "shortcode": "LVA",
+    "flag": "\uD83C\uDDF1\uD83C\uDDFB",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "371"
+  },
+  {
+    "id": "0x01821BB1C5EF25813D2853A364B0EBCA",
+    "fullname": "Mexico",
+    "shortcode": "MEX",
+    "flag": "\uD83C\uDDF2\uD83C\uDDFD",
+    "banned": 0,
+    "currency": "MXN",
+    "symbol": null,
+    "callcode": "52"
+  },
+  {
+    "id": "0x01821BB1C5EF25813D2853A364B0EBCB",
+    "fullname": "Macau",
+    "shortcode": "MAC",
+    "flag": "\uD83C\uDDF2\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "MOP",
+    "symbol": null,
+    "callcode": "853"
+  },
+  {
+    "id": "0x01821BB1C5EF25813D2853A364B0EBCC",
+    "fullname": "Bahrain",
+    "shortcode": "BHR",
+    "flag": "\uD83C\uDDE7\uD83C\uDDED",
+    "banned": 0,
+    "currency": "BHD",
+    "symbol": null,
+    "callcode": "973"
+  },
+  {
+    "id": "0x01821BB1C5F03BBDD9743E850FBC893D",
+    "fullname": "Yemen",
+    "shortcode": "YEM",
+    "flag": "\uD83C\uDDFE\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "YER",
+    "symbol": null,
+    "callcode": "967"
+  },
+  {
+    "id": "0x01821BB1C5F03BBDD9743E850FBC893F",
+    "fullname": "United States Virgin Islands",
+    "shortcode": "VIR",
+    "flag": "\uD83C\uDDFB\uD83C\uDDEE",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "1340"
+  },
+  {
+    "id": "0x01821BB1C5F03BBDD9743E850FBC8940",
+    "fullname": "Mauritania",
+    "shortcode": "MRT",
+    "flag": "\uD83C\uDDF2\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "MRU",
+    "symbol": null,
+    "callcode": "222"
+  },
+  {
+    "id": "0x01821BB1C5F1D6699C85890CF00907CC",
+    "fullname": "Cook Islands",
+    "shortcode": "COK",
+    "flag": "\uD83C\uDDE8\uD83C\uDDF0",
+    "banned": 0,
+    "currency": "NZD",
+    "symbol": "$",
+    "callcode": "682"
+  },
+  {
+    "id": "0x01821BB1C5F1D6699C85890CF00907CD",
+    "fullname": "Monaco",
+    "shortcode": "MCO",
+    "flag": "\uD83C\uDDF2\uD83C\uDDE8",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "377"
+  },
+  {
+    "id": "0x01821BB1C5F1D6699C85890CF00907CE",
+    "fullname": "Niue",
+    "shortcode": "NIU",
+    "flag": "\uD83C\uDDF3\uD83C\uDDFA",
+    "banned": 0,
+    "currency": "NZD",
+    "symbol": "$",
+    "callcode": "683"
+  },
+  {
+    "id": "0x01821BB1C5F2BD5249CC0A1473B795E7",
+    "fullname": "Peru",
+    "shortcode": "PER",
+    "flag": "\uD83C\uDDF5\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "PEN",
+    "symbol": "S/.",
+    "callcode": "51"
+  },
+  {
+    "id": "0x01821BB1C5F2BD5249CC0A1473B795E8",
+    "fullname": "British Indian Ocean Territory",
+    "shortcode": "IOT",
+    "flag": "\uD83C\uDDEE\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "GBP",
+    "symbol": "£",
+    "callcode": "246"
+  },
+  {
+    "id": "0x01821BB1C5F2BD5249CC0A1473B795E9",
+    "fullname": "Serbia",
+    "shortcode": "SRB",
+    "flag": "\uD83C\uDDF7\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "RSD",
+    "symbol": "Дин.",
+    "callcode": "381"
+  },
+  {
+    "id": "0x01821BB1C5F2BD5249CC0A1473B795EA",
+    "fullname": "Tanzania",
+    "shortcode": "TZA",
+    "flag": "\uD83C\uDDF9\uD83C\uDDFF",
+    "banned": 0,
+    "currency": "TZN",
+    "symbol": null,
+    "callcode": "255"
+  },
+  {
+    "id": "0x01821BB1C5F3DAD848A11BBB859B16DB",
+    "fullname": "Pakistan",
+    "shortcode": "PAK",
+    "flag": "\uD83C\uDDF5\uD83C\uDDF0",
+    "banned": 0,
+    "currency": "PKR",
+    "symbol": "Rs",
+    "callcode": "92"
+  },
+  {
+    "id": "0x01821BB1C5F3DAD848A11BBB859B16DC",
+    "fullname": "Belarus",
+    "shortcode": "BLR",
+    "flag": "\uD83C\uDDE7\uD83C\uDDFE",
+    "banned": 0,
+    "currency": "BYN",
+    "symbol": "Br",
+    "callcode": "375"
+  },
+  {
+    "id": "0x01821BB1C5F3DAD848A11BBB859B16DD",
+    "fullname": "Saint Lucia",
+    "shortcode": "LCA",
+    "flag": "\uD83C\uDDF1\uD83C\uDDE8",
+    "banned": 0,
+    "currency": null,
+    "symbol": null,
+    "callcode": "1758"
+  },
+  {
+    "id": "0x01821BB1C5F3DAD848A11BBB859B16DE",
+    "fullname": "Puerto Rico",
+    "shortcode": "PRI",
+    "flag": "\uD83C\uDDF5\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "1787"
+  },
+  {
+    "id": "0x01821BB1C5F42FFEE3809E9B3E78CC5B",
+    "fullname": "Myanmar",
+    "shortcode": "MMR",
+    "flag": "\uD83C\uDDF2\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "MMK",
+    "symbol": null,
+    "callcode": "95"
+  },
+  {
+    "id": "0x01821BB1C5F42FFEE3809E9B3E78CC5C",
+    "fullname": "Seychelles",
+    "shortcode": "SYC",
+    "flag": "\uD83C\uDDF8\uD83C\uDDE8",
+    "banned": 0,
+    "currency": "SCR",
+    "symbol": "Rs",
+    "callcode": "248"
+  },
+  {
+    "id": "0x01821BB1C5F42FFEE3809E9B3E78CC5D",
+    "fullname": "Bermuda",
+    "shortcode": "BMU",
+    "flag": "\uD83C\uDDE7\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "BMD",
+    "symbol": null,
+    "callcode": "1441"
+  },
+  {
+    "id": "0x01821BB1C5F42FFEE3809E9B3E78CC5E",
+    "fullname": "Ukraine",
+    "shortcode": "UKR",
+    "flag": "\uD83C\uDDFA\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "UAH",
+    "symbol": "₴",
+    "callcode": "380"
+  },
+  {
+    "id": "0x01821BB1C5F59A87803A2DAC8210B6CC",
+    "fullname": "Gambia",
+    "shortcode": "GMB",
+    "flag": "\uD83C\uDDEC\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "GMD",
+    "symbol": null,
+    "callcode": "220"
+  },
+  {
+    "id": "0x01821BB1C5F59A87803A2DAC8210B6CD",
+    "fullname": "Paraguay",
+    "shortcode": "PRY",
+    "flag": "\uD83C\uDDF5\uD83C\uDDFE",
+    "banned": 0,
+    "currency": "PYG",
+    "symbol": "Gs",
+    "callcode": "595"
+  },
+  {
+    "id": "0x01821BB1C5F59A87803A2DAC8210B6CE",
+    "fullname": "São Tomé and Príncipe",
+    "shortcode": "STP",
+    "flag": "\uD83C\uDDF8\uD83C\uDDF9",
+    "banned": 0,
+    "currency": null,
+    "symbol": null,
+    "callcode": "239"
+  },
+  {
+    "id": "0x01821BB1C5F59A87803A2DAC8210B6CF",
+    "fullname": "Denmark",
+    "shortcode": "DNK",
+    "flag": "\uD83C\uDDE9\uD83C\uDDF0",
+    "banned": 0,
+    "currency": "DKK",
+    "symbol": "Kr",
+    "callcode": "45"
+  },
+  {
+    "id": "0x01821BB1C5F59A87803A2DAC8210B6D0",
+    "fullname": "South Korea",
+    "shortcode": "KOR",
+    "flag": "\uD83C\uDDF0\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "KRW",
+    "symbol": "₩",
+    "callcode": "82"
+  },
+  {
+    "id": "0x01821BB1C5F6E97CEDEAFA43B232EF98",
+    "fullname": "Saint Pierre and Miquelon",
+    "shortcode": "SPM",
+    "flag": "\uD83C\uDDF5\uD83C\uDDF2",
+    "banned": 0,
+    "currency": null,
+    "symbol": null,
+    "callcode": "508"
+  },
+  {
+    "id": "0x01821BB1C5F6E97CEDEAFA43B232EF99",
+    "fullname": "Tunisia",
+    "shortcode": "TUN",
+    "flag": "\uD83C\uDDF9\uD83C\uDDF3",
+    "banned": 0,
+    "currency": "TND",
+    "symbol": null,
+    "callcode": "216"
+  },
+  {
+    "id": "0x01821BB1C5F6E97CEDEAFA43B232EF9A",
+    "fullname": "Kuwait",
+    "shortcode": "KWT",
+    "flag": "\uD83C\uDDF0\uD83C\uDDFC",
+    "banned": 0,
+    "currency": "KWD",
+    "symbol": null,
+    "callcode": "965"
+  },
+  {
+    "id": "0x01821BB1C5F76D4800387564101BB670",
+    "fullname": "Italy",
+    "shortcode": "ITA",
+    "flag": "\uD83C\uDDEE\uD83C\uDDF9",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "39"
+  },
+  {
+    "id": "0x01821BB1C5F76D4800387564101BB671",
+    "fullname": "South Georgia",
+    "shortcode": "SGS",
+    "flag": "\uD83C\uDDEC\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "GBP",
+    "symbol": "£",
+    "callcode": "500"
+  },
+  {
+    "id": "0x01821BB1C5F76D4800387564101BB672",
+    "fullname": "Åland Islands",
+    "shortcode": "ALA",
+    "flag": "\uD83C\uDDE6\uD83C\uDDFD",
+    "banned": 0,
+    "currency": null,
+    "symbol": null,
+    "callcode": "35818"
+  },
+  {
+    "id": "0x01821BB1C5F76D4800387564101BB673",
+    "fullname": "Cyprus",
+    "shortcode": "CYP",
+    "flag": "\uD83C\uDDE8\uD83C\uDDFE",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "357"
+  },
+  {
+    "id": "0x01821BB1C5F8B0CF3BE2E6D468C06801",
+    "fullname": "Luxembourg",
+    "shortcode": "LUX",
+    "flag": "\uD83C\uDDF1\uD83C\uDDFA",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "352"
+  },
+  {
+    "id": "0x01821BB1C5F8B0CF3BE2E6D468C06802",
+    "fullname": "Papua New Guinea",
+    "shortcode": "PNG",
+    "flag": "\uD83C\uDDF5\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "PGK",
+    "symbol": null,
+    "callcode": "675"
+  },
+  {
+    "id": "0x01821BB1C5F8B0CF3BE2E6D468C06803",
+    "fullname": "Togo",
+    "shortcode": "TGO",
+    "flag": "\uD83C\uDDF9\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "XOF",
+    "symbol": "CFA",
+    "callcode": "228"
+  },
+  {
+    "id": "0x01821BB1C5F93B491A28EAAD9CF452D1",
+    "fullname": "Hong Kong",
+    "shortcode": "HKG",
+    "flag": "\uD83C\uDDED\uD83C\uDDF0",
+    "banned": 0,
+    "currency": "HKD",
+    "symbol": "$",
+    "callcode": "852"
+  },
+  {
+    "id": "0x01821BB1C5F93B491A28EAAD9CF452D2",
+    "fullname": "Kiribati",
+    "shortcode": "KIR",
+    "flag": "\uD83C\uDDF0\uD83C\uDDEE",
+    "banned": 0,
+    "currency": "KID",
+    "symbol": null,
+    "callcode": "686"
+  },
+  {
+    "id": "0x01821BB1C5F93B491A28EAAD9CF452D3",
+    "fullname": "Madagascar",
+    "shortcode": "MDG",
+    "flag": "\uD83C\uDDF2\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "MGA",
+    "symbol": null,
+    "callcode": "261"
+  },
+  {
+    "id": "0x01821BB1C5F93B491A28EAAD9CF452D4",
+    "fullname": "United Kingdom",
+    "shortcode": "GBR",
+    "flag": "\uD83C\uDDEC\uD83C\uDDE7",
+    "banned": 0,
+    "currency": "GBP",
+    "symbol": "£",
+    "callcode": "44"
+  },
+  {
+    "id": "0x01821BB1C5FA9C01896A65D036393601",
+    "fullname": "Bolivia",
+    "shortcode": "BOL",
+    "flag": "\uD83C\uDDE7\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "BOB",
+    "symbol": "$b",
+    "callcode": "591"
+  },
+  {
+    "id": "0x01821BB1C5FA9C01896A65D036393602",
+    "fullname": "Isle of Man",
+    "shortcode": "IMN",
+    "flag": "\uD83C\uDDEE\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "44"
+  },
+  {
+    "id": "0x01821BB1C5FA9C01896A65D036393603",
+    "fullname": "Slovenia",
+    "shortcode": "SVN",
+    "flag": "\uD83C\uDDF8\uD83C\uDDEE",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "386"
+  },
+  {
+    "id": "0x01821BB1C5FA9C01896A65D036393604",
+    "fullname": "Réunion",
+    "shortcode": "REU",
+    "flag": "\uD83C\uDDF7\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "262"
+  },
+  {
+    "id": "0x01821BB1C5FA9C01896A65D036393605",
+    "fullname": "Kyrgyzstan",
+    "shortcode": "KGZ",
+    "flag": "\uD83C\uDDF0\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "KGS",
+    "symbol": null,
+    "callcode": "996"
+  },
+  {
+    "id": "0x01821BB1C5FB8BD085580B4FC7F352EE",
+    "fullname": "New Zealand",
+    "shortcode": "NZL",
+    "flag": "\uD83C\uDDF3\uD83C\uDDFF",
+    "banned": 0,
+    "currency": "NZD",
+    "symbol": "$",
+    "callcode": "64"
+  },
+  {
+    "id": "0x01821BB1C5FB8BD085580B4FC7F352EF",
+    "fullname": "Kazakhstan",
+    "shortcode": "KAZ",
+    "flag": "\uD83C\uDDF0\uD83C\uDDFF",
+    "banned": 0,
+    "currency": "KZT",
+    "symbol": "лв",
+    "callcode": "76"
+  },
+  {
+    "id": "0x01821BB1C5FB8BD085580B4FC7F352F0",
+    "fullname": "North Macedonia",
+    "shortcode": "MKD",
+    "flag": "\uD83C\uDDF2\uD83C\uDDF0",
+    "banned": 0,
+    "currency": null,
+    "symbol": null,
+    "callcode": "389"
+  },
+  {
+    "id": "0x01821BB1C5FB8BD085580B4FC7F352F1",
+    "fullname": "Heard Island and McDonald Islands",
+    "shortcode": "HMD",
+    "flag": "\uD83C\uDDED\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "AUD",
+    "symbol": "$",
+    "callcode": null
+  },
+  {
+    "id": "0x01821BB1C5FCEAC185D700D74072603E",
+    "fullname": "Tonga",
+    "shortcode": "TON",
+    "flag": "\uD83C\uDDF9\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "TOP",
+    "symbol": null,
+    "callcode": "676"
+  },
+  {
+    "id": "0x01821BB1C5FCEAC185D700D74072603F",
+    "fullname": "Kosovo",
+    "shortcode": "UNK",
+    "flag": "\uD83C\uDDFD\uD83C\uDDF0",
+    "banned": 0,
+    "currency": null,
+    "symbol": null,
+    "callcode": "383"
+  },
+  {
+    "id": "0x01821BB1C5FCEAC185D700D740726040",
+    "fullname": "Chile",
+    "shortcode": "CHL",
+    "flag": "\uD83C\uDDE8\uD83C\uDDF1",
+    "banned": 0,
+    "currency": "CLP",
+    "symbol": "$",
+    "callcode": "56"
+  },
+  {
+    "id": "0x01821BB1C5FD073100A51CA1A65C57A0",
+    "fullname": "Burundi",
+    "shortcode": "BDI",
+    "flag": "\uD83C\uDDE7\uD83C\uDDEE",
+    "banned": 0,
+    "currency": "BIF",
+    "symbol": null,
+    "callcode": "257"
+  },
+  {
+    "id": "0x01821BB1C5FD073100A51CA1A65C57A1",
+    "fullname": "Dominican Republic",
+    "shortcode": "DOM",
+    "flag": "\uD83C\uDDE9\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "DOP",
+    "symbol": "RD$",
+    "callcode": "1809"
+  },
+  {
+    "id": "0x01821BB1C5FD073100A51CA1A65C57A2",
+    "fullname": "Western Sahara",
+    "shortcode": "ESH",
+    "flag": "\uD83C\uDDEA\uD83C\uDDED",
+    "banned": 0,
+    "currency": "MAD",
+    "symbol": null,
+    "callcode": "2125288"
+  },
+  {
+    "id": "0x01821BB1C5FD073100A51CA1A65C57A3",
+    "fullname": "Lesotho",
+    "shortcode": "LSO",
+    "flag": "\uD83C\uDDF1\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "LSL",
+    "symbol": null,
+    "callcode": "266"
+  },
+  {
+    "id": "0x01821BB1C5FD073100A51CA1A65C57A4",
+    "fullname": "North Korea",
+    "shortcode": "PRK",
+    "flag": "\uD83C\uDDF0\uD83C\uDDF5",
+    "banned": 0,
+    "currency": "KPW",
+    "symbol": null,
+    "callcode": "850"
+  },
+  {
+    "id": "0x01821BB1C5FE007E44E105D7C76E83FE",
+    "fullname": "Cocos (Keeling) Islands",
+    "shortcode": "CCK",
+    "flag": "\uD83C\uDDE8\uD83C\uDDE8",
+    "banned": 0,
+    "currency": "AUD",
+    "symbol": "$",
+    "callcode": "61"
+  },
+  {
+    "id": "0x01821BB1C5FE007E44E105D7C76E83FF",
+    "fullname": "Bhutan",
+    "shortcode": "BTN",
+    "flag": "\uD83C\uDDE7\uD83C\uDDF9",
+    "banned": 0,
+    "currency": "BTN",
+    "symbol": null,
+    "callcode": "975"
+  },
+  {
+    "id": "0x01821BB1C5FE007E44E105D7C76E8400",
+    "fullname": "Somalia",
+    "shortcode": "SOM",
+    "flag": "\uD83C\uDDF8\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "SOS",
+    "symbol": null,
+    "callcode": "252"
+  },
+  {
+    "id": "0x01821BB1C5FE007E44E105D7C76E8401",
+    "fullname": "Netherlands",
+    "shortcode": "NLD",
+    "flag": "\uD83C\uDDF3\uD83C\uDDF1",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "31"
+  },
+  {
+    "id": "0x01821BB1C5FF614107CE0C6F49741F9D",
+    "fullname": "Tajikistan",
+    "shortcode": "TJK",
+    "flag": "\uD83C\uDDF9\uD83C\uDDEF",
+    "banned": 0,
+    "currency": "TJS",
+    "symbol": "$",
+    "callcode": "992"
+  },
+  {
+    "id": "0x01821BB1C5FF614107CE0C6F49741F9E",
+    "fullname": "Timor-Leste",
+    "shortcode": "TLS",
+    "flag": "\uD83C\uDDF9\uD83C\uDDF1",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "670"
+  },
+  {
+    "id": "0x01821BB1C5FF614107CE0C6F49741F9F",
+    "fullname": "Lebanon",
+    "shortcode": "LBN",
+    "flag": "\uD83C\uDDF1\uD83C\uDDE7",
+    "banned": 0,
+    "currency": "LBP",
+    "symbol": "£",
+    "callcode": "961"
+  },
+  {
+    "id": "0x01821BB1C5FF614107CE0C6F49741FA0",
+    "fullname": "Sint Maarten",
+    "shortcode": "SXM",
+    "flag": "\uD83C\uDDF8\uD83C\uDDFD",
+    "banned": 0,
+    "currency": "ANG",
+    "symbol": null,
+    "callcode": "1721"
+  },
+  {
+    "id": "0x01821BB1C600BE4C21270EE15D1632E5",
+    "fullname": "Uganda",
+    "shortcode": "UGA",
+    "flag": "\uD83C\uDDFA\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "UGH",
+    "symbol": null,
+    "callcode": "256"
+  },
+  {
+    "id": "0x01821BB1C600BE4C21270EE15D1632E6",
+    "fullname": "Ghana",
+    "shortcode": "GHA",
+    "flag": "\uD83C\uDDEC\uD83C\uDDED",
+    "banned": 0,
+    "currency": "GHS",
+    "symbol": "¢",
+    "callcode": "233"
+  },
+  {
+    "id": "0x01821BB1C600BE4C21270EE15D1632E7",
+    "fullname": "Albania",
+    "shortcode": "ALB",
+    "flag": "\uD83C\uDDE6\uD83C\uDDF1",
+    "banned": 0,
+    "currency": "ALL",
+    "symbol": "Lek",
+    "callcode": "355"
+  },
+  {
+    "id": "0x01821BB1C6012AA0F237BD67FF25DAF3",
+    "fullname": "Palau",
+    "shortcode": "PLW",
+    "flag": "\uD83C\uDDF5\uD83C\uDDFC",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "680"
+  },
+  {
+    "id": "0x01821BB1C6012AA0F237BD67FF25DAF4",
+    "fullname": "Micronesia",
+    "shortcode": "FSM",
+    "flag": "\uD83C\uDDEB\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "691"
+  },
+  {
+    "id": "0x01821BB1C6012AA0F237BD67FF25DAF5",
+    "fullname": "Curaçao",
+    "shortcode": "CUW",
+    "flag": "\uD83C\uDDE8\uD83C\uDDFC",
+    "banned": 0,
+    "currency": null,
+    "symbol": null,
+    "callcode": "599"
+  },
+  {
+    "id": "0x01821BB1C6029DB2313DCB8BAD65E304",
+    "fullname": "Finland",
+    "shortcode": "FIN",
+    "flag": "\uD83C\uDDEB\uD83C\uDDEE",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "358"
+  },
+  {
+    "id": "0x01821BB1C6029DB2313DCB8BAD65E305",
+    "fullname": "Jersey",
+    "shortcode": "JEY",
+    "flag": "\uD83C\uDDEF\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "JEP",
+    "symbol": "£",
+    "callcode": "44"
+  },
+  {
+    "id": "0x01821BB1C6029DB2313DCB8BAD65E306",
+    "fullname": "Namibia",
+    "shortcode": "NAM",
+    "flag": "\uD83C\uDDF3\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "NAD",
+    "symbol": "$",
+    "callcode": "264"
+  },
+  {
+    "id": "0x01821BB1C6029DB2313DCB8BAD65E307",
+    "fullname": "Vietnam",
+    "shortcode": "VNM",
+    "flag": "\uD83C\uDDFB\uD83C\uDDF3",
+    "banned": 0,
+    "currency": "VND",
+    "symbol": "₫",
+    "callcode": "84"
+  },
+  {
+    "id": "0x01821BB1C6038D649755B6472AFB4B92",
+    "fullname": "Antarctica",
+    "shortcode": "ATA",
+    "flag": "\uD83C\uDDE6\uD83C\uDDF6",
+    "banned": 0,
+    "currency": null,
+    "symbol": null,
+    "callcode": "672"
+  },
+  {
+    "id": "0x01821BB1C6038D649755B6472AFB4B93",
+    "fullname": "Palestine",
+    "shortcode": "PSE",
+    "flag": "\uD83C\uDDF5\uD83C\uDDF8",
+    "banned": 0,
+    "currency": "ILS",
+    "symbol": null,
+    "callcode": "970"
+  },
+  {
+    "id": "0x01821BB1C6038D649755B6472AFB4B94",
+    "fullname": "Turkey",
+    "shortcode": "TUR",
+    "flag": "\uD83C\uDDF9\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "TRY",
+    "symbol": "₺",
+    "callcode": "90"
+  },
+  {
+    "id": "0x01821BB1C6038D649755B6472AFB4B95",
+    "fullname": "Moldova",
+    "shortcode": "MDA",
+    "flag": "\uD83C\uDDF2\uD83C\uDDE9",
+    "banned": 0,
+    "currency": "MDL",
+    "symbol": null,
+    "callcode": "373"
+  },
+  {
+    "id": "0x01821BB1C6048EA56D8CE39B332F6326",
+    "fullname": "Saint Kitts and Nevis",
+    "shortcode": "KNA",
+    "flag": "\uD83C\uDDF0\uD83C\uDDF3",
+    "banned": 0,
+    "currency": "XCD",
+    "symbol": null,
+    "callcode": "1869"
+  },
+  {
+    "id": "0x01821BB1C6048EA56D8CE39B332F6327",
+    "fullname": "Australia",
+    "shortcode": "AUS",
+    "flag": "\uD83C\uDDE6\uD83C\uDDFA",
+    "banned": 0,
+    "currency": "AUD",
+    "symbol": "$",
+    "callcode": "61"
+  },
+  {
+    "id": "0x01821BB1C6048EA56D8CE39B332F6328",
+    "fullname": "Japan",
+    "shortcode": "JPN",
+    "flag": "\uD83C\uDDEF\uD83C\uDDF5",
+    "banned": 0,
+    "currency": "JPY",
+    "symbol": "¥",
+    "callcode": "81"
+  },
+  {
+    "id": "0x01821BB1C6048EA56D8CE39B332F6329",
+    "fullname": "Croatia",
+    "shortcode": "HRV",
+    "flag": "\uD83C\uDDED\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "HRK",
+    "symbol": "kn",
+    "callcode": "385"
+  },
+  {
+    "id": "0x01821BB1C6053DCA836E6F67B7BE63C5",
+    "fullname": "Burkina Faso",
+    "shortcode": "BFA",
+    "flag": "\uD83C\uDDE7\uD83C\uDDEB",
+    "banned": 0,
+    "currency": "XFO",
+    "symbol": null,
+    "callcode": "226"
+  },
+  {
+    "id": "0x01821BB1C6053DCA836E6F67B7BE63C6",
+    "fullname": "Indonesia",
+    "shortcode": "IDN",
+    "flag": "\uD83C\uDDEE\uD83C\uDDE9",
+    "banned": 0,
+    "currency": "IDR",
+    "symbol": "Rp",
+    "callcode": "62"
+  },
+  {
+    "id": "0x01821BB1C6053DCA836E6F67B7BE63C7",
+    "fullname": "Turkmenistan",
+    "shortcode": "TKM",
+    "flag": "\uD83C\uDDF9\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "TMT",
+    "symbol": null,
+    "callcode": "993"
+  },
+  {
+    "id": "0x01821BB1C606D21172D6785FA5EC66DD",
+    "fullname": "Republic of the Congo",
+    "shortcode": "COG",
+    "flag": "\uD83C\uDDE8\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "CDF",
+    "symbol": null,
+    "callcode": "242"
+  },
+  {
+    "id": "0x01821BB1C606D21172D6785FA5EC66DE",
+    "fullname": "Vanuatu",
+    "shortcode": "VUT",
+    "flag": "\uD83C\uDDFB\uD83C\uDDFA",
+    "banned": 0,
+    "currency": "VUV",
+    "symbol": null,
+    "callcode": "678"
+  },
+  {
+    "id": "0x01821BB1C606D21172D6785FA5EC66DF",
+    "fullname": "Belize",
+    "shortcode": "BLZ",
+    "flag": "\uD83C\uDDE7\uD83C\uDDFF",
+    "banned": 0,
+    "currency": "BZD",
+    "symbol": "BZ$",
+    "callcode": "501"
+  },
+  {
+    "id": "0x01821BB1C606D21172D6785FA5EC66E0",
+    "fullname": "Ethiopia",
+    "shortcode": "ETH",
+    "flag": "\uD83C\uDDEA\uD83C\uDDF9",
+    "banned": 0,
+    "currency": "ETB",
+    "symbol": null,
+    "callcode": "251"
+  },
+  {
+    "id": "0x01821BB1C606D21172D6785FA5EC66E1",
+    "fullname": "Honduras",
+    "shortcode": "HND",
+    "flag": "\uD83C\uDDED\uD83C\uDDF3",
+    "banned": 0,
+    "currency": "HNL",
+    "symbol": "L",
+    "callcode": "504"
+  },
+  {
+    "id": "0x01821BB1C6075887694836E0EABE0FF8",
+    "fullname": "Poland",
+    "shortcode": "POL",
+    "flag": "\uD83C\uDDF5\uD83C\uDDF1",
+    "banned": 0,
+    "currency": "PLN",
+    "symbol": "zł",
+    "callcode": "48"
+  },
+  {
+    "id": "0x01821BB1C6075887694836E0EABE0FF9",
+    "fullname": "Nauru",
+    "shortcode": "NRU",
+    "flag": "\uD83C\uDDF3\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "AUD",
+    "symbol": "$",
+    "callcode": "674"
+  },
+  {
+    "id": "0x01821BB1C608AB11FE25873A92412979",
+    "fullname": "Norfolk Island",
+    "shortcode": "NFK",
+    "flag": "\uD83C\uDDF3\uD83C\uDDEB",
+    "banned": 0,
+    "currency": "AUD",
+    "symbol": "$",
+    "callcode": "672"
+  },
+  {
+    "id": "0x01821BB1C608AB11FE25873A9241297A",
+    "fullname": "Qatar",
+    "shortcode": "QAT",
+    "flag": "\uD83C\uDDF6\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "QAR",
+    "symbol": "﷼",
+    "callcode": "974"
+  },
+  {
+    "id": "0x01821BB1C608AB11FE25873A9241297B",
+    "fullname": "Haiti",
+    "shortcode": "HTI",
+    "flag": "\uD83C\uDDED\uD83C\uDDF9",
+    "banned": 0,
+    "currency": "HTG",
+    "symbol": null,
+    "callcode": "509"
+  },
+  {
+    "id": "0x01821BB1C608AB11FE25873A9241297C",
+    "fullname": "Uruguay",
+    "shortcode": "URY",
+    "flag": "\uD83C\uDDFA\uD83C\uDDFE",
+    "banned": 0,
+    "currency": "UYU",
+    "symbol": "$U",
+    "callcode": "598"
+  },
+  {
+    "id": "0x01821BB1C609E5162CC2A672A2B6F361",
+    "fullname": "Kenya",
+    "shortcode": "KEN",
+    "flag": "\uD83C\uDDF0\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "KES",
+    "symbol": null,
+    "callcode": "254"
+  },
+  {
+    "id": "0x01821BB1C609E5162CC2A672A2B6F362",
+    "fullname": "Equatorial Guinea",
+    "shortcode": "GNQ",
+    "flag": "\uD83C\uDDEC\uD83C\uDDF6",
+    "banned": 0,
+    "currency": null,
+    "symbol": null,
+    "callcode": "240"
+  },
+  {
+    "id": "0x01821BB1C609E5162CC2A672A2B6F363",
+    "fullname": "Benin",
+    "shortcode": "BEN",
+    "flag": "\uD83C\uDDE7\uD83C\uDDEF",
+    "banned": 0,
+    "currency": "XOF",
+    "symbol": null,
+    "callcode": "229"
+  },
+  {
+    "id": "0x01821BB1C60A8B47BD485DD5B83E9207",
+    "fullname": "France",
+    "shortcode": "FRA",
+    "flag": "\uD83C\uDDEB\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "33"
+  },
+  {
+    "id": "0x01821BB1C60A8B47BD485DD5B83E9208",
+    "fullname": "Thailand",
+    "shortcode": "THA",
+    "flag": "\uD83C\uDDF9\uD83C\uDDED",
+    "banned": 0,
+    "currency": "THB",
+    "symbol": null,
+    "callcode": "66"
+  },
+  {
+    "id": "0x01821BB1C60A8B47BD485DD5B83E9209",
+    "fullname": "Guam",
+    "shortcode": "GUM",
+    "flag": "\uD83C\uDDEC\uD83C\uDDFA",
+    "banned": 0,
+    "currency": "USD",
+    "symbol": "$",
+    "callcode": "1671"
+  },
+  {
+    "id": "0x01821BB1C60A8B47BD485DD5B83E920A",
+    "fullname": "Saint Martin",
+    "shortcode": "MAF",
+    "flag": "\uD83C\uDDF2\uD83C\uDDEB",
+    "banned": 0,
+    "currency": null,
+    "symbol": null,
+    "callcode": "590"
+  },
+  {
+    "id": "0x01821BB1C60B637E5B10E50C30530F9C",
+    "fullname": "India",
+    "shortcode": "IND",
+    "flag": "\uD83C\uDDEE\uD83C\uDDF3",
+    "banned": 0,
+    "currency": "INR",
+    "symbol": "₹",
+    "callcode": "91"
+  },
+  {
+    "id": "0x01821BB1C60B637E5B10E50C30530F9D",
+    "fullname": "Jordan",
+    "shortcode": "JOR",
+    "flag": "\uD83C\uDDEF\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "JOD",
+    "symbol": "$",
+    "callcode": "962"
+  },
+  {
+    "id": "0x01821BB1C60B637E5B10E50C30530F9E",
+    "fullname": "Costa Rica",
+    "shortcode": "CRI",
+    "flag": "\uD83C\uDDE8\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "CRC",
+    "symbol": "₡",
+    "callcode": "506"
+  },
+  {
+    "id": "0x01821BB1C60B637E5B10E50C30530F9F",
+    "fullname": "Nepal",
+    "shortcode": "NPL",
+    "flag": "\uD83C\uDDF3\uD83C\uDDF5",
+    "banned": 0,
+    "currency": "NPR",
+    "symbol": "Rs",
+    "callcode": "977"
+  },
+  {
+    "id": "0x01821BB1C60CF2A5F1F479C9F53EF1DA",
+    "fullname": "Cape Verde",
+    "shortcode": "CPV",
+    "flag": "\uD83C\uDDE8\uD83C\uDDFB",
+    "banned": 0,
+    "currency": "CVE",
+    "symbol": null,
+    "callcode": "238"
+  },
+  {
+    "id": "0x01821BB1C60CF2A5F1F479C9F53EF1DB",
+    "fullname": "Trinidad and Tobago",
+    "shortcode": "TTO",
+    "flag": "\uD83C\uDDF9\uD83C\uDDF9",
+    "banned": 0,
+    "currency": "TTD",
+    "symbol": "$",
+    "callcode": "1868"
+  },
+  {
+    "id": "0x01821BB1C60CF2A5F1F479C9F53EF1DC",
+    "fullname": "South Africa",
+    "shortcode": "ZAF",
+    "flag": "\uD83C\uDDFF\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "ZAR",
+    "symbol": "R",
+    "callcode": "27"
+  },
+  {
+    "id": "0x01821BB1C60CF2A5F1F479C9F53EF1DD",
+    "fullname": "Gabon",
+    "shortcode": "GAB",
+    "flag": "\uD83C\uDDEC\uD83C\uDDE6",
+    "banned": 0,
+    "currency": "XAF",
+    "symbol": null,
+    "callcode": "241"
+  },
+  {
+    "id": "0x01821BB1C60D8C13328550F3B6EE6D84",
+    "fullname": "Eritrea",
+    "shortcode": "ERI",
+    "flag": "\uD83C\uDDEA\uD83C\uDDF7",
+    "banned": 0,
+    "currency": "ERN",
+    "symbol": null,
+    "callcode": "291"
+  },
+  {
+    "id": "0x01821BB1C60D8C13328550F3B6EE6D85",
+    "fullname": "Israel",
+    "shortcode": "ISR",
+    "flag": "\uD83C\uDDEE\uD83C\uDDF1",
+    "banned": 0,
+    "currency": "ILS",
+    "symbol": "₪",
+    "callcode": "972"
+  },
+  {
+    "id": "0x01821BB1C60D8C13328550F3B6EE6D86",
+    "fullname": "Nigeria",
+    "shortcode": "NGA",
+    "flag": "\uD83C\uDDF3\uD83C\uDDEC",
+    "banned": 0,
+    "currency": "NGN",
+    "symbol": "₦",
+    "callcode": "234"
+  },
+  {
+    "id": "0x01821BB1C60D8C13328550F3B6EE6D87",
+    "fullname": "Norway",
+    "shortcode": "NOR",
+    "flag": "\uD83C\uDDF3\uD83C\uDDF4",
+    "banned": 0,
+    "currency": "NOK",
+    "symbol": "kr",
+    "callcode": "47"
+  },
+  {
+    "id": "0x01821BB1C60EC7234E60D41E57FD3798",
+    "fullname": "French Polynesia",
+    "shortcode": "PYF",
+    "flag": "\uD83C\uDDF5\uD83C\uDDEB",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "689"
+  },
+  {
+    "id": "0x01821BB1C60EC7234E60D41E57FD3799",
+    "fullname": "Sweden",
+    "shortcode": "SWE",
+    "flag": "\uD83C\uDDF8\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "SEK",
+    "symbol": "Kr",
+    "callcode": "46"
+  },
+  {
+    "id": "0x01821BB1C60EC7234E60D41E57FD379A",
+    "fullname": "Iraq",
+    "shortcode": "IRQ",
+    "flag": "\uD83C\uDDEE\uD83C\uDDF6",
+    "banned": 0,
+    "currency": "IQD",
+    "symbol": null,
+    "callcode": "964"
+  },
+  {
+    "id": "0x01821BB1C60EC7234E60D41E57FD379B",
+    "fullname": "Pitcairn Islands",
+    "shortcode": "PCN",
+    "flag": "\uD83C\uDDF5\uD83C\uDDF3",
+    "banned": 0,
+    "currency": "NZD",
+    "symbol": "$",
+    "callcode": "64"
+  },
+  {
+    "id": "0x01821BB1C60EC7234E60D41E57FD379C",
+    "fullname": "Tokelau",
+    "shortcode": "TKL",
+    "flag": "\uD83C\uDDF9\uD83C\uDDF0",
+    "banned": 0,
+    "currency": "TKL",
+    "symbol": null,
+    "callcode": "690"
+  },
+  {
+    "id": "0x01821BB1C60F7A5B7ECF98B393A15EFD",
+    "fullname": "Cameroon",
+    "shortcode": "CMR",
+    "flag": "\uD83C\uDDE8\uD83C\uDDF2",
+    "banned": 0,
+    "currency": "XAF",
+    "symbol": "",
+    "callcode": "237"
+  },
+  {
+    "id": "0x01821BB1C60F7A5B7ECF98B393A15EFE",
+    "fullname": "China",
+    "shortcode": "CHN",
+    "flag": "\uD83C\uDDE8\uD83C\uDDF3",
+    "banned": 0,
+    "currency": "CNY",
+    "symbol": "¥",
+    "callcode": "86"
+  },
+  {
+    "id": "0x01821BB1C60F7A5B7ECF98B393A15EFF",
+    "fullname": "United Arab Emirates",
+    "shortcode": "ARE",
+    "flag": "\uD83C\uDDE6\uD83C\uDDEA",
+    "banned": 0,
+    "currency": "AED",
+    "symbol": " د.إ",
+    "callcode": "971"
+  },
+  {
+    "id": "0x01821BB1C60F7A5B7ECF98B393A15F00",
+    "fullname": "Ivory Coast",
+    "shortcode": "CIV",
+    "flag": "\uD83C\uDDE8\uD83C\uDDEE",
+    "banned": 0,
+    "currency": "XOF",
+    "symbol": null,
+    "callcode": "225"
+  },
+  {
+    "id": "0x01821BB1C6101AC16C14345419196B5D",
+    "fullname": "Malta",
+    "shortcode": "MLT",
+    "flag": "\uD83C\uDDF2\uD83C\uDDF9",
+    "banned": 0,
+    "currency": "EUR",
+    "symbol": "€",
+    "callcode": "356"
+  },
+  {
+    "id": "0x01821BB1C6101AC16C14345419196B5E",
+    "fullname": "Mongolia",
+    "shortcode": "MNG",
+    "flag": "\uD83C\uDDF2\uD83C\uDDF3",
+    "banned": 0,
+    "currency": "MNT",
+    "symbol": null,
+    "callcode": "976"
+  },
+  {
+    "id": "0x01821BB1C6101AC16C14345419196B5F",
+    "fullname": "Guatemala",
+    "shortcode": "GTM",
+    "flag": "\uD83C\uDDEC\uD83C\uDDF9",
+    "banned": 0,
+    "currency": "GTQ",
+    "symbol": null,
+    "callcode": "502"
+  },
+  {
+    "id": "0x01821BB1C6101AC16C14345419196B60",
+    "fullname": "Czechia",
+    "shortcode": "CZE",
+    "flag": "\uD83C\uDDE8\uD83C\uDDFF",
+    "banned": 0,
+    "currency": "CZK",
+    "symbol": "Kč",
+    "callcode": "420"
+  },
+  {
+    "id": "0x01821BB1C61155656911E4CED6FAF6D5",
+    "fullname": "Hungary",
+    "shortcode": "HUN",
+    "flag": "\uD83C\uDDED\uD83C\uDDFA",
+    "banned": 0,
+    "currency": "HUF",
+    "symbol": "Ft",
+    "callcode": "36"
+  },
+  {
+    "id": "0x01821BB1C61155656911E4CED6FAF6D6",
+    "fullname": "Svalbard and Jan Mayen",
+    "shortcode": "SJM",
+    "flag": "\uD83C\uDDF8\uD83C\uDDEF",
+    "banned": 0,
+    "currency": "NOK",
+    "symbol": "Kr",
+    "callcode": "4779"
+  }
+]

@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Ad;
 use App\Models\AttributeGroup;
 use App\Models\Category;
+use App\Models\Client;
 use App\Models\Country;
 use App\Models\File;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File as F ;
 use Ramsey\Uuid\Uuid;
@@ -350,6 +352,33 @@ class Service extends Controller
         }
     }
 
-   
+   public function returnClientIdAuth(){
+    try {
+        if (!Auth::user()) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ]);
+        }
+
+        $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+        $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
+
+        $client = Client::where('person_id',$person->id)->first();
+
+        return $client->id;
+    } catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
+   }
+
+   public function checkAuth(){
+    if (!Auth::user()) {
+        return response()->json([
+            'message' => 'UNAUTHENTIFICATED'
+        ],200);
+    }
+   }
 
 }

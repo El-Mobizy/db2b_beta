@@ -46,9 +46,7 @@ class CategoryAttributesController extends Controller
             //     'uid' => 'required|string|unique:your_table_name_here',
             // ]);
 
-            $ulid = Uuid::uuid1();
-            $ulidAttr = $ulid->toString();
-    
+         
             $field = new CategoryAttributes();
             $field->fieldtype = $request->input('fieldtype');
             $field->label = $request->input('label');
@@ -63,6 +61,8 @@ class CategoryAttributesController extends Controller
                 ]);
             }
 
+            $service = new Service();
+
             $field->isrequired = $request->input('isrequired', 0);
             $field->description = $request->input('description');
             $field->order_no = $request->input('order_no');
@@ -71,7 +71,7 @@ class CategoryAttributesController extends Controller
             $field->search_criteria = $request->input('search_criteria', 0);
             $field->is_active = $request->input('is_active', 0);
             $field->deleted = $request->input('deleted', 0);
-            $field->uid =$ulidAttr;
+            $field->uid = $service->generateUid($field);
     
             $field->save();
     
