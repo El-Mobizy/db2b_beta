@@ -204,9 +204,16 @@ class CategoryController extends Controller
             $query = "SELECT * FROM categories WHERE deleted = false";
             $stmt = $db->prepare($query);
             $stmt->execute();
-            $categories = $stmt->fetchAll($db::FETCH_ASSOC);
+            // $categories = $stmt->fetchAll($db::FETCH_ASSOC);
+            $categories =  Category::whereDeleted(0)->get();
+            foreach($categories as $categorie){
+                $categorie->category_icone = File::where('referencecode',$categorie->filecode)->first()->location;
+                $data[] = $categorie;
+               
+            }
+           
             return response()->json([
-                'data' => $categories
+                'data' =>$data
             ]);
 
         } catch (Exception $e) {

@@ -15,6 +15,7 @@ use Ramsey\Uuid\Uuid;
 use App\Interfaces\Interfaces\FileRepositoryInterface;
 use App\Models\Client;
 use App\Models\Country;
+use App\Models\File;
 use App\Models\ShopHasCategory;
 use App\Models\Shop;
 use App\Models\TypeOfType;
@@ -52,17 +53,98 @@ class AdController extends Controller
     {
         try {
 
-            // $db = DB::connection()->getPdo();
-            // $query = "SELECT * FROM ads WHERE deleted = false";
-            // $stmt = $db->prepare($query);
-            // $stmt->execute();
-            // $ads = $stmt->fetchAll($db::FETCH_ASSOC);
+            if(Auth::user()){
+                return $this->getAllAdforAuth();
+            }
+            $data = [];
+            $ads =  Ad::with('file')
+            ->orderBy('created_at', 'desc')
+            ->where('deleted',false)->get();
+
+            foreach($ads as $ad){
+                $ad->category_title =  Category::find($ad->category_id)->title ;
+
+                if(File::where('referencecode',$ad->file_code)->exists()){
+                    $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+                }
+                $data[] = $ad;
+            }
+
             return response()->json([
-                'data' =>  Ad::with('ad_detail', 'file')
-                ->orderBy('created_at', 'desc')
-                ->where('deleted',false)->get()
+                'data' => $data
             ]);
 
+        } catch (Exception $e) {
+           return response()->json([
+            'error' => $e->getMessage()
+           ]);
+        }
+    }
+
+    public function getAllAdforAuth()
+    {
+        try {
+            $userId = Auth::user()->id;
+            $ads = Ad::with('file')
+                ->leftJoin('favorites', function ($join) use ($userId) {
+                    $join->on('ads.id', '=', 'favorites.ad_id')
+                        ->where('favorites.user_id', '=', $userId)
+                        ->where('favorites.deleted', '=', false);
+                })
+                ->select('ads.*', DB::raw('CASE WHEN favorites.id IS NULL THEN false ELSE true END as is_favorite'))
+                ->orderBy('created_at', 'desc')
+                ->where('ads.deleted', false)
+                ->get();
+
+                foreach($ads as $ad){
+                    $ad->category_title =  Category::find($ad->category_id)->title ;
+
+                    if(File::where('referencecode',$ad->file_code)->exists() ==1){
+                        $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+                    }
+                    $data[] = $ad;
+                }
+    
+            return response()->json([
+                'data' => $data
+            ]);
+        } catch (Exception $e) {
+           return response()->json([
+            'error' => $e->getMessage()
+           ]);
+        }
+    }
+
+    public function getAllRecentAdforAuth($perPage = 20)
+    {
+        try {
+            if($perPage > 50){
+                $perPage = 50;
+            }
+            $userId = Auth::user()->id;
+            $ads = Ad::with('file')
+                ->leftJoin('favorites', function ($join) use ($userId) {
+                    $join->on('ads.id', '=', 'favorites.ad_id')
+                        ->where('favorites.user_id', '=', $userId)
+                        ->where('favorites.deleted', '=', false);
+                })
+                ->select('ads.*', DB::raw('CASE WHEN favorites.id IS NULL THEN false ELSE true END as is_favorite'))
+                ->orderBy('created_at', 'desc')
+                ->where('ads.deleted', false)
+                ->paginate($perPage);
+
+                foreach($ads as $ad){
+                    $ad->category_title =  Category::find($ad->category_id)->title ;
+
+                    if(File::where('referencecode',$ad->file_code)->exists() ==1){
+                        $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+                    }
+                    $data[] = $ad;
+                }
+    
+            return response()->json([
+                'data' => $data
+            ]);
         } catch (Exception $e) {
            return response()->json([
             'error' => $e->getMessage()
@@ -102,20 +184,32 @@ class AdController extends Controller
  *      )
  * )
  */
-    public function getRecentAdd($perPage)
+    public function getRecentAdd($perPage = 20)
     {
         try {
             if($perPage > 50){
                 $perPage = 50;
             }
-            $ads = Ad::with('ad_detail', 'file')
+
+            if(Auth::user()){
+                return $this->getAllRecentAdforAuth();
+            }
+            $ads = Ad::with('file')
             ->whereDeleted(0)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
+            foreach($ads as $ad){
+                $ad->category_title =  Category::find($ad->category_id)->title ;
+                if(File::where('referencecode',$ad->file_code)->exists() ==1){
+                    $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+                }
+                $data[] = $ad;
+            }
+
 
                   return response()->json([
-                    'data' =>$ads,
+                    'data' =>$data,
                   ]);
         } catch (Exception $e) {
            return response()->json([
@@ -341,10 +435,7 @@ class AdController extends Controller
       if($checkAuth){
          return $checkAuth;
       }
-
-
-    
-
+      
         $checkIfmerchant = $this->checkMerchant();
 
         if($checkIfmerchant ==0){
@@ -707,8 +798,6 @@ public function checkCategoryShop($ownerId, Request $request){
             ],200);
         }
 
-  
-
 
         $ad = new Ad();
         $ad->title = $title;
@@ -998,5 +1087,73 @@ public function checkCategoryShop($ownerId, Request $request){
         ],500);
     }
    }
+
+   public function checkIfAdIsPending($adUid){
+        try {
+    //code...
+
+            $a =  Ad::where('uid',$adUid)->first()->statut ;
+            $b =TypeOfType::whereLibelle('pending')->first()->id;
+    
+            return $a == $b?1:0;
+
+        } catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ],500);
+        }
+   }
+
+   public function checkIfAdIsRejected($adUid){
+    try {
+//code...
+
+        $a =  Ad::where('uid',$adUid)->first()->statut ;
+        $b =TypeOfType::whereLibelle('rejected')->first()->id;
+
+        return $a == $b?1:0;
+
+    } catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
+}
+
+public function checkIfAdIsValidated($adUid){
+    try {
+//code...
+
+        $a =  Ad::where('uid',$adUid)->first()->statut ;
+        $b =TypeOfType::whereLibelle('validated')->first()->id;
+
+        return $a == $b?1:0;
+    } catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
+}
+
+public function getAdDetail($adUid){
+    try {
+        $ad =  Ad::where('uid',$adUid)->first() ;
+
+        if(!$ad){
+            return response()->json([
+                'message' => 'Ad not found !'
+            ]);
+        }
+
+        return response()->json([
+            'data' => AdDetail::where('ad_id',$ad->id)->whereDeleted(false)->get()
+        ]);
+
+    } catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
+}
 
 }

@@ -525,10 +525,10 @@ class UserController extends Controller
                     'required',
                     'string',
                     'min:8',
-                    'confirmed',
+                    // 'confirmed',
                     'regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]+$/',
                 ],
-                'password_confirmation' => 'required|string',
+                // 'password_confirmation' => 'required|string',
                 'country_id' => 'required'
             ]);
             
@@ -1369,8 +1369,9 @@ public function verification_code(Request $request)
 {
     try {
         $verification = $request->code;
-        $user = User::where('code', $verification)->first();
-     
+        $user = User::where('code', $verification)->exists();
+        // return [$verification,User::where('code', $verification)->exists()];
+
         if (!$user) {
             return response()->json([
                 'status_code' => 200,
@@ -1378,15 +1379,18 @@ public function verification_code(Request $request)
             ]);
         }
       
-        if ($request->code !== null) {
+        if ($user) {
+            // $users =User::whereId(Auth::user()->id)->whereCode($verification)->first();
+            $users =User::whereId(Auth::user()->id)->whereCode($verification)->first();
+            $users->code = 0;
+            $users->save();
             return response()->json([
                 'status_code' => 200,
                 'message' => 'Verification passed',
             ]);
         }
 
-        $user->code=0;
-        $user->save();
+       
 
      
 

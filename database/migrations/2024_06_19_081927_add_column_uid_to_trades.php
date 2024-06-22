@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('device_key')->nullable();
+        Schema::table('trades', function (Blueprint $table) {
+            $table->boolean('deleted')->default(false);
+            $table->uuid('uid');
         });
     }
 
@@ -21,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('trades', function (Blueprint $table) {
+            //
+        });
     }
 };

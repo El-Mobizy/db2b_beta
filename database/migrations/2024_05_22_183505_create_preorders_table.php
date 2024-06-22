@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('filecode');
             $table->text('description');
-            $table->double('price')->nullable();
+            $table->float('price')->nullable();
             $table->foreignId('statut')->constrained('type_of_types');
             $table->foreignId('user_id')->constrained('users');
             $table->string('address')->nullable();

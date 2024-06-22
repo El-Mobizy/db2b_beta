@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('order_details', function (Blueprint $table) {
+        Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            $table->float('amount');
             $table->foreignId('order_id')->constrained('orders');
-            $table->foreignId('ad_id')->constrained('ads');
-            $table->foreignId('shop_id')->constrained('shops');
-            $table->integer('quantity');
-            $table->float('price');
-            $table->float('final_price');
+            $table->foreignId('sender_id')->constrained('users');
+            $table->foreignId('receiver_id')->constrained('users');
+            $table->foreignId('commission_wallet_id')->constrained('commission_wallets');
+            $table->string('transaction_type')->default('transfer');
             $table->uuid('uid');
-            $table->boolean('deleted')->default(0);
+            $table->boolean('deleted')->default(false);
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('order_details');
+        Schema::dropIfExists('transactions');
     }
 };

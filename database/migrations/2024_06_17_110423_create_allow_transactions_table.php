@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('allow_transactions', function (Blueprint $table) {
             $table->id();
             $table->uuid('uid');
-            $table->float('amount');
-            $table->foreignId('status')->constrained('type_of_types');
-            $table->foreignId('user_id')->constrained('users');
-            $table->boolean('deleted')->default(0);
+            $table->foreignId('validated_by_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->timestamp('validated_on')->nullable();
+            $table->boolean('deleted')->default(false);
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('allow_transactions');
     }
 };

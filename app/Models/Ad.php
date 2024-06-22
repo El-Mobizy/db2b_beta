@@ -31,3 +31,25 @@ class Ad extends Model
         return $this->belongsTo(Shop::class);
     }
 }
+
+// "id": 23,
+//             "title": "Productsjk",
+//             "statut": 6,
+//             "file_code": "1WSNabR",
+//             "reject_reason": null,
+//             "validated_on": null,
+//             "deleted": false,
+//             "uid": "e574345a-281c-11ef-a184-00ff5210c7f1",
+//             "category_id": 1,
+//             "owner_id": 2,
+//             "location_id": 1,
+//             "validated_by_id": null,
+//             "shop_id": 1,
+//             "ad_code": "s9DtyB8",
+//             "created_at": "2024-06-11T18:03:24.000000Z",
+//             "updated_at": "2024-06-11T18:03:24.000000Z",
+//             "price": "10",
+//             "final_price": null,
+//             "category_title": "Voiture",
+//             "ad_detail": [],
+//             "file": [],

@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('preorders', function (Blueprint $table) {
-            $table->double('maximumbudget')->nullable();
-            $table->double('minimumbudget')->nullable();
+            $table->float('maximumbudget')->nullable();
+            $table->float('minimumbudget')->nullable();
         });
     }
 

@@ -373,6 +373,25 @@ class Service extends Controller
     }
    }
 
+   public function returnPersonIdAuth(){
+    try {
+        if (!Auth::user()) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ]);
+        }
+
+        $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+        $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
+
+        return $person->id;
+    } catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
+   }
+
    public function checkAuth(){
     if (!Auth::user()) {
         return response()->json([

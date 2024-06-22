@@ -58,6 +58,12 @@ class CartController extends Controller
     public function addToCart(Request $request) {
 
         $item = $this->getCartItem($request);
+        if($item == 0){
+            return response()->json(
+                [
+                    'message' =>'Check if this ad is already validated'
+                ]);
+        }
         $cartItem = $item['cartItem'];
 
         // return $item['cartItem'];
@@ -71,7 +77,7 @@ class CartController extends Controller
             $cartItem->ad_id =$request->ad_id;
             $cartItem->quantity = 1;
             $cartItem->save();
-          
+
         }
         return response()->json(
             [
@@ -223,6 +229,8 @@ class CartController extends Controller
 
             foreach ($userCarts as $userCart) {
                 $ad = Ad::whereId($userCart->ad_id)->with('file')->first();
+                $ad->cartItemId = $userCart->id;
+               
                 $data[] = [
                     $ad
                 ];
@@ -454,15 +462,25 @@ class CartController extends Controller
             $request->validate([
                 'ad_id' => 'required',
             ]);
-    
+
             $service = new Service();
-    
+
             $checkAuth=$service->checkAuth();
-    
+
             if($checkAuth){
                return $checkAuth;
             }
-           
+
+            // return ($request->ad_id);
+
+            $ac = new AdController();
+
+            $checkAd = $ac->checkIfAdIsValidated(Ad::find($request->ad_id)->uid);
+
+            if($checkAd == 0){
+                return 0;
+             }
+
             $user = auth()->user();
     
                 $cartItem = Cart::where('user_id', $user->id)

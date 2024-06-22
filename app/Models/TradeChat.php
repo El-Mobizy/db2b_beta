@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ChatMessage extends Model
+class TradeChat extends Model
 {
     use HasFactory;
 
-
+    public function chat_message(){
+        return $this->hasMany(ChatMessage::class)->whereDeleted(false);
+    }
 }

@@ -184,84 +184,98 @@ class ShopController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/shop/updateShop/{uid}",
-     *     tags={"Shop"},
-     *     security={{"bearerAuth": {}}},
-     *     summary="Update shop details",
-     *     description="This endpoint allows updating the details of an existing shop.",
-     *     @OA\Parameter(
-     *         name="uid",
-     *         in="path",
-     *         description="UID of the shop",
-     *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             type="object",
-     *             required={"title", "description"},
-     *             @OA\Property(
-     *                 property="title",
-     *                 type="string",
-     *                 description="Title of the shop"
-     *             ),
-     *             @OA\Property(
-     *                 property="description",
-     *                 type="string",
-     *                 description="Description of the shop"
-     *             ),
-     *             @OA\Property(
-     *                 property="files",
-     *                 type="array",
-     *                 @OA\Items(type="string", format="binary"),
-     *                 description="Files to upload"
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Shop updated successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="message",
-     *                 type="string",
-     *                 example="Shop updated successfully"
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Invalid data provided",
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="message",
-     *                 type="string",
-     *                 example="The data provided is not valid."
-     *             ),
-     *             @OA\Property(
-     *                 property="errors",
-     *                 type="object"
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="error",
-     *                 type="string",
-     *                 example="Error message"
-     *             )
-     *         )
-     *     )
-     * )
-     */
+   /**
+ * @OA\Post(
+ *     path="/api/shop/updateShop/{uid}",
+ *     summary="Update shop details",
+ *     tags={"Shop"},
+ *   security={{"bearerAuth": {}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         description="Shop details to update",
+ *         @OA\MediaType(
+ *             mediaType="multipart/form-data",
+ *             @OA\Schema(
+ *                 @OA\Property(
+ *                     property="title",
+ *                     type="string",
+ *                     description="Title of the shop",
+ *                     example="New Shop Name"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="description",
+ *                     type="string",
+ *                     description="Description of the shop",
+ *                     example="This is a new shop description."
+ *                 ),
+ *                 @OA\Property(
+ *                     property="files",
+ *                     type="file",
+ *                     description="Optional files to upload",
+ *                     example="file.txt"
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Parameter(
+ *         name="uid",
+ *         in="path",
+ *         required=true,
+ *         description="UID of the shop to update",
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response="200",
+ *         description="Success response",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Shop updated successfully"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response="400",
+ *         description="Invalid data provided",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="The data provided is not valid."
+ *             ),
+ *             @OA\Property(
+ *                 property="errors",
+ *                 type="object",
+ *                 example={"title": {"The title field is required."}}
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response="500",
+ *         description="Server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Internal Server Error"
+ *             )
+ *         )
+ *     )
+ * )
+ */
     public function updateShop($uid, Request $request){
         try{
+
+           
+      $service = new Service();
+
+      $checkAuth=$service->checkAuth();
+      if($checkAuth){
+         return $checkAuth;
+      }
 
             $validator = Validator::make($request->all(), [
                 'title' => 'required',
@@ -276,6 +290,19 @@ class ShopController extends Controller
                 'description' => 'required'
             ]);
             $shop = Shop::whereUid($uid)->whereDeleted(0)->first();
+
+            if(!$shop){
+                return response()->json([
+                    'message' => 'Shop not found!'
+                ]);
+            }
+
+            $shopv = new AdController();
+
+            $checkShop = $shopv->checkShop($request->shop_id);
+            if($checkShop){
+                return $checkShop;
+            }
             $service = new Service();
             $shop->title = $request->input('title');
             $shop->description = $request->input('description');

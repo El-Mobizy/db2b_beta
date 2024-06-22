@@ -13,7 +13,10 @@ class Order extends Model
         return $this->hasMany(OrderDetail::class);
     }
 
-    public function order_details_deleted(){
+    public function order_details_not_deleted(){
         return $this->hasMany(OrderDetail::class)->where('deleted', 0);
+    }
+    public function transactions(){
+        return $this->hasMany(Transaction::class);
     }
 }

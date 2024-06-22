@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ads', function (Blueprint $table) {
-            $table->double('price')->nullable();
-            $table->double('final_price')->nullable();
+            $table->float('price')->nullable();
+            $table->float('final_price')->nullable();
         });
     }
 

@@ -16,5 +16,10 @@ class Category extends Model
     public function ad(){
         return $this->hasMany(Ad::class);
     }
+
+    public function file()
+    {
+        return $this->hasMany(File::class,'referencecode','filecode');
+    }
 }
 
