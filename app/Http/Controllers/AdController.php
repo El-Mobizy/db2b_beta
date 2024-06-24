@@ -766,7 +766,8 @@ public function checkCategoryShop($ownerId, Request $request){
                 'category_id' => '',
                 'value_entered' => 'required|array',
                 'files' =>'',
-                'price' => 'required'
+                'price' => 'required',
+                'final_price' => 'required'
             ])){
                 $e = new Exception();
                 return response()->json([
@@ -780,8 +781,10 @@ public function checkCategoryShop($ownerId, Request $request){
 
     private function createAd(Request $request){
 
+
         $title = htmlspecialchars($request->input('title'));
         $price = htmlspecialchars($request->input('price'));
+        $final_price = htmlspecialchars($request->input('final_price'));
         $location_id = htmlspecialchars($request->input('location_id'));
         $category_id = htmlspecialchars($request->input('category_id'));
         $shop_id = htmlspecialchars($request->input('shop_id'));
@@ -808,6 +811,7 @@ public function checkCategoryShop($ownerId, Request $request){
         $ad->owner_id = $owner_id;
         $ad->statut = $statut;
         $ad->price = $price;
+        $ad->final_price = $final_price;
         $ad->uid = $service->generateUid($ad);
 
         $randomString = $service->generateRandomAlphaNumeric(7,$ad,'file_code');

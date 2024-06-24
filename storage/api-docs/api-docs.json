@@ -39,12 +39,7 @@
                     "500": {
                         "description": "Serveur error."
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             }
         },
         "/api/ad/recent/{perPage}": {
@@ -905,69 +900,6 @@
                         "bearerAuth": []
                     }
                 ]
-            }
-        },
-        "/api/cart/getCartItem/{ad_id}": {
-            "get": {
-                "tags": [
-                    "Cart"
-                ],
-                "summary": "Get a cart item by ad ID",
-                "operationId": "5e669f1deff20c0a2a76afc6372921f5",
-                "parameters": [
-                    {
-                        "name": "ad_id",
-                        "in": "query",
-                        "description": "The ID of the ad",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Cart item retrieved successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "catItem": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer"
-                                                },
-                                                "user_id": {
-                                                    "type": "integer"
-                                                },
-                                                "ad_id": {
-                                                    "type": "integer"
-                                                },
-                                                "quantity": {
-                                                    "type": "integer"
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "userId": {
-                                            "type": "integer"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid input"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "500": {
-                        "description": "Server error"
-                    }
-                }
             }
         },
         "/api/category/add": {
@@ -5998,6 +5930,858 @@
                                         "error": {
                                             "type": "string",
                                             "example": "An error occurred while retrieving the shop details."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade/createTrade": {
+            "post": {
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Create a new trade",
+                "operationId": "044a7eae0695780f849247b3dd178192",
+                "parameters": [
+                    {
+                        "name": "orderDetailId",
+                        "in": "query",
+                        "description": "Order detail ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "buyerId",
+                        "in": "query",
+                        "description": "Buyer ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sellerId",
+                        "in": "query",
+                        "description": "Seller ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "enddate",
+                        "in": "query",
+                        "description": "End date of the trade",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "amount",
+                        "in": "query",
+                        "description": "Trade amount",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade created successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade/updateTradeStatusCanceled{tradeId}": {
+            "post": {
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Update trade status to canceled",
+                "operationId": "483d9aa73e4d039c10e5de31c5965f2e",
+                "parameters": [
+                    {
+                        "name": "tradeId",
+                        "in": "path",
+                        "description": "Trade ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade/updateTradeStatusDisputed/{tradeId}": {
+            "post": {
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Update trade status to disputed",
+                "operationId": "025eee1872953e7d089de1a623742c06",
+                "parameters": [
+                    {
+                        "name": "tradeId",
+                        "in": "path",
+                        "description": "Trade ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade/displayTrades": {
+            "get": {
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Display all trades for the authenticated user",
+                "operationId": "fbf5600af7a3b9df25222028987b9270",
+                "responses": {
+                    "200": {
+                        "description": "Trades retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade/displayTradesWithoutEndDate": {
+            "get": {
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Display trades without end date",
+                "operationId": "2861ee4c0c848dabe1441d9fd2d91005",
+                "responses": {
+                    "200": {
+                        "description": "List of trades without end date",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade/updateEndDate/{tradeId}": {
+            "post": {
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Update end date of a trade",
+                "operationId": "4638763700f66f93862575c412587d3f",
+                "parameters": [
+                    {
+                        "name": "tradeId",
+                        "in": "path",
+                        "description": "Trade ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "enddate": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2024-06-24 10:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "End date updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "End date updated successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The end date field is required."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade/getTradeStage/{tradeId}": {
+            "get": {
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Get stages of a trade",
+                "operationId": "111937632cc92ae226d937cfde049455",
+                "parameters": [
+                    {
+                        "name": "tradeId",
+                        "in": "path",
+                        "description": "Trade ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of trade stages",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "trade_id": {
+                                                "type": "integer",
+                                                "example": 123
+                                            },
+                                            "stage": {
+                                                "type": "string",
+                                                "example": "Stage name"
+                                            },
+                                            "buyer": {
+                                                "type": "boolean",
+                                                "example": true
+                                            },
+                                            "seller": {
+                                                "type": "boolean",
+                                                "example": false
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-06-24 10:00:00"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-06-24 10:00:00"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade/getTradeStageDone/{tradeId}": {
+            "get": {
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Get completed stages of a trade",
+                "operationId": "6797375e55d912d46112caee4f376f13",
+                "parameters": [
+                    {
+                        "name": "tradeId",
+                        "in": "path",
+                        "description": "Trade ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of completed trade stages",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "trade_id": {
+                                                "type": "integer",
+                                                "example": 123
+                                            },
+                                            "stage": {
+                                                "type": "string",
+                                                "example": "Stage name"
+                                            },
+                                            "complete": {
+                                                "type": "boolean",
+                                                "example": true
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-06-24 10:00:00"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-06-24 10:00:00"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade/getTradeStageNotDoneYet/{tradeId}": {
+            "get": {
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Get stages not completed yet of a trade",
+                "operationId": "0a6f1d0e084b78575b3e3c68fb9aa114",
+                "parameters": [
+                    {
+                        "name": "tradeId",
+                        "in": "path",
+                        "description": "Trade ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of not completed trade stages",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "trade_id": {
+                                                "type": "integer",
+                                                "example": 123
+                                            },
+                                            "stage": {
+                                                "type": "string",
+                                                "example": "Stage name"
+                                            },
+                                            "complete": {
+                                                "type": "boolean",
+                                                "example": false
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-06-24 10:00:00"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-06-24 10:00:00"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade/getTradeChat/{tradeId}": {
+            "get": {
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Get chat messages of a trade",
+                "operationId": "313c2a45d5252964cb0c04c24b933e95",
+                "parameters": [
+                    {
+                        "name": "tradeId",
+                        "in": "path",
+                        "description": "Trade ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of chat messages",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "trade_id": {
+                                                "type": "integer",
+                                                "example": 123
+                                            },
+                                            "message": {
+                                                "type": "string",
+                                                "example": "Hello"
+                                            },
+                                            "sender_id": {
+                                                "type": "integer",
+                                                "example": 456
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-06-24 10:00:00"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-06-24 10:00:00"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade/getAuthTradeStage/{tradeId}": {
+            "get": {
+                "tags": [
+                    "Trade"
+                ],
+                "summary": "Get authenticated user's trade stage details",
+                "operationId": "6177fb65d5f21a7bc602db326c3adc6b",
+                "parameters": [
+                    {
+                        "name": "tradeId",
+                        "in": "path",
+                        "description": "Trade ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade stage details for the authenticated user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "trade_id": {
+                                                    "type": "integer",
+                                                    "example": 123
+                                                },
+                                                "stage": {
+                                                    "type": "string",
+                                                    "example": "Stage name"
+                                                },
+                                                "buyer": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "seller": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                },
+                                                "action_done_by": {
+                                                    "type": "string",
+                                                    "example": "BUYER"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2024-06-24 10:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2024-06-24 10:00:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No data found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "string",
+                                            "example": "No data found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
                                         }
                                     },
                                     "type": "object"

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Favorite;
 use App\Models\Ad;
+use App\Models\Category;
+use App\Models\File;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -123,22 +125,31 @@ class FavoriteController extends Controller
     public function GetFavoritesAd()
     {
         try {
+
+            $service = new Service();
+
+            $checkAuth=$service->checkAuth();
+    
+            if($checkAuth){
+               return $checkAuth;
+            }
+
             $db = DB::connection()->getPdo();
             $user_id = Auth::user()->id;
 
-            $query = "SELECT favorites.*, 
+            $query = "SELECT favorites.*,
             ads.id AS ad_id, 
             ads.category_id AS ad_category_id,
             ads.owner_id AS ad_owner_id,
             ads.location_id AS ad_location_id,
-            ads.validated_by_id AS ad_validated_by_id,
+            -- ads.validated_by_id AS ad_validated_by_id,
             ads.title AS ad_title, 
             ads.statut AS ad_status, 
             ads.file_code AS ad_file_code, 
-            ads.reject_reason AS ad_reject_reason, 
-            ads.validated_on AS ad_validated_on, 
-            ads.created_at AS ad_created_at,
-            ads.updated_at AS ad_updated_at,
+            -- ads.reject_reason AS ad_reject_reason, 
+            -- ads.validated_on AS ad_validated_on, 
+            -- ads.created_at AS ad_created_at,
+            -- ads.updated_at AS ad_updated_at,
             ads.uid AS ad_uid
             FROM favorites
             INNER JOIN ads ON favorites.ad_id = ads.id 
@@ -151,8 +162,16 @@ class FavoriteController extends Controller
             $statement->execute();
             $favorites = $statement->fetchAll($db::FETCH_ASSOC);
 
+            foreach($favorites as $favorite){
+                $favorite['category_title'] = Category::whereId($favorite['ad_category_id'])->first()->title;
+                $favorite['image'] = File::where('referencecode',$favorite['ad_file_code'])->first()->location;
+                // return $favorite;
+
+                $data[] = $favorite;
+            }
+
             return response()->json([
-                'data' => $favorites
+                'data' => $data
             ]);
             
         } catch (Exception $e) {

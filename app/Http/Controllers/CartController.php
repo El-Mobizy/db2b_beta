@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Ad;
 use App\Models\Cart;
+use App\Models\File;
+use App\Models\OngingTradeStage;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -229,10 +231,22 @@ class CartController extends Controller
 
             foreach ($userCarts as $userCart) {
                 $ad = Ad::whereId($userCart->ad_id)->with('file')->first();
-                $ad->cartItemId = $userCart->id;
-               
+                // if(File::where('referencecode',$ad->file_code)->exists()){
+                //     $ad->image = File::where('referencecode',$ad->file_code)->first();
+                // // $ad->file =  $ad->with('file')->get();
+                // }
+
+                // return File::where('referencecode',$ad->file_code)->exists();
+
                 $data[] = [
-                    $ad
+                    'ad_id' =>Ad::whereId($userCart->ad_id)->first()->id,
+                    'ad_uid' =>Ad::whereId($userCart->ad_id)->first()->uid,
+                    'ad_title' => Ad::whereId($userCart->ad_id)->first()->title,
+                    'final_price' => Ad::whereId($userCart->ad_id)->first()->final_price,
+                    'cart_id' => $userCart->id,
+                    'quantity' => $userCart->quantity,
+                    'image' => File::where('referencecode',$ad->file_code)->first()->location
+
                 ];
             }
 
@@ -398,64 +412,64 @@ class CartController extends Controller
     }
 
 
-    /**
- * @OA\Get(
- *     path="/api/cart/getCartItem/{ad_id}",
- *     summary="Get a cart item by ad ID",
- *     tags={"Cart"},
- *     @OA\Parameter(
- *         name="ad_id",
- *         in="query",
- *         required=true,
- *         description="The ID of the ad",
- *         @OA\Schema(
- *             type="integer"
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Cart item retrieved successfully",
- *         @OA\JsonContent(
- *             @OA\Property(
- *                 property="catItem",
- *                 type="object",
- *                 @OA\Property(
- *                     property="id",
- *                     type="integer"
- *                 ),
- *                 @OA\Property(
- *                     property="user_id",
- *                     type="integer"
- *                 ),
- *                 @OA\Property(
- *                     property="ad_id",
- *                     type="integer"
- *                 ),
- *                 @OA\Property(
- *                     property="quantity",
- *                     type="integer"
- *                 )
- *             ),
- *             @OA\Property(
- *                 property="userId",
- *                 type="integer"
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Invalid input"
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthorized"
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Server error"
- *     )
- * )
- */
+//     /**
+//  * @OA\Get(
+//  *     path="/api/cart/getCartItem/{ad_id}",
+//  *     summary="Get a cart item by ad ID",
+//  *     tags={"Cart"},
+//  *     @OA\Parameter(
+//  *         name="ad_id",
+//  *         in="query",
+//  *         required=true,
+//  *         description="The ID of the ad",
+//  *         @OA\Schema(
+//  *             type="integer"
+//  *         )
+//  *     ),
+//  *     @OA\Response(
+//  *         response=200,
+//  *         description="Cart item retrieved successfully",
+//  *         @OA\JsonContent(
+//  *             @OA\Property(
+//  *                 property="catItem",
+//  *                 type="object",
+//  *                 @OA\Property(
+//  *                     property="id",
+//  *                     type="integer"
+//  *                 ),
+//  *                 @OA\Property(
+//  *                     property="user_id",
+//  *                     type="integer"
+//  *                 ),
+//  *                 @OA\Property(
+//  *                     property="ad_id",
+//  *                     type="integer"
+//  *                 ),
+//  *                 @OA\Property(
+//  *                     property="quantity",
+//  *                     type="integer"
+//  *                 )
+//  *             ),
+//  *             @OA\Property(
+//  *                 property="userId",
+//  *                 type="integer"
+//  *             )
+//  *         )
+//  *     ),
+//  *     @OA\Response(
+//  *         response=400,
+//  *         description="Invalid input"
+//  *     ),
+//  *     @OA\Response(
+//  *         response=401,
+//  *         description="Unauthorized"
+//  *     ),
+//  *     @OA\Response(
+//  *         response=500,
+//  *         description="Server error"
+//  *     )
+//  * )
+//  */
 
     public function getCartItem(Request $request){
         try {
@@ -498,6 +512,8 @@ class CartController extends Controller
             ],500);
         }
     }
+    
+
     
 
  

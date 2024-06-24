@@ -141,11 +141,16 @@ Route::prefix('users')->group(function () {
             Route::get('/getTradeStageDone/{tradeId}', [TradeController::class, 'getTradeStageDone'])->name('tradeStage.getTradeStageDone');
             Route::get('/getTradeStageNotDoneYet/{tradeId}', [TradeController::class, 'getTradeStageNotDoneYet'])->name('tradeStage.getTradeStageNotDoneYet');
             Route::get('/getTradeStage/{tradeId}', [TradeController::class, 'getTradeStage'])->name('tradeStage.getTradeStage');
+            Route::get('/getAuthTradeStage/{tradeId}', [TradeController::class, 'getAuthTradeStage'])->name('tradeStage.getAuthTradeStage');
+              Route::get('/getTradeChat/{tradeId}', [TradeController::class, 'getTradeChat'])->name('tradeStage.getTradeChat');
         });
 
         Route::prefix('ongingtradeStage')->group(function () {
             Route::post('/makeCompleteTradeStage/{ongingTradeStageId}', [OngingTradeStageController::class, 'makeCompleteTradeStage'])->name('ongingtradeStage.makeCompleteTradeStage');
             Route::post('/makeInCompleteTradeStage/{ongingTradeStageId}', [OngingTradeStageController::class, 'makeInCompleteTradeStage'])->name('ongingtradeStage.makeInCompleteTradeStage');
+            Route::post('/yes_action/{ongingTradeStageId}', [OngingTradeStageController::class, 'yes_action'])->name('ongingtradeStage.yes_action');
+            Route::post('/no_action/{ongingTradeStageId}', [OngingTradeStageController::class, 'no_action'])->name('ongingtradeStage.no_action');
+            Route::post('/updateOngingTradeStage/{ongingTradeStageId}', [OngingTradeStageController::class, 'updateOngingTradeStage'])->name('ongingtradeStage.updateOngingTradeStage');
         });
 
         Route::prefix('tradeStage')->group(function () {

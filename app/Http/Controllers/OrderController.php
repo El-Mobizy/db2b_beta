@@ -737,6 +737,7 @@ private function getCartAds($cartItem){
                 $order_detail->price = $item['price_product'];
                 $order_detail->final_price = $item['final_price_product'];
                 $order_detail->shop_id = $item['shop_product'];
+                $order_detail->amount = $item['final_price_product'] *  $item['quantity_product'];
                 $order_detail->save();
                 // $a[] = $order_detail;
                 $trade->createTrade($order_detail->id,Order::find($orderId)->user_id,Shop::find($item['shop_product'])->client_id,'1000-10-10 10:10:10', $item['final_price_product']);
