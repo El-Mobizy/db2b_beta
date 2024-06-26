@@ -14,10 +14,14 @@ class Trade extends Model
     ];
 
     public function order_detail(){
-        return $this->hasOne(OrderDetail::class);
+        return $this->belongsTo(OrderDetail::class,'order_detail_id');
     }
 
     public function TradeWithoutEndDate(){
         return $this->hasMany(Trade::class)->where('enddate','1000-10-10 10:10:10');
+    }
+
+    public function onging_trade_stage(){
+        return $this->hasMany(OngingTradeStage::class)->whereDeleted(0);
     }
 }

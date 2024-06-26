@@ -11,12 +11,49 @@ use Illuminate\Support\Facades\Validator;
 
 class TradeStageController extends Controller
 {
-    function createTradeStage($tradeId,Request $request){
+
+
+    /**
+     * @OA\Post(
+     *     path="/api/tradeStage/createTradeStage",
+     *     summary="Create a trade stage",
+     *     tags={"tradeStage"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="stage_title", type="string", example="Stage Title"),
+     *             @OA\Property(property="steporder", type="integer", example=1),
+     *             @OA\Property(property="yes_action", type="string", example="Action 1"),
+     *             @OA\Property(property="no_action", type="string", example="Action 2"),
+     *             @OA\Property(property="action_done_by", type="string", example="BUYER")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Trade stage created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Trade stage created successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="An error occurred")
+     *         )
+     *     )
+     * )
+     */
+    function createTradeStage(Request $request){
         try {
+
+            $request->validate([
+                'stage_title' => 'required,'
+            ]);
 
             $tradeStage = new TradeStage();
             $service = new Service();
-            $tradeStage->trade_id = $tradeId;
             $tradeStage->stage_title = $request->stage_title;
             $tradeStage->steporder = $request->steporder;
             $tradeStage->yes_action = $request->yes_action;
@@ -24,7 +61,6 @@ class TradeStageController extends Controller
             $tradeStage->action_done_by = $request->action_done_by;
             $tradeStage->uid = $service->generateUid($tradeStage);
             $tradeStage->save();
-          
         } catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()
@@ -113,6 +149,47 @@ class TradeStageController extends Controller
                 ],500);
             }
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/trade-stages/updateTradeStage/{tradeStageId}",
+     *     summary="Update a trade stage",
+     *     tags={"tradeStage"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="tradeStageId",
+     *         in="path",
+     *         description="ID of the trade stage",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="stage_title", type="string", example="Updated Stage Title"),
+     *             @OA\Property(property="steporder", type="integer", example=2),
+     *             @OA\Property(property="yes_action", type="string", example="Updated Action 1"),
+     *             @OA\Property(property="no_action", type="string", example="Updated Action 2"),
+     *             @OA\Property(property="previous_step_id", type="integer", example=1),
+     *             @OA\Property(property="next_step_id", type="integer", example=3)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Trade stage updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Trade stage updated successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="An error occurred")
+     *         )
+     *     )
+     * )
+     */
 
     public function updateTradeStage(Request $request, $tradeStageId){
         try {

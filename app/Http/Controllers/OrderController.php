@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ad;
+use App\Models\AllowTransaction;
 use App\Models\Cart;
 use App\Models\CommissionWallet;
 use App\Models\Escrow;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Shop;
+use App\Models\Trade;
 use App\Models\Transaction;
 use App\Models\TypeOfType;
 use Exception;
@@ -741,7 +743,6 @@ private function getCartAds($cartItem){
                 $order_detail->save();
                 // $a[] = $order_detail;
                 $trade->createTrade($order_detail->id,Order::find($orderId)->user_id,Shop::find($item['shop_product'])->client_id,'1000-10-10 10:10:10', $item['final_price_product']);
-                
 
                 // return [
                 //     $order_detail->id,
@@ -947,6 +948,20 @@ private function getCartAds($cartItem){
             $service = new Service();
             $personId = $service->returnPersonIdAuth();
 
+            $order = Order::find($orderId);
+
+            if(!$order){
+                return response()->json(
+                    ['message' => 'Order not found'
+                ],200);
+            }
+            $c = $this->checkIfOrderIsPaid($orderId);
+
+            if($c){
+                return $c;
+            }
+
+
             $checkAuth=$service->checkAuth();
 
             if($checkAuth){
@@ -971,6 +986,10 @@ private function getCartAds($cartItem){
 
         $this->createEscrow($orderId);
 
+        $order->status = TypeOfType::whereLibelle('paid')->first()->id;
+
+       $order->save();
+
 //Secured
             return response()->json(
                 ['message' => 'Payement done Successfully'
@@ -989,6 +1008,7 @@ private function getCartAds($cartItem){
             $escrow = new Escrow();
             $order = Order::find($orderId);
             $escrow->order_id = $orderId;
+            $escrow->status = 'Secured';
             $escrow->amount =  $order->amount;
             $escrow->uid= $service->generateUid($escrow);
             $escrow->save();
@@ -999,12 +1019,22 @@ private function getCartAds($cartItem){
         }
     }
 
+    public function checkIfOrderIsPaid($orderId){
+        $order = Order::find($orderId);
+        if($order->status == TypeOfType::whereLibelle('paid')->first()->id){
+            return response()->json([
+                'message' => 'Order already paid'
+            ]);
+        }
+    }
+
     public function createTransaction($orderId,$wallet){
         try {
             $user = Auth::user();
             $service = new Service();
             $order = Order::find($orderId);
             $transaction = new Transaction();
+
             $transaction->order_id = $orderId;
             $transaction->sender_id = $user->id;
             $transaction->receiver_id = $user->id;
@@ -1012,6 +1042,24 @@ private function getCartAds($cartItem){
             $transaction->amount =  $order->amount;
             $transaction->transaction_type = 'transfer';
             $transaction->uid= $service->generateUid($transaction);
+            $transaction->save();
+            return $transaction->id;
+        } catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function createAllowTransaction($transactionId){
+        try {
+            $service = new Service();
+            $transactionAllow = new AllowTransaction();
+            $transactionAllow->validated_by_id = null;
+            $transactionAllow->transaction_id = $transactionId;
+            $transactionAllow->validated_on =  now();
+            $transactionAllow->uid= $service->generateUid($transactionAllow);
+            $transactionAllow->save();
         } catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()
@@ -1174,7 +1222,7 @@ private function getCartAds($cartItem){
 
     /**
  * @OA\Get(
- *     path="/api/order/orderTransaction/{orderId}",
+ *     path="/api/order/orderTrade/{orderId}",
  *     tags={"Trade"},
  *   security={{"bearerAuth":{}}},
  *     summary="Get order transactions",
@@ -1210,11 +1258,57 @@ private function getCartAds($cartItem){
  * )
  */
 
-    public function orderTransaction($orderId){
+    public function orderTrade($orderId){
         try{
             $order =  Order::find($orderId);
+            foreach(OrderDetail::where('order_id',$order->id)->get() as $od){
+                $trades = Trade::where('order_detail_id',$od->id)->first();
+                $data[] =$trades;
+            }
             return response()->json(
-                ['data' =>$order->transactions->trade
+                ['data' =>$data
+            ],200);
+
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function getOrderEndTrade($orderId){
+        try{
+            $order =  Order::find($orderId);
+            $statut_trade_id = TypeOfType::whereLibelle('endtrade')->first()->id;
+            foreach(OrderDetail::where('order_id',$order->id)->get() as $od){
+                $trade = Trade::where('order_detail_id',$od->id)
+                ->where('status_id',$statut_trade_id)
+                ->first();
+                $data[] =$trade;
+            }
+            return response()->json(
+                ['data' =>$data
+            ],200);
+
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function getOrderCanceledTrade($orderId){
+        try{
+            $order =  Order::find($orderId);
+            $statut_trade_id = TypeOfType::whereLibelle('canceled')->first()->id;
+            foreach(OrderDetail::where('order_id',$order->id)->get() as $od){
+                $trade = Trade::where('order_detail_id',$od->id)
+                ->where('status_id',$statut_trade_id)
+                ->first();
+                $data[] =$trade;
+            }
+            return response()->json(
+                ['data' =>$data
             ],200);
 
         }catch(Exception $e){

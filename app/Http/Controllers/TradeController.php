@@ -19,7 +19,7 @@ class TradeController extends Controller
  * @OA\Post(
  *     path="/api/trade/createTrade",
  *     summary="Create a new trade",
- *  security={{"bearerAuth": {}} },    
+ *  security={{"bearerAuth": {}} },
  * tags={"Trade"},
  *     @OA\Parameter(
  *         name="orderDetailId",
@@ -437,7 +437,11 @@ class TradeController extends Controller
 
     public function getTradeStage($tradeId){
         try {
-            $stages = OngingTradeStage::where('trade_id',$tradeId)->whereDeleted(false)->get();
+            $stages = OngingTradeStage::where('trade_id', $tradeId)
+            ->where('deleted', false)
+            ->orderBy('steporder', 'asc')
+            ->get();
+
 
             if(count($stages) == 0){
                 return response()->json([
@@ -779,6 +783,28 @@ class TradeController extends Controller
         } catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()
+            ],500);
+        }
+    }
+
+    public function getEndTrade(){
+        try {
+            $statut_trade_id = TypeOfType::whereLibelle('endtrade')->first()->id;
+            $trades = Trade::where('status_id',$statut_trade_id)->whereDeleted(0)->get();
+        } catch(Exception $e){
+            return response()->json([
+                'data' => $trades
+            ],500);
+        }
+    }
+
+    public function getCanceledTrade(){
+        try {
+            $statut_trade_id = TypeOfType::whereLibelle('canceled')->first()->id;
+            $trades = Trade::where('status_id',$statut_trade_id)->whereDeleted(0)->get();
+        } catch(Exception $e){
+            return response()->json([
+                'data' => $trades
             ],500);
         }
     }

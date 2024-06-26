@@ -17,22 +17,17 @@ class FavoriteController extends Controller
 
     /**
  * @OA\Post(
- *     path="/api/favorite/addAdToFavorite",
+ *     path="/api/favorite/addAdToFavorite/{adId}",
  *     summary="add new ad to favorite",
  *     tags={"Favorite"},
  *     security={{ "bearerAuth":{} }},
- *     @OA\RequestBody(
+ *  @OA\Parameter(
+ *         name="adId",
+ *         in="path",
+ *         description="ID of the product to add to the favorite",
  *         required=true,
- *         @OA\MediaType(
- *             mediaType="application/json",
- *             @OA\Schema(
- *                 @OA\Property(
- *                     property="ad_id",
- *                     type="integer",
- *                     description="Get specific ID of ad"
- *                 ),
- *                 example={"ad_id": 123}
- *             )
+ *         @OA\Schema(
+ *             type="integer"
  *         )
  *     ),
  *     @OA\Response(
@@ -54,20 +49,22 @@ class FavoriteController extends Controller
  * )
  */
 
-    public function addAdToFavorite(Request $request)
+    public function addAdToFavorite(Request $request,$adId)
     {
         try {
-                $request->validate([
-                    'ad_id' => 'required',
-                ]);
+            $service = new Service();
 
-                $ad_id = htmlspecialchars($request->input('ad_id'));
+            $checkAuth=$service->checkAuth();
+    
+            if($checkAuth){
+               return $checkAuth;
+            }
+
+                // $ad_id = htmlspecialchars($request->input('ad_id'));
                 $user_id = Auth::user()->id;
-                $exist = Favorite::where('ad_id',$ad_id)->where('user_id',$user_id)->where('deleted',false)->exists();
+                $exist = Favorite::where('ad_id',$adId)->where('user_id',$user_id)->where('deleted',false)->exists();
                 if($exist){
-                    return response()->json([
-                        'message' => 'This add already exist in your favorites'
-                    ]);
+                    Favorite::where('user_id',$user_id)->where('ad_id',$adId)->first()->delete();
                 }
                 $ulid = Uuid::uuid1();
                 $ulidFavorite = $ulid->toString();
@@ -81,7 +78,7 @@ class FavoriteController extends Controller
 
                 $statement = $db->prepare($query);
 
-                $statement->bindParam(1, $ad_id);
+                $statement->bindParam(1, $adId);
                 $statement->bindParam(2, $user_id);
                 $statement->bindParam(3, $uid);
                 $statement->bindParam(4,  $created_at);
@@ -90,7 +87,7 @@ class FavoriteController extends Controller
                 $statement->execute();
 
                 return response()->json([
-                    'message' => 'Ad added successfully !'
+                    'message' => 'Ad added to wishlist successfully !'
                 ]);
 
         } catch (Exception $e) {
@@ -102,27 +99,52 @@ class FavoriteController extends Controller
     }
 
 
-    /**
+   /**
      * @OA\Get(
-     *     path="/api/favorite/GetFavoritesAd",
-     *     summary="Retrieve favorite ads for the current user",
-     *     description="Retrieve a list of favorite ads for the currently authenticated user",
+     *     path="/api/favorite/GetFavoritesAd/{page}/{perPage}",
+     *     summary="Get user's favorite ads",
+     *     description="Retrieve a paginated list of the user's favorite ads.",
+     *     operationId="getFavoritesAd",
      *     tags={"Favorite"},
      *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="integer"),
+     *         description="Page number"
+     *     ),
+     *     @OA\Parameter(
+     *         name="perPage",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="integer"),
+     *         description="Number of items per page"
+     *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="A list of favorite ads",
+     *         description="Successful response",
      *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(ref="")
+     *             type="object",
+     *             @OA\Property(property="data", ref="")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )
      */
 
-   
-
-    public function GetFavoritesAd()
+    public function GetFavoritesAd(Request $request,$page = 1,$perPage=5)
     {
         try {
 
@@ -134,45 +156,67 @@ class FavoriteController extends Controller
                return $checkAuth;
             }
 
+            if($perPage > 50){
+                $perPage = 50;
+            }
+
             $db = DB::connection()->getPdo();
             $user_id = Auth::user()->id;
 
-            $query = "SELECT favorites.*,
-            ads.id AS ad_id, 
-            ads.category_id AS ad_category_id,
-            ads.owner_id AS ad_owner_id,
-            ads.location_id AS ad_location_id,
-            -- ads.validated_by_id AS ad_validated_by_id,
-            ads.title AS ad_title, 
-            ads.statut AS ad_status, 
-            ads.file_code AS ad_file_code, 
-            -- ads.reject_reason AS ad_reject_reason, 
-            -- ads.validated_on AS ad_validated_on, 
-            -- ads.created_at AS ad_created_at,
-            -- ads.updated_at AS ad_updated_at,
-            ads.uid AS ad_uid
-            FROM favorites
-            INNER JOIN ads ON favorites.ad_id = ads.id 
-            WHERE favorites.user_id = :user_id 
-            AND ads.deleted = false";
+            $query = "
+            SELECT 
+                favorites.*, 
+                ads.id AS ad_id, 
+                ads.category_id AS ad_category_id, 
+                ads.owner_id AS ad_owner_id, 
+                ads.location_id AS ad_location_id, 
+                files.location AS image, 
+                ads.title AS title, 
+                ads.file_code AS ad_file_code, 
+                 ads.final_price AS price, 
+                ads.uid AS ad_uid,
+                categories.title AS category_title
+            FROM 
+                favorites 
+            JOIN 
+                ads ON favorites.ad_id = ads.id 
+            LEFT JOIN 
+                files ON ads.file_code = files.referencecode
+            LEFT JOIN 
+                categories ON ads.category_id = categories.id
+            WHERE 
+                favorites.user_id = :user_id 
+                AND ads.deleted = false 
+            ORDER BY 
+                ads.id DESC 
+            LIMIT :limit OFFSET :offset
+        ";
+        
+        
 
+        $page = max(1, intval($page));
+        $perPage = intval($perPage);
+        $offset = $perPage * ($page - 1);
 
-            $statement = $db->prepare($query);
-            $statement->bindParam(':user_id', $user_id);
-            $statement->execute();
-            $favorites = $statement->fetchAll($db::FETCH_ASSOC);
+        // Exécuter la requête
+        $data = DB::select($query, [$user_id, $perPage, $offset]);
 
-            foreach($favorites as $favorite){
-                $favorite['category_title'] = Category::whereId($favorite['ad_category_id'])->first()->title;
-                $favorite['image'] = File::where('referencecode',$favorite['ad_file_code'])->first()->location;
-                // return $favorite;
-
-                $data[] = $favorite;
-            }
-
-            return response()->json([
-                'data' => $data
+        $totalQuery = "
+        SELECT 
+            COUNT(*) AS total 
+        FROM 
+            carts
+        WHERE 
+            carts.user_id = ?
+            ";
+            $total = DB::select($totalQuery, [$user_id])[0]->total;$paginator = new \Illuminate\Pagination\LengthAwarePaginator($data, $total, $perPage, $page, [
+                'path' => request()->url(),
+                'query' => request()->query(),
             ]);
+        
+            return response()->json(['data' => $paginator]);
+
+
             
         } catch (Exception $e) {
            return response()->json([

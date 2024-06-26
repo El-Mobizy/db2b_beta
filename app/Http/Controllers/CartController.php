@@ -9,6 +9,7 @@ use App\Models\OngingTradeStage;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
@@ -16,36 +17,32 @@ class CartController extends Controller
 
 /**
  * @OA\Post(
- *     path="/api/cart/addToCart",
- *     summary="Add a product to the cart",
- *     tags={"Cart"},
+ *     path="/api/cart/addToCart/{adId}",
+ *     summary="Add to Cart",
  * security={{"bearerAuth": {}}},
- *     @OA\RequestBody(
- *         @OA\MediaType(
- *             mediaType="application/json",
- *             @OA\Schema(
- *                 @OA\Property(
- *                     property="ad_id",
- *                     type="integer",
- *                     description="The ID of the product to add to the cart"
- *                 )
- *             )
+ *     description="Add an advertisement to the authenticated user's cart.",
+ *     operationId="addToCart",   
+ *     tags={"Cart"},
+ *     @OA\Parameter(
+ *         name="adId",
+ *         in="path",
+ *         description="ID of the advertisement to add to the cart",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="integer"
  *         )
  *     ),
+ *     
  *     @OA\Response(
  *         response=200,
- *         description="Product added to the cart successfully",
+ *         description="Product added to cart successfully",
  *         @OA\JsonContent(
  *             @OA\Property(
  *                 property="message",
  *                 type="string",
- *                 example="Product add to cart successfully"
+ *                 example="Product added to cart successfully"
  *             )
  *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Invalid input"
  *     ),
  *     @OA\Response(
  *         response=401,
@@ -53,24 +50,55 @@ class CartController extends Controller
  *     ),
  *     @OA\Response(
  *         response=500,
- *         description="Server error"
+ *         description="Server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Error message"
+ *             )
+ *         )
  *     )
  * )
  */
-    public function addToCart(Request $request) {
+    public function addToCart(Request $request,$adId) {
 
-        $item = $this->getCartItem($request);
-        if($item == 0){
-            return response()->json(
-                [
-                    'message' =>'Check if this ad is already validated'
-                ]);
+        
+
+        $service = new Service();
+
+        $checkAuth=$service->checkAuth();
+
+        if($checkAuth){
+           return $checkAuth;
         }
-        $cartItem = $item['cartItem'];
 
-        // return $item['cartItem'];
+        $user = auth()->user();
+
+        $ac = new AdController();
+
+        $checkAd = $ac->checkIfAdIsValidated(Ad::find($adId)->uid);
+
+
+        if($checkAd == 0){
+            return response()->json([
+                'message' => 'Check if this ad is validated !'
+            ]);
+         }
+    
+        $cartItem = Cart::where('user_id', $user->id)
+                        ->where('ad_id', $adId)
+                        ->first();
+    $item = [
+        'cartItem' => $cartItem,
+        'userId' => $user->id
+    ];
+
+        // $cartItem = $item['cartItem'];
+
     
         if ($cartItem) {
+            // return 1;
             $cartItem->quantity += 1;
             $cartItem->save();
         } else {
@@ -159,43 +187,60 @@ class CartController extends Controller
     }
 
 
-    /**
+ /**
  * @OA\Get(
- *     path="/api/cart/getUserCart",
- *     summary="Get the user's cart",
- *     tags={"Cart"},
+ *     path="/api/cart/getUserCart/{page}/{perPage}",
  * security={{"bearerAuth": {}}},
+ *     summary="Get User Cart",
+ *     description="Retrieve the cart items for the authenticated user with pagination.",
+ *     operationId="getUserCart",
+ *     tags={"Cart"},
+ *     @OA\Parameter(
+ *         name="page",
+ *         in="query",
+ *         description="Page number for pagination",
+ *         required=false,
+ *         @OA\Schema(
+ *             type="integer",
+ *             default=1
+ *         )
+ *     ),
+ *     @OA\Parameter(
+ *         name="perPage",
+ *         in="query",
+ *         description="Number of items per page",
+ *         required=false,
+ *         @OA\Schema(
+ *             type="integer",
+ *             default=5,
+ *             maximum=50
+ *         )
+ *     ),
  *     @OA\Response(
  *         response=200,
- *         description="User's cart retrieved successfully",
+ *         description="Successful retrieval of cart items",
  *         @OA\JsonContent(
+ *             type="object",
  *             @OA\Property(
  *                 property="data",
  *                 type="array",
  *                 @OA\Items(
- *                     @OA\Property(
- *                         property="files",
- *                         type="array",
- *                         @OA\Items(
- *                             @OA\Property(
- *                                 property="file_name",
- *                                 type="string",
- *                                 description="The name of the file"
- *                             ),
- *                             @OA\Property(
- *                                 property="file_path",
- *                                 type="string",
- *                                 description="The path of the file"
- *                             )
- *                         )
- *                     )
+ *                     @OA\Property(property="ad_id", type="integer", example=1),
+ *                     @OA\Property(property="ad_uid", type="string", example="abc123"),
+ *                     @OA\Property(property="ad_title", type="string", example="Sample Ad Title"),
+ *                     @OA\Property(property="final_price", type="number", format="float", example=99.99),
+ *                     @OA\Property(property="cart_id", type="integer", example=1),
+ *                     @OA\Property(property="quantity", type="integer", example=2),
+ *                     @OA\Property(property="image", type="string", example="http://example.com/image.jpg")
  *                 )
- *             )
+ *             ),
+ *             @OA\Property(property="current_page", type="integer", example=1),
+ *             @OA\Property(property="last_page", type="integer", example=2),
+ *             @OA\Property(property="per_page", type="integer", example=5),
+ *             @OA\Property(property="total", type="integer", example=10),
+ *             @OA\Property(property="path", type="string", example="http://example.com/user/cart"),
+ *             @OA\Property(property="query", type="object")
  *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Invalid input"
  *     ),
  *     @OA\Response(
  *         response=401,
@@ -203,13 +248,23 @@ class CartController extends Controller
  *     ),
  *     @OA\Response(
  *         response=500,
- *         description="Server error"
+ *         description="Server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Error message")
+ *         )
  *     )
  * )
  */
 
-    public function getUserCart(){
+    public function getUserCart(Request $request,$page = 1,$perPage=5){
         try {
+            // $page = $request->input('page', 1);
+            // $perPage = $request->input('per_page',5);
+
+            if($perPage > 50){
+                $perPage = 50;
+            }
+
             $service = new Service();
     
             $checkAuth=$service->checkAuth();
@@ -228,32 +283,55 @@ class CartController extends Controller
                 ],200);
             }
 
+            $query = "
+            SELECT 
+                ads.id AS ad_id, 
+                ads.uid AS ad_uid, 
+                ads.title AS ad_title, 
+                ads.final_price, 
+                carts.id AS cart_id, 
+                carts.quantity, 
+                files.location AS image
+            FROM 
+                carts
+            JOIN 
+                ads ON carts.ad_id = ads.id
+            LEFT JOIN 
+                files ON ads.file_code = files.referencecode
+            WHERE 
+                carts.user_id = ?
+                 AND ads.deleted = false
+            ORDER BY 
+                carts.id DESC
+            LIMIT ? OFFSET ?
+        ";
 
-            foreach ($userCarts as $userCart) {
-                $ad = Ad::whereId($userCart->ad_id)->with('file')->first();
-                // if(File::where('referencecode',$ad->file_code)->exists()){
-                //     $ad->image = File::where('referencecode',$ad->file_code)->first();
-                // // $ad->file =  $ad->with('file')->get();
-                // }
+    // Calculer l'offset
+    
+    $page = max(1, intval($page));
+    $perPage = intval($perPage);
+    $offset = $perPage * ($page - 1);
+    // Exécuter la requête
+    $data = DB::select($query, [$user->id, $perPage, $offset]);
 
-                // return File::where('referencecode',$ad->file_code)->exists();
+    // Compter le total des résultats pour la pagination
+    $totalQuery = "
+        SELECT 
+            COUNT(*) AS total 
+        FROM 
+            carts
+        WHERE 
+            carts.user_id = ?
+    ";
+    $total = DB::select($totalQuery, [$user->id])[0]->total;
 
-                $data[] = [
-                    'ad_id' =>Ad::whereId($userCart->ad_id)->first()->id,
-                    'ad_uid' =>Ad::whereId($userCart->ad_id)->first()->uid,
-                    'ad_title' => Ad::whereId($userCart->ad_id)->first()->title,
-                    'final_price' => Ad::whereId($userCart->ad_id)->first()->final_price,
-                    'cart_id' => $userCart->id,
-                    'quantity' => $userCart->quantity,
-                    'image' => File::where('referencecode',$ad->file_code)->first()->location
+    $paginator = new \Illuminate\Pagination\LengthAwarePaginator($data, $total, $perPage, $page, [
+        'path' => request()->url(),
+        'query' => request()->query(),
+    ]);
 
-                ];
-            }
+    return response()->json(['data' => $paginator]);
 
-
-            return response()->json([
-                'data' => $data
-            ],200);
 
         } catch(Exception $e){
             return response()->json([
@@ -261,6 +339,21 @@ class CartController extends Controller
             ],500);
         }
     }
+
+       // foreach ($userCarts as $userCart) {
+            //     $ad = Ad::whereId($userCart->ad_id)->with('file')->first();
+
+            //     $data[] = [
+            //         'ad_id' =>Ad::whereId($userCart->ad_id)->first()->id,
+            //         'ad_uid' =>Ad::whereId($userCart->ad_id)->first()->uid,
+            //         'ad_title' => Ad::whereId($userCart->ad_id)->first()->title,
+            //         'final_price' => Ad::whereId($userCart->ad_id)->first()->final_price,
+            //         'cart_id' => $userCart->id,
+            //         'quantity' => $userCart->quantity,
+            //         'image' => File::where('referencecode',$ad->file_code)->first()->location
+
+            //     ];
+            // }
 
 
     /**
@@ -473,40 +566,19 @@ class CartController extends Controller
 
     public function getCartItem(Request $request){
         try {
-            $request->validate([
-                'ad_id' => 'required',
-            ]);
+            // $request->validate([
+            //     'ad_id' => 'required',
+            // ]);
 
-            $service = new Service();
-
-            $checkAuth=$service->checkAuth();
-
-            if($checkAuth){
-               return $checkAuth;
-            }
+          
 
             // return ($request->ad_id);
 
-            $ac = new AdController();
+           
 
-            $checkAd = $ac->checkIfAdIsValidated(Ad::find($request->ad_id)->uid);
+           
 
-            if($checkAd == 0){
-                return 0;
-             }
-
-            $user = auth()->user();
-    
-                $cartItem = Cart::where('user_id', $user->id)
-                                ->where('ad_id', $request->ad_id)
-                                ->first();
-            $item = [
-                'cartItem' => $cartItem,
-                'userId' => $user->id
-            ];
-
-                return $item;
-        }catch(Exception $e){
+            }catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()
             ],500);

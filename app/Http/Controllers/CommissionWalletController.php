@@ -235,4 +235,25 @@ class CommissionWalletController extends Controller
         }
     }
 
+    public function generateStandardUnAuthWallet($personId){
+        try {
+            $service = new Service();
+            $wallet = new CommissionWallet();
+            $wallet->balance = 0;
+            $wallet->prev_balance = 0;
+            $wallet->commission_id = Commission::where('short','STD')->first()->id;
+            $wallet->person_id = $personId;
+            $wallet->uid= $service->generateUid($wallet);
+            $wallet->save();
+
+            return response()->json([
+                'message' => 'Wallet generate successffuly'
+            ],200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
 }

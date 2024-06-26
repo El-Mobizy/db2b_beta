@@ -392,6 +392,21 @@ class Service extends Controller
     }
    }
 
+   public function returnUserPersonId($userId){
+    try {
+
+
+        $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+        $person = DB::selectOne($personQuery, ['userId' => $userId]);
+
+        return $person->id;
+    } catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
+   }
+
    public function checkAuth(){
     if (!Auth::user()) {
         return response()->json([
@@ -399,5 +414,40 @@ class Service extends Controller
         ],200);
     }
    }
+
+   public function returnPersonAndUserId($clientId) {
+    try {
+        // Récupérer le client en fonction de l'ID client
+        $client = Client::find($clientId);
+
+        if (!$client) {
+            return response()->json([
+                'message' => 'Client not found'
+            ], 404);
+        }
+
+        // Requête SQL pour récupérer la personne
+        $personQuery = "SELECT * FROM person WHERE id = :personId";
+        $person = DB::selectOne($personQuery, ['personId' => $client->person_id]);
+
+        if (!$person) {
+            return response()->json([
+                'message' => 'Person not found'
+            ], 404);
+        }
+
+        $data = [
+            'person_id' => $person->id,
+            'user_id' => $person->user_id
+        ];
+
+        return $data;
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
 
 }

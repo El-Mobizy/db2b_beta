@@ -56,12 +56,12 @@ Route::prefix('users')->group(function () {
 
     Route::group(['middleware' => 'auth:api'], function () {
         Route::prefix('cart')->group(function () {
-            Route::post('/addToCart', [CartController::class, 'addToCart'])->name('cart.addToCart');
+            Route::post('/addToCart/{ad_id}', [CartController::class, 'addToCart'])->name('cart.addToCart');
             Route::delete('/removeToCart', [CartController::class, 'removeToCart'])->name('cart.removeToCart');
-            Route::get('/getUserCart', [CartController::class, 'getUserCart'])->name('cart.getUserCart');
+            Route::get('/getUserCart/{page}/{perPage}', [CartController::class, 'getUserCart'])->name('cart.getUserCart');
             Route::post('/incrementQuantity', [CartController::class, 'incrementQuantity'])->name('cart.incrementQuantity');
             Route::post('/decrementQuantity', [CartController::class, 'decrementQuantity'])->name('cart.decrementQuantity');
-            Route::get('/getCartItem/{ad_id}', [CartController::class, 'getCartItem'])->name('cart.getCartItem');
+            // Route::get('/getCartItem/{ad_id}', [CartController::class, 'getCartItem'])->name('cart.getCartItem');
         });
 
         Route::prefix('commission')->group(function () {
@@ -92,7 +92,10 @@ Route::prefix('users')->group(function () {
             Route::post('/orderManyItem', [OrderController::class, 'orderManyItem'])->name('order.orderManyItem');
             Route::post('/payOrder/{orderId}', [OrderController::class, 'payOrder'])->name('order.payOrder');
             Route::post('/addFund', [OrderController::class, 'addFund'])->name('order.addFund');
-            Route::get('/orderTransaction/{orderId}', [OrderController::class, 'orderTransaction'])->name('order.orderTransaction');
+            Route::get('/orderTrade/{orderId}', [OrderController::class, 'orderTrade'])->name('order.orderTrade');
+            Route::get('/getOrderEndTrade/{orderId}', [OrderController::class, 'getOrderEndTrade'])->name('order.getOrderEndTrade');
+            Route::get('/getOrderCanceledTrade/{orderId}', [OrderController::class, 'getOrderCanceledTrade'])->name('order.getOrderCanceledTrade');
+           
         });
 
         Route::get('/user', [UserController::class, 'userAuth']);
@@ -149,8 +152,10 @@ Route::prefix('users')->group(function () {
             Route::post('/makeCompleteTradeStage/{ongingTradeStageId}', [OngingTradeStageController::class, 'makeCompleteTradeStage'])->name('ongingtradeStage.makeCompleteTradeStage');
             Route::post('/makeInCompleteTradeStage/{ongingTradeStageId}', [OngingTradeStageController::class, 'makeInCompleteTradeStage'])->name('ongingtradeStage.makeInCompleteTradeStage');
             Route::post('/yes_action/{ongingTradeStageId}', [OngingTradeStageController::class, 'yes_action'])->name('ongingtradeStage.yes_action');
+            Route::get('/showTradeStage/{ongingTradeStageId}', [OngingTradeStageController::class, 'showTradeStage'])->name('ongingtradeStage.showTradeStage');
             Route::post('/no_action/{ongingTradeStageId}', [OngingTradeStageController::class, 'no_action'])->name('ongingtradeStage.no_action');
             Route::post('/updateOngingTradeStage/{ongingTradeStageId}', [OngingTradeStageController::class, 'updateOngingTradeStage'])->name('ongingtradeStage.updateOngingTradeStage');
+            Route::post('/handleTradeStageAction/{ongingtradeStageId}/{actionType}', [OngingTradeStageController::class, 'handleTradeStageAction'])->name('order.handleTradeStageAction');
         });
 
         Route::prefix('tradeStage')->group(function () {
@@ -185,7 +190,7 @@ Route::prefix('users')->group(function () {
     });
 
     Route::prefix('ad')->group(function () {
-        Route::get('/recent/{perPage}', [AdController::class, 'getRecentAdd'])->name('ad.recent');
+        Route::get('/recent/{page}/{perPage}', [AdController::class, 'getRecentAdd'])->name('ad.recent');
         Route::get('/all', [AdController::class, 'getAllAd'])->name('ad.all');
         Route::post('/storeAd', [AdController::class, 'storeAd'])->name('ad.storeAd');
         Route::post('/editAd/{uid}', [AdController::class, 'editAd'])->name('ad.editAd');
@@ -203,8 +208,8 @@ Route::prefix('users')->group(function () {
     });
 
     Route::prefix('favorite')->group(function () {
-        Route::post('/addAdToFavorite', [FavoriteController::class, 'addAdToFavorite'])->name('favorite.addAdToFavorite');
-        Route::get('/GetFavoritesAd', [FavoriteController::class, 'GetFavoritesAd'])->name('favorite.GetFavoritesAd');
+        Route::post('/addAdToFavorite/{adId}', [FavoriteController::class, 'addAdToFavorite'])->name('favorite.addAdToFavorite');
+        Route::get('/GetFavoritesAd/{page}/{perPage}', [FavoriteController::class, 'GetFavoritesAd'])->name('favorite.GetFavoritesAd');
         Route::delete('/RemoveAdFromFavoriteList/{id}', [FavoriteController::class, 'RemoveAdFromFavoriteList'])->name('favorite.RemoveAdFromFavoriteList');
         Route::get('/all', [FavoriteController::class, 'all'])->name('favorite.all');
     });
@@ -285,12 +290,13 @@ Route::prefix('users')->group(function () {
     Route::get('/order/ordersIndex', [OrderController::class, 'ordersIndex'])->name('order.ordersIndex');
 
 
-    // Route::prefix('tradeStage')->group(function () {
-    //     Route::post('/createTradeStage/{tradeId}', [TradeStageController::class, 'createTradeStage'])->name('tradeStage.createTradeStage');
-    //     Route::get('/displayTradeStages/{tradeId}', [TradeStageController::class, 'displayTradeStages'])->name('tradeStage.displayTradeStages');
-    //     Route::post('/initializeTradeStage/{tradeId}', [TradeStageController::class, 'initializeTradeStage'])->name('tradeStage.initializeTradeStage');
-    //     Route::post('/updateTradeStage/{tradeStageId}', [TradeStageController::class, 'updateTradeStage'])->name('tradeStage.updateTradeStage');
-    //     Route::post('/makeAsDoneBy/{tradeStageId}', [TradeStageController::class, 'makeAsDoneBy'])->name('tradeStage.makeAsDoneBy');
-    //     Route::get('/getTradeStageDone/{tradeId}', [TradeStageController::class, 'getTradeStageDone'])->name('tradeStage.getTradeStageDone');
-    //     Route::get('/getTradeStageNotDoneYet/{tradeId}', [TradeStageController::class, 'getTradeStageNotDoneYet'])->name('tradeStage.getTradeStageNotDoneYet');
-    // });
+    Route::prefix('tradeStage')->group(function () {
+        Route::post('/createTradeStage', [TradeStageController::class, 'createTradeStage'])->name('tradeStage.createTradeStage');
+        Route::post('/updateTradeStage/{tradeStageId}', [TradeStageController::class, 'updateTradeStage'])->name('tradeStage.updateTradeStage');
+        // Route::get('/displayTradeStages/{tradeId}', [TradeStageController::class, 'displayTradeStages'])->name('tradeStage.displayTradeStages');
+        // Route::post('/initializeTradeStage/{tradeId}', [TradeStageController::class, 'initializeTradeStage'])->name('tradeStage.initializeTradeStage');
+       
+        // Route::post('/makeAsDoneBy/{tradeStageId}', [TradeStageController::class, 'makeAsDoneBy'])->name('tradeStage.makeAsDoneBy');
+        // Route::get('/getTradeStageDone/{tradeId}', [TradeStageController::class, 'getTradeStageDone'])->name('tradeStage.getTradeStageDone');
+        // Route::get('/getTradeStageNotDoneYet/{tradeId}', [TradeStageController::class, 'getTradeStageNotDoneYet'])->name('tradeStage.getTradeStageNotDoneYet');
+    });

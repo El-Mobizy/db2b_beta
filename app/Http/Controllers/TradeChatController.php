@@ -37,6 +37,50 @@ class TradeChatController extends Controller
         }
     }
 
+
+    /**
+     * @OA\Post(
+     *     path="/api/tradeChat/updateTradeChatLastMessage/{tradeChatId}",
+     * security={{"bearerAuth": {}} },    
+     *     summary="Update the last message of a trade chat",
+     *     tags={"tradeChat"},
+     *     @OA\Parameter(
+     *         name="tradeChatId",
+     *         in="path",
+     *         description="ID of the trade chat",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Updated last message content")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Trade chat last message updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Trade chat last message updated successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Trade chat not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Trade chat not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="An error occurred")
+     *         )
+     *     )
+     * )
+     */
+
     public function updateTradeChatLastMessage($tradeChatId, $message){
         try {
 
@@ -47,6 +91,43 @@ class TradeChatController extends Controller
             ],500);
         }
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/tradeChat/markTradeChatAsSpam/{tradeChatId}",
+     *     summary="Mark a trade chat as spam",
+     *     tags={"tradeChat"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="tradeChatId",
+     *         in="path",
+     *         description="ID of the trade chat",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Trade chat marked as spam successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Trade chat marked as spam successfully !")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Trade chat not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Trade chat not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="An error occurred")
+     *         )
+     *     )
+     * )
+     */
 
     public function markTradeChatAsSpam($tradeChatId){
         try {
@@ -67,6 +148,43 @@ class TradeChatController extends Controller
             ],500);
         }
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/tradeStage/archiveTradeChat/{tradeChatId}",
+     *     summary="Archive a trade chat",
+     *     tags={"tradeChat"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="tradeChatId",
+     *         in="path",
+     *         description="ID of the trade chat",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Trade chat archived successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Trade chat marked archived successfully !")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Trade chat not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Trade chat not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="An error occurred")
+     *         )
+     *     )
+     * )
+     */
 
 
     public function archiveTradeChat($tradeChatId){
@@ -124,6 +242,43 @@ class TradeChatController extends Controller
         }
     }
 
+
+    /**
+     * @OA\Get(
+     *     path="/api/tradeChat/getMessageOfTradeChat/{tradeChatId}",
+     *     summary="Get messages of a trade chat",
+     *     tags={"tradeChat"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="tradeChatId",
+     *         in="path",
+     *         description="ID of the trade chat",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Messages retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref=""))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Trade chat not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Trade chat not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="An error occurred")
+     *         )
+     *     )
+     * )
+     */
     public function getMessageOfTradeChat($tradeChatId){
         try {
 

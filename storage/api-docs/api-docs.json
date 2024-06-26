@@ -42,22 +42,31 @@
                 }
             }
         },
-        "/api/ad/recent/{perPage}": {
+        "/api/ad/recent/{page}/{perPage}": {
             "get": {
                 "tags": [
                     "Ad"
                 ],
                 "summary": "Get recent ads.",
                 "description": "Get recent ads.",
-                "operationId": "129ce8c1391a1017d1354e22424517df",
+                "operationId": "7bd5c48bb7a6d3e1cbd6aef28b4d84b6",
                 "parameters": [
+                    {
+                        "name": "page",
+                        "in": "path",
+                        "description": "number of ad per page.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
                     {
                         "name": "perPage",
                         "in": "path",
                         "description": "number of ad per page.",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
                 ],
@@ -617,38 +626,35 @@
                 ]
             }
         },
-        "/api/cart/addToCart": {
+        "/api/cart/addToCart/{adId}": {
             "post": {
                 "tags": [
                     "Cart"
                 ],
-                "summary": "Add a product to the cart",
-                "operationId": "d28260d393ac0530cca1b17ee434d954",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "ad_id": {
-                                        "description": "The ID of the product to add to the cart",
-                                        "type": "integer"
-                                    }
-                                },
-                                "type": "object"
-                            }
+                "summary": "Add to Cart",
+                "description": "Add an advertisement to the authenticated user's cart.",
+                "operationId": "addToCart",
+                "parameters": [
+                    {
+                        "name": "adId",
+                        "in": "path",
+                        "description": "ID of the advertisement to add to the cart",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
-                },
+                ],
                 "responses": {
                     "200": {
-                        "description": "Product added to the cart successfully",
+                        "description": "Product added to cart successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Product add to cart successfully"
+                                            "example": "Product added to cart successfully"
                                         }
                                     },
                                     "type": "object"
@@ -656,14 +662,24 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Invalid input"
-                    },
                     "401": {
                         "description": "Unauthorized"
                     },
                     "500": {
-                        "description": "Server error"
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -729,16 +745,40 @@
                 ]
             }
         },
-        "/api/cart/getUserCart": {
+        "/api/cart/getUserCart/{page}/{perPage}": {
             "get": {
                 "tags": [
                     "Cart"
                 ],
-                "summary": "Get the user's cart",
-                "operationId": "ccf4cea20083d292d6a199279f67d09b",
+                "summary": "Get User Cart",
+                "description": "Retrieve the cart items for the authenticated user with pagination.",
+                "operationId": "getUserCart",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 5,
+                            "maximum": 50
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "User's cart retrieved successfully",
+                        "description": "Successful retrieval of cart items",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -747,25 +787,61 @@
                                             "type": "array",
                                             "items": {
                                                 "properties": {
-                                                    "files": {
-                                                        "type": "array",
-                                                        "items": {
-                                                            "properties": {
-                                                                "file_name": {
-                                                                    "description": "The name of the file",
-                                                                    "type": "string"
-                                                                },
-                                                                "file_path": {
-                                                                    "description": "The path of the file",
-                                                                    "type": "string"
-                                                                }
-                                                            },
-                                                            "type": "object"
-                                                        }
+                                                    "ad_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "ad_uid": {
+                                                        "type": "string",
+                                                        "example": "abc123"
+                                                    },
+                                                    "ad_title": {
+                                                        "type": "string",
+                                                        "example": "Sample Ad Title"
+                                                    },
+                                                    "final_price": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 99.99
+                                                    },
+                                                    "cart_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "quantity": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    },
+                                                    "image": {
+                                                        "type": "string",
+                                                        "example": "http://example.com/image.jpg"
                                                     }
                                                 },
                                                 "type": "object"
                                             }
+                                        },
+                                        "current_page": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "last_page": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "per_page": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "http://example.com/user/cart"
+                                        },
+                                        "query": {
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -773,14 +849,24 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Invalid input"
-                    },
                     "401": {
                         "description": "Unauthorized"
                     },
                     "500": {
-                        "description": "Server error"
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1068,6 +1154,263 @@
                         "description": "Erreur de serveur. Une erreur s'est produite lors du traitement de la requête."
                     }
                 }
+            }
+        },
+        "/api/chatMessage/createChatMessage/{tradeChatId}": {
+            "post": {
+                "tags": [
+                    "chatMessage"
+                ],
+                "summary": "Create a chat message",
+                "operationId": "9aa6ec376405c1105883641a206431f7",
+                "parameters": [
+                    {
+                        "name": "tradeChatId",
+                        "in": "path",
+                        "description": "ID of the trade chat",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "content": {
+                                        "type": "string",
+                                        "example": "Hello, how are you?"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Chat message created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Chat message created successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request, content is required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "The content field is required."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade chat not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade chat not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chatMessage/markMessageAsRead/{chatMessageId}": {
+            "post": {
+                "tags": [
+                    "chatMessage"
+                ],
+                "summary": "Mark a message as read",
+                "operationId": "07d13759bc433b2121efa31fa52d512b",
+                "parameters": [
+                    {
+                        "name": "chatMessageId",
+                        "in": "path",
+                        "description": "ID of the chat message",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message marked as read successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Message read successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Message not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Message not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chatMessage/markMessageAsUnRead/{chatMessageId}": {
+            "post": {
+                "tags": [
+                    "chatMessage"
+                ],
+                "summary": "Mark a message as unread",
+                "operationId": "508e3bfdae060c2468eb36a3ddd1ff91",
+                "parameters": [
+                    {
+                        "name": "chatMessageId",
+                        "in": "path",
+                        "description": "ID of the chat message",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message marked as unread successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Message unread successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Message not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Message not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/commission/store": {
@@ -1852,32 +2195,24 @@
                 }
             }
         },
-        "/api/favorite/addAdToFavorite": {
+        "/api/favorite/addAdToFavorite/{adId}": {
             "post": {
                 "tags": [
                     "Favorite"
                 ],
                 "summary": "add new ad to favorite",
-                "operationId": "3a4ca13bce683d5458259ef611001221",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "ad_id": {
-                                        "description": "Get specific ID of ad",
-                                        "type": "integer"
-                                    }
-                                },
-                                "type": "object",
-                                "example": {
-                                    "ad_id": 123
-                                }
-                            }
+                "operationId": "5f62daa907653edf4ed656061bf7a9e6",
+                "parameters": [
+                    {
+                        "name": "adId",
+                        "in": "path",
+                        "description": "ID of the product to add to the favorite",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
-                },
+                ],
                 "responses": {
                     "200": {
                         "description": "add added successfully"
@@ -1899,24 +2234,64 @@
                 ]
             }
         },
-        "/api/favorite/GetFavoritesAd": {
+        "/api/favorite/GetFavoritesAd/{page}/{perPage}": {
             "get": {
                 "tags": [
                     "Favorite"
                 ],
-                "summary": "Retrieve favorite ads for the current user",
-                "description": "Retrieve a list of favorite ads for the currently authenticated user",
-                "operationId": "207974cefca86f2b808cc11a36c52805",
+                "summary": "Get user's favorite ads",
+                "description": "Retrieve a paginated list of the user's favorite ads.",
+                "operationId": "getFavoritesAd",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "A list of favorite ads",
+                        "description": "Successful response",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": ""
-                                    }
+                                    "properties": {
+                                        "data": {
+                                            "$ref": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -2100,6 +2475,587 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/ongingtradeStage/makeCompleteTradeStage/{ongingtradeStageId}": {
+            "post": {
+                "tags": [
+                    "OnGoingTradeStage"
+                ],
+                "summary": "Mark a trade stage as complete",
+                "operationId": "98d68334fa0f15778f4a0f32b0705e32",
+                "parameters": [
+                    {
+                        "name": "ongingtradeStageId",
+                        "in": "path",
+                        "description": "Ongoing trade stage ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade stage marked as complete successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade stage complete successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade stage already complete",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade stage already complete"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ongingtradeStage/makeInCompleteTradeStage/{ongingtradeStageId}": {
+            "post": {
+                "tags": [
+                    "OnGoingTradeStage"
+                ],
+                "summary": "Mark a trade stage as incomplete",
+                "operationId": "47a7b2cf546056fb318b72e990942bf2",
+                "parameters": [
+                    {
+                        "name": "ongingtradeStageId",
+                        "in": "path",
+                        "description": "Ongoing trade stage ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade stage marked as incomplete successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade stage marked as incomplete successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade stage already incomplete",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade stage already incomplete"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ongingtradeStage/showTradeStage/{ongingtradeStageId}": {
+            "get": {
+                "tags": [
+                    "OnGoingTradeStage"
+                ],
+                "summary": "Retrieve details of a trade stage",
+                "operationId": "6643d18028b90d70125b30b311dee815",
+                "parameters": [
+                    {
+                        "name": "ongingtradeStageId",
+                        "in": "path",
+                        "description": "Ongoing trade stage ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Details of the trade stage",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade stage not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade stage not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ongingtradeStage/yes_action/{ongingtradeStageId}": {
+            "post": {
+                "tags": [
+                    "OnGoingTradeStage"
+                ],
+                "summary": "Handle 'yes' action for a trade stage",
+                "operationId": "e66251fbb2ed4ee8e82df7056b0b3f95",
+                "parameters": [
+                    {
+                        "name": "ongingtradeStageId",
+                        "in": "path",
+                        "description": "Ongoing trade stage ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Action successfully handled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "integer|null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade stage not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade stage not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ongingtradeStage/no_action/{ongingtradeStageId}": {
+            "post": {
+                "tags": [
+                    "OnGoingTradeStage"
+                ],
+                "summary": "Handle 'yes' action for a trade stage",
+                "operationId": "4bcd91a6c6ea3d694ce67d12357ec465",
+                "parameters": [
+                    {
+                        "name": "ongingtradeStageId",
+                        "in": "path",
+                        "description": "Ongoing trade stage ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Action successfully handled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "MOVE_TO_NEXT_STEP or END_TRADE"
+                                        },
+                                        "data": {
+                                            "type": "integer|null",
+                                            "example": "Next step ID or null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade stage not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade stage not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ongingtradeStage/updateOngingTradeStage/{tradeStageId}": {
+            "post": {
+                "tags": [
+                    "OnGoingTradeStage"
+                ],
+                "summary": "Update an ongoing trade stage",
+                "operationId": "a939573ef67d7c8eb570e9f19d919fc5",
+                "parameters": [
+                    {
+                        "name": "tradeStageId",
+                        "in": "path",
+                        "description": "ID of the ongoing trade stage to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "stage_title": {
+                                        "type": "string",
+                                        "example": "Updated Stage Title"
+                                    },
+                                    "steporder": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "yes_action": {
+                                        "type": "string",
+                                        "example": "MOVE_TO_NEXT_STEP"
+                                    },
+                                    "no_action": {
+                                        "type": "string",
+                                        "example": "END_TRADE"
+                                    },
+                                    "previous_step_id": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "next_step_id": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Trade stage updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade stage updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade stage not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade stage not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ongingtradeStage/handleTradeStageAction/{ongingtradeStageId}/{actionType}": {
+            "post": {
+                "tags": [
+                    "OnGoingTradeStage"
+                ],
+                "summary": "Handle action on trade stage",
+                "description": "Handles 'yes' or 'no' action on a trade stage based on provided onging trade stage ID and action type.",
+                "operationId": "efdf89c6c783a19dbd90239607d57438",
+                "parameters": [
+                    {
+                        "name": "ongingtradeStageId",
+                        "in": "path",
+                        "description": "ID of the ongoing trade stage",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "actionType",
+                        "in": "path",
+                        "description": "Type of action ('yes' or 'no')",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "MOVE_TO_NEXT_STEP"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "123"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input or action type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid input or action type"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Internal server error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/order/CreateAnOrder": {
@@ -3016,14 +3972,14 @@
                 ]
             }
         },
-        "/api/order/orderTransaction/{orderId}": {
+        "/api/order/orderTrade/{orderId}": {
             "get": {
                 "tags": [
                     "Trade"
                 ],
                 "summary": "Get order transactions",
                 "description": "Get the transactions for an order by its ID",
-                "operationId": "1c94a1fb5d490b219f9a66ebcb0dcdcc",
+                "operationId": "2bacb5cc212d4ed375f65fe7c791ac93",
                 "parameters": [
                     {
                         "name": "orderId",
@@ -5945,6 +6901,324 @@
                 ]
             }
         },
+        "/api/tradeChat/updateTradeChatLastMessage/{tradeChatId}": {
+            "post": {
+                "tags": [
+                    "tradeChat"
+                ],
+                "summary": "Update the last message of a trade chat",
+                "operationId": "59a37df7100e907274e2f19ebfadc092",
+                "parameters": [
+                    {
+                        "name": "tradeChatId",
+                        "in": "path",
+                        "description": "ID of the trade chat",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "message": {
+                                        "type": "string",
+                                        "example": "Updated last message content"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Trade chat last message updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade chat last message updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade chat not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade chat not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tradeChat/markTradeChatAsSpam/{tradeChatId}": {
+            "post": {
+                "tags": [
+                    "tradeChat"
+                ],
+                "summary": "Mark a trade chat as spam",
+                "operationId": "c5334b208e764b40d3a92bcf4b2ce37c",
+                "parameters": [
+                    {
+                        "name": "tradeChatId",
+                        "in": "path",
+                        "description": "ID of the trade chat",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade chat marked as spam successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade chat marked as spam successfully !"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade chat not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade chat not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tradeStage/archiveTradeChat/{tradeChatId}": {
+            "post": {
+                "tags": [
+                    "tradeChat"
+                ],
+                "summary": "Archive a trade chat",
+                "operationId": "aeaad299b645e293d78b45d058d4c87d",
+                "parameters": [
+                    {
+                        "name": "tradeChatId",
+                        "in": "path",
+                        "description": "ID of the trade chat",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade chat archived successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade chat marked archived successfully !"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade chat not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade chat not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tradeChat/getMessageOfTradeChat/{tradeChatId}": {
+            "get": {
+                "tags": [
+                    "tradeChat"
+                ],
+                "summary": "Get messages of a trade chat",
+                "operationId": "ce4d176897174878ab68f3f153f4ac9a",
+                "parameters": [
+                    {
+                        "name": "tradeChatId",
+                        "in": "path",
+                        "description": "ID of the trade chat",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Messages retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade chat not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade chat not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/trade/createTrade": {
             "post": {
                 "tags": [
@@ -6782,6 +8056,181 @@
                                         "error": {
                                             "type": "string",
                                             "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tradeStage/createTradeStage": {
+            "post": {
+                "tags": [
+                    "tradeStage"
+                ],
+                "summary": "Create a trade stage",
+                "operationId": "2fcfd68b276570ac7dd845ebc030e8ae",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "stage_title": {
+                                        "type": "string",
+                                        "example": "Stage Title"
+                                    },
+                                    "steporder": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "yes_action": {
+                                        "type": "string",
+                                        "example": "Action 1"
+                                    },
+                                    "no_action": {
+                                        "type": "string",
+                                        "example": "Action 2"
+                                    },
+                                    "action_done_by": {
+                                        "type": "string",
+                                        "example": "BUYER"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Trade stage created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade stage created successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/trade-stages/updateTradeStage/{tradeStageId}": {
+            "post": {
+                "tags": [
+                    "tradeStage"
+                ],
+                "summary": "Update a trade stage",
+                "operationId": "f673919b3733e9ebc4ce20120861cf91",
+                "parameters": [
+                    {
+                        "name": "tradeStageId",
+                        "in": "path",
+                        "description": "ID of the trade stage",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "stage_title": {
+                                        "type": "string",
+                                        "example": "Updated Stage Title"
+                                    },
+                                    "steporder": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "yes_action": {
+                                        "type": "string",
+                                        "example": "Updated Action 1"
+                                    },
+                                    "no_action": {
+                                        "type": "string",
+                                        "example": "Updated Action 2"
+                                    },
+                                    "previous_step_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "next_step_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Trade stage updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade stage updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
                                         }
                                     },
                                     "type": "object"
