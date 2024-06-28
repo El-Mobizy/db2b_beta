@@ -402,7 +402,11 @@ class UserController extends Controller
                         $title=  'Help us protect your account';
                         $body =$codes;
                         $message = new ChatMessageController();
-                        $mes =  $message->sendLoginConfirmationNotification(Auth::user()->id,$title,$body, 'code sent successfully !');
+                        $n=0;
+                        if( $mes =  $message->sendLoginConfirmationNotification(Auth::user()->id,$title,$body, 'code sent successfully !')){
+                            $n = $n+1;
+                        }
+                       
             
                         // $mes = $message->sendNotification(Auth::user()->id,$title,$body, 'code sent successfully !');
             
@@ -417,6 +421,8 @@ class UserController extends Controller
                             'user' => $user,
                             'access_token' => $token,
                             'token_type' => 'Bearer',
+                            'expires_in' => Auth::factory()->getTTL() * 60,
+                            'n' => $n
                         ]);
                     } else {
                         return response()->json(['error' => 'Mot de passe invalide.'], 200);
@@ -1368,6 +1374,12 @@ class UserController extends Controller
 public function verification_code(Request $request)
 {
     try {
+        $service = new Service();
+        $checkAuth=$service->checkAuth();
+
+        if($checkAuth){
+            return $checkAuth;
+        }
         $verification = $request->code;
         $user = User::where('code', $verification)->exists();
         // return [$verification,User::where('code', $verification)->exists()];

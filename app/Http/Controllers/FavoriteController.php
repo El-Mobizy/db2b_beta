@@ -49,54 +49,159 @@ class FavoriteController extends Controller
  * )
  */
 
-    public function addAdToFavorite(Request $request,$adId)
-    {
+    // public function addAdToFavorite(Request $request,$adId)
+    // {
+    //     try {
+    //         $service = new Service();
+
+    //         $checkAuth=$service->checkAuth();
+    
+    //         if($checkAuth){
+    //            return $checkAuth;
+    //         }
+
+    public function addAdToFavorite(Request $request, $adId) {
         try {
             $service = new Service();
-
-            $checkAuth=$service->checkAuth();
+            $checkAuth = $service->checkAuth();
     
-            if($checkAuth){
-               return $checkAuth;
+            if ($checkAuth) {
+                return $checkAuth;
             }
-
-                // $ad_id = htmlspecialchars($request->input('ad_id'));
-                $user_id = Auth::user()->id;
-                $exist = Favorite::where('ad_id',$adId)->where('user_id',$user_id)->where('deleted',false)->exists();
-                if($exist){
-                    Favorite::where('user_id',$user_id)->where('ad_id',$adId)->first()->delete();
-                }
+    
+            $user_id = Auth::user()->id;
+            $exist = Favorite::where('ad_id', $adId)->where('user_id', $user_id)->where('deleted', false)->exists();
+    
+            if ($exist) {
+                Favorite::where('user_id', $user_id)->where('ad_id', $adId)->first()->delete();
+                return $this->returnFavoritesList($user_id, 'Product removed from wishlist successfully!');
+            } else {
                 $ulid = Uuid::uuid1();
                 $ulidFavorite = $ulid->toString();
                 $uid = $ulidFavorite;
-                $created_at = date('Y-m-d H:i:s');
-                $updated_at = date('Y-m-d H:i:s');
-
+                $created_at = now();
+                $updated_at = now();
+    
                 $db = DB::connection()->getPdo();
-
-                $query = " INSERT INTO favorites (ad_id, user_id, uid, created_at, updated_at) VALUES (?,?,?,?,?) ";
-
+                $query = "INSERT INTO favorites (ad_id, user_id, uid, created_at, updated_at) VALUES (?, ?, ?, ?, ?)";
                 $statement = $db->prepare($query);
-
+    
                 $statement->bindParam(1, $adId);
                 $statement->bindParam(2, $user_id);
                 $statement->bindParam(3, $uid);
-                $statement->bindParam(4,  $created_at);
-                $statement->bindParam(5,  $updated_at);
-
+                $statement->bindParam(4, $created_at);
+                $statement->bindParam(5, $updated_at);
+    
                 $statement->execute();
-
-                return response()->json([
-                    'message' => 'Ad added to wishlist successfully !'
-                ]);
-
+    
+                return $this->returnFavoritesList($user_id, 'Product added to wishlist successfully!');
+            }
         } catch (Exception $e) {
-           return response()->json([
-            'error' => $e->getMessage()
-           ]);
+            return response()->json(['error' => $e->getMessage()]);
         }
-
     }
+    
+    private function returnFavoritesList($user_id, $message) {
+        $page = 1; // Default page number, can be adjusted as needed
+        $perPage = 5; // Default per page, can be adjusted as needed
+    
+        $db = DB::connection()->getPdo();
+    
+        $query = "
+            SELECT 
+                favorites.*, 
+                ads.id AS ad_id, 
+                ads.category_id AS ad_category_id, 
+                ads.owner_id AS ad_owner_id, 
+                ads.location_id AS ad_location_id, 
+                files.location AS image, 
+                ads.title AS title, 
+                ads.file_code AS ad_file_code, 
+                ads.final_price AS price, 
+                ads.uid AS ad_uid,
+                categories.title AS category_title
+            FROM 
+                favorites 
+            JOIN 
+                ads ON favorites.ad_id = ads.id 
+            LEFT JOIN 
+                files ON ads.file_code = files.referencecode
+            LEFT JOIN 
+                categories ON ads.category_id = categories.id
+            WHERE 
+                favorites.user_id = :user_id 
+                AND ads.deleted = false 
+            ORDER BY 
+                ads.id DESC 
+            LIMIT :limit OFFSET :offset
+        ";
+    
+        $offset = $perPage * ($page - 1);
+    
+        $data = DB::select($query, ['user_id' => $user_id, 'limit' => $perPage, 'offset' => $offset]);
+    
+        $totalQuery = "
+            SELECT 
+                COUNT(*) AS total 
+            FROM 
+                favorites
+            WHERE 
+                favorites.user_id = :user_id
+        ";
+    
+        $total = DB::select($totalQuery, ['user_id' => $user_id])[0]->total;
+    
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator($data, $total, $perPage, $page, [
+            'path' => request()->url(),
+            'query' => request()->query(),
+        ]);
+    
+        return response()->json(['message' => $message, 'data' => $paginator], 200);
+    }
+    
+
+    //             // $ad_id = htmlspecialchars($request->input('ad_id'));
+    //             $user_id = Auth::user()->id;
+    //             $exist = Favorite::where('ad_id',$adId)->where('user_id',$user_id)->where('deleted',false)->exists();
+    //             if($exist){
+    //                 Favorite::where('user_id',$user_id)->where('ad_id',$adId)->first()->delete();
+    //                 return response()->json([
+    //                     'message' => 'Product retrieve from wishlist successfully !',
+    //                     'data' => Favorite::where('user_id',Auth::user()->id)->get()
+    //                 ],200);
+    //             }
+    //             $ulid = Uuid::uuid1();
+    //             $ulidFavorite = $ulid->toString();
+    //             $uid = $ulidFavorite;
+    //             $created_at = date('Y-m-d H:i:s');
+    //             $updated_at = date('Y-m-d H:i:s');
+
+    //             $db = DB::connection()->getPdo();
+
+    //             $query = " INSERT INTO favorites (ad_id, user_id, uid, created_at, updated_at) VALUES (?,?,?,?,?) ";
+
+    //             $statement = $db->prepare($query);
+
+    //             $statement->bindParam(1, $adId);
+    //             $statement->bindParam(2, $user_id);
+    //             $statement->bindParam(3, $uid);
+    //             $statement->bindParam(4,  $created_at);
+    //             $statement->bindParam(5,  $updated_at);
+
+    //             $statement->execute();
+
+    //             return response()->json([
+    //                 'message' => 'product added to wishlist successfully !',
+    //                 'data' => Favorite::where('user_id',Auth::user()->id)->get()
+    //             ],200);
+
+    //     } catch (Exception $e) {
+    //        return response()->json([
+    //         'error' => $e->getMessage()
+    //        ]);
+    //     }
+
+    // }
 
 
    /**

@@ -14,14 +14,13 @@ use Illuminate\Support\Facades\DB;
 class CartController extends Controller
 {
   
-
 /**
  * @OA\Post(
  *     path="/api/cart/addToCart/{adId}",
  *     summary="Add to Cart",
  * security={{"bearerAuth": {}}},
  *     description="Add an advertisement to the authenticated user's cart.",
- *     operationId="addToCart",   
+ *     operationId="addToCart",  
  *     tags={"Cart"},
  *     @OA\Parameter(
  *         name="adId",
@@ -32,7 +31,6 @@ class CartController extends Controller
  *             type="integer"
  *         )
  *     ),
- *     
  *     @OA\Response(
  *         response=200,
  *         description="Product added to cart successfully",

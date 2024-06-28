@@ -955,10 +955,10 @@ private function getCartAds($cartItem){
                     ['message' => 'Order not found'
                 ],200);
             }
-            $c = $this->checkIfOrderIsPaid($orderId);
+            $checkIfOrderIsPaid = $this->checkIfOrderIsPaid($orderId);
 
-            if($c){
-                return $c;
+            if($checkIfOrderIsPaid){
+                return $checkIfOrderIsPaid;
             }
 
 
@@ -1028,18 +1028,17 @@ private function getCartAds($cartItem){
         }
     }
 
-    public function createTransaction($orderId,$wallet){
+    public function createTransaction($orderId,$wallet,$sender_id,$receiver_id,$amount){
         try {
-            $user = Auth::user();
             $service = new Service();
             $order = Order::find($orderId);
             $transaction = new Transaction();
 
             $transaction->order_id = $orderId;
-            $transaction->sender_id = $user->id;
-            $transaction->receiver_id = $user->id;
+            $transaction->sender_id = $sender_id;
+            $transaction->receiver_id = $receiver_id;
             $transaction->commission_wallet_id = $wallet->id;
-            $transaction->amount =  $order->amount;
+            $transaction->amount =  $amount;
             $transaction->transaction_type = 'transfer';
             $transaction->uid= $service->generateUid($transaction);
             $transaction->save();
@@ -1116,12 +1115,6 @@ private function getCartAds($cartItem){
 
             $wallet = CommissionWallet::where('person_id',$personId)->first();
             $walletAmount = $wallet->balance;
-
-            // if($walletAmount < $orderAmount){
-            //     return response()->json(
-            //         ['message' => 'insufficient balance'
-            //     ],200);
-            // }
 
             $diff = $walletAmount - $orderAmount;
 
@@ -1276,47 +1269,105 @@ private function getCartAds($cartItem){
         }
     }
 
-    public function getOrderEndTrade($orderId){
-        try{
-            $order =  Order::find($orderId);
+    public function getOrderEndTrade($orderId) {
+        try {
+            $order = Order::find($orderId);
+    
+            if (!$order) {
+                return response()->json([
+                    'error' => 'Order not found'
+                ], 404);
+            }
+    
             $statut_trade_id = TypeOfType::whereLibelle('endtrade')->first()->id;
-            foreach(OrderDetail::where('order_id',$order->id)->get() as $od){
-                $trade = Trade::where('order_detail_id',$od->id)
-                ->where('status_id',$statut_trade_id)
-                ->first();
-                $data[] =$trade;
+    
+            if (!$statut_trade_id) {
+                return response()->json([
+                    'error' => 'End trade status not found'
+                ], 404);
             }
-            return response()->json(
-                ['data' =>$data
-            ],200);
-
-        }catch(Exception $e){
+    
+            $data = [];
+            $orderDetails = OrderDetail::where('order_id', $order->id)->get();
+    
+            foreach ($orderDetails as $od) {
+                $trade = Trade::where('order_detail_id', $od->id)
+                              ->where('status_id', $statut_trade_id)
+                              ->first();
+    
+                if ($trade) {
+                    $trade->state = $trade->status_id == $statut_trade_id;
+                    if ($trade->state) {
+                        $data[] = $trade;
+                    }
+                }
+            }
+    
+            if (empty($data)) {
+                $data = 'No trades found';
+            }
+    
+            return response()->json([
+                'data' => $data
+            ], 200);
+    
+        } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
+    
 
-    public function getOrderCanceledTrade($orderId){
-        try{
-            $order =  Order::find($orderId);
-            $statut_trade_id = TypeOfType::whereLibelle('canceled')->first()->id;
-            foreach(OrderDetail::where('order_id',$order->id)->get() as $od){
-                $trade = Trade::where('order_detail_id',$od->id)
-                ->where('status_id',$statut_trade_id)
-                ->first();
-                $data[] =$trade;
+    public function getOrderCanceledTrade($orderId) {
+        try {
+            $order = Order::find($orderId);
+    
+            if (!$order) {
+                return response()->json([
+                    'error' => 'Order not found'
+                ], 404);
             }
-            return response()->json(
-                ['data' =>$data
-            ],200);
-
-        }catch(Exception $e){
+    
+            $statut_trade_id = TypeOfType::whereLibelle('canceltrade')->first()->id;
+    
+            if (!$statut_trade_id) {
+                return response()->json([
+                    'error' => 'Cancel trade status not found'
+                ], 404);
+            }
+    
+            $data = [];
+            $orderDetails = OrderDetail::where('order_id', $order->id)->get();
+    
+            foreach ($orderDetails as $od) {
+                $trade = Trade::where('order_detail_id', $od->id)
+                              ->where('status_id', $statut_trade_id)
+                              ->first();
+    
+                if ($trade) {
+                    $trade->state = $trade->status_id == $statut_trade_id;
+                    if ($trade->state) {
+                        $data[] = $trade;
+                    }
+                }
+            }
+    
+            if (empty($data)) {
+                $data = 'No trades found';
+            }
+    
+            return response()->json([
+                'data' => $data
+            ], 200);
+    
+        } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
+    
 
 
 }
