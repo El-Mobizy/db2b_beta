@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Info(
@@ -403,9 +404,15 @@ class UserController extends Controller
                         $body =$codes;
                         $message = new ChatMessageController();
                         $n=0;
-                        if( $mes =  $message->sendLoginConfirmationNotification(Auth::user()->id,$title,$body, 'code sent successfully !')){
-                            $n = $n+1;
+                        // if( $mes =  $message->sendLoginConfirmationNotification(Auth::user()->id,$title,$body, 'code sent successfully !')){
+                        //     $n = $n+1;
+                        // }
+
+                        if ($mes = $message->sendLoginConfirmationNotification(Auth::user()->id, $title, $body, 'code sent successfully !')) {
+                            Log::info('Login confirmation email sent to user ID: ' . Auth::user()->id);
+                            $n = $n + 1;
                         }
+                        
                        
             
                         // $mes = $message->sendNotification(Auth::user()->id,$title,$body, 'code sent successfully !');
@@ -1374,12 +1381,12 @@ class UserController extends Controller
 public function verification_code(Request $request)
 {
     try {
-        $service = new Service();
-        $checkAuth=$service->checkAuth();
+        // $service = new Service();
+        // $checkAuth=$service->checkAuth();
 
-        if($checkAuth){
-            return $checkAuth;
-        }
+        // if($checkAuth){
+        //     return $checkAuth;
+        // }
         $verification = $request->code;
         $user = User::where('code', $verification)->exists();
         // return [$verification,User::where('code', $verification)->exists()];

@@ -27,10 +27,12 @@ class AdController extends Controller
  /**
  * Get All ads.
  *
+ * 
  * @OA\Get(
  *      path="/api/ad/all",
  *      summary="Get all ads.",
  *   tags={"Ad"},
+ * security={{"bearerAuth": {}}},
  *      @OA\Response(
  *          response=200,
  *          description="Success. Return all ads.",
@@ -56,6 +58,7 @@ class AdController extends Controller
             if(Auth::user()){
                 return $this->getAllAdforAuth();
             }
+            // return Auth::user();
             $data = [];
             $ads =  Ad::with('file')
             ->orderBy('created_at', 'desc')
@@ -203,7 +206,6 @@ class AdController extends Controller
                     AND favorites.deleted = false
                 WHERE 
                     ads.deleted = false
-                    
             ";
     
             $total = DB::select($countQuery, [
@@ -227,8 +229,9 @@ class AdController extends Controller
  * Get recent ads.
  *
  * @OA\Get(
- *      path="/api/ad/recent/{page}/{perPage}",
+ *      path="/api/ad/all/{page}/{perPage}",
  *      summary="Get recent ads.",
+ *  security={{"bearerAuth": {}}},
  *   tags={"Ad"},
  *  @OA\Parameter(
  *          in="path",
@@ -512,6 +515,7 @@ class AdController extends Controller
  *                 @OA\Property(property="category_id", type="integer", example=1),
  *                 @OA\Property(property="shop_id", type="integer", example=1),
  *  @OA\Property(property="price", type="double", example=1),
+ * @OA\Property(property="final_price", type="double", example=1),
  *               @OA\Property(
  *                     property="value_entered[]",
  *                     type="array",

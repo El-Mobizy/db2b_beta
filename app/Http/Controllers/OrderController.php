@@ -15,6 +15,7 @@ use App\Models\Transaction;
 use App\Models\TypeOfType;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Spatie\LaravelIgnition\Http\Requests\UpdateConfigRequest;
@@ -949,13 +950,14 @@ private function getCartAds($cartItem){
             $personId = $service->returnPersonIdAuth();
 
             $order = Order::find($orderId);
-
+            
             if(!$order){
                 return response()->json(
                     ['message' => 'Order not found'
                 ],200);
             }
             $checkIfOrderIsPaid = $this->checkIfOrderIsPaid($orderId);
+            // return 1;
 
             if($checkIfOrderIsPaid){
                 return $checkIfOrderIsPaid;
@@ -1020,8 +1022,14 @@ private function getCartAds($cartItem){
     }
 
     public function checkIfOrderIsPaid($orderId){
+        $statusId = TypeOfType::whereLibelle('paid')->first()->id;
+        if(!$statusId){
+            return response()->json([
+                'message' => 'Status not found'
+            ]);
+        }
         $order = Order::find($orderId);
-        if($order->status == TypeOfType::whereLibelle('paid')->first()->id){
+        if($order->status == $statusId){
             return response()->json([
                 'message' => 'Order already paid'
             ]);
@@ -1195,9 +1203,14 @@ private function getCartAds($cartItem){
             $wallet = CommissionWallet::where('person_id',$personId)->first();
 
             if(!$wallet){
-                $com = new CommissionWalletController();
+                $com = new CommissionWalletController;
                 $com->generateStandardWallet();
+
+                if($com){
+                    return $com;
+                }
             }
+            // return 1;
 
             $credit =  $request->amount + CommissionWallet::where('person_id',$personId)->first()->balance;
 
@@ -1308,7 +1321,8 @@ private function getCartAds($cartItem){
             }
     
             return response()->json([
-                'data' => $data
+                'data' => $data,
+                'dataCount' => count($data)
             ], 200);
     
         } catch (Exception $e) {

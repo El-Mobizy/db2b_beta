@@ -55,6 +55,7 @@ Route::prefix('users')->group(function () {
 
 
     Route::group(['middleware' => 'auth:api'], function () {
+        Route::post('wallet/generateStandardWallet', [CommissionWalletController::class, 'generateStandardWallet'])->name('wallet.generateStandardWallet');
         Route::prefix('cart')->group(function () {
             Route::post('/addToCart/{ad_id}', [CartController::class, 'addToCart'])->name('cart.addToCart');
             Route::delete('/removeToCart', [CartController::class, 'removeToCart'])->name('cart.removeToCart');
@@ -77,7 +78,7 @@ Route::prefix('users')->group(function () {
             Route::post('/createWallet', [CommissionWalletController::class, 'createWallet'])->name('wallet.createWallet');
             Route::get('/listWallets', [CommissionWalletController::class, 'listWallets'])->name('wallet.listWallets');
             Route::post('/walletDetail/{commissionWalletId}', [CommissionWalletController::class, 'walletDetail'])->name('wallet.walletDetail');
-            Route::post('/generateStandardWallet', [CommissionWalletController::class, 'generateStandardWallet'])->name('wallet.generateStandardWallet');
+            // Route::post('/generateStandardWallet', [CommissionWalletController::class, 'generateStandardWallet'])->name('wallet.generateStandardWallet');
         });
 
         Route::prefix('order')->group(function () {
@@ -174,6 +175,7 @@ Route::prefix('users')->group(function () {
             Route::post('/markMessageAsRead/{chatMessageId}', [ChatMessageController::class, 'markMessageAsRead'])->name('chatMessage.markMessageAsRead');
             Route::post('/markMessageAsUnRead/{chatMessageId}', [ChatMessageController::class, 'markMessageAsUnRead'])->name('chatMessage.markMessageAsUnRead');
         });
+        // Route::get('/ad/all', [AdController::class, 'getAllAd'])->name('ad.all');
 
     });
     Route::prefix('category')->group(function () {
@@ -190,7 +192,7 @@ Route::prefix('users')->group(function () {
     });
 
     Route::prefix('ad')->group(function () {
-        Route::get('/recent/{page}/{perPage}', [AdController::class, 'getRecentAdd'])->name('ad.recent');
+        Route::get('/all/{page}/{perPage}', [AdController::class, 'getRecentAdd'])->name('ad.recent');
         Route::get('/all', [AdController::class, 'getAllAd'])->name('ad.all');
         Route::post('/storeAd', [AdController::class, 'storeAd'])->name('ad.storeAd');
         Route::post('/editAd/{uid}', [AdController::class, 'editAd'])->name('ad.editAd');

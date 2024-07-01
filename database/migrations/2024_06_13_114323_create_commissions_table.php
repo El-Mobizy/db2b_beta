@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -27,6 +28,10 @@ return new class extends Migration
             $table->boolean('deleted')->default(false);
             $table->timestamps();
         });
+        DB::table('commissions')->insert([
+            ['name' => 'Commission Standard', 'short' =>'STD' ,'created_at' => now(), 'updated_at' => now(),'uid'=>'30c588a0-356f-11ef-8aee-00ff5210c7f1'],
+            ['name' => 'Commission Bonus', 'short' =>'BNS' ,'created_at' => now(), 'updated_at' => now(),'uid'=>'30c588a0-356f-11ef-2afe-00ff5210c7f1'],
+        ]);
     }
 
     /**

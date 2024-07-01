@@ -109,6 +109,13 @@ class ShopController extends Controller
     public function becomeMerchant( Request $request){
         try{
 
+            $service = new Service();
+            $checkAuth = $service->checkAuth();
+    
+            if ($checkAuth) {
+                return $checkAuth;
+            }
+
 
             $personQuery = "SELECT * FROM person WHERE user_id = :userId";
             $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);

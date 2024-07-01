@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Commission;
 use App\Models\CommissionWallet;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class CommissionWalletController extends Controller
 {
@@ -216,11 +217,12 @@ class CommissionWalletController extends Controller
             $service = new Service();
 
             $personId = $service->returnPersonIdAuth();
-
             $wallet = new CommissionWallet();
             $wallet->balance = 0;
             $wallet->prev_balance = 0;
+            // return 1;
             $wallet->commission_id = Commission::where('short','STD')->first()->id;
+            // return Commission::where('short','STD')->first()->id;
             $wallet->person_id = $personId;
             $wallet->uid= $service->generateUid($wallet);
             $wallet->save();

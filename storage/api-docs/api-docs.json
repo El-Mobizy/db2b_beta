@@ -39,17 +39,22 @@
                     "500": {
                         "description": "Serveur error."
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/api/ad/recent/{page}/{perPage}": {
+        "/api/ad/all/{page}/{perPage}": {
             "get": {
                 "tags": [
                     "Ad"
                 ],
                 "summary": "Get recent ads.",
                 "description": "Get recent ads.",
-                "operationId": "7bd5c48bb7a6d3e1cbd6aef28b4d84b6",
+                "operationId": "f4ce9f06046ccb35678d2a79cfe05c00",
                 "parameters": [
                     {
                         "name": "page",
@@ -92,7 +97,12 @@
                     "500": {
                         "description": "Serveur error."
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/ad/marchand": {
@@ -271,6 +281,11 @@
                                         "example": 1
                                     },
                                     "price": {
+                                        "type": "number",
+                                        "format": "double",
+                                        "example": 1
+                                    },
+                                    "final_price": {
                                         "type": "number",
                                         "format": "double",
                                         "example": 1
@@ -2701,153 +2716,53 @@
                 ]
             }
         },
-        "/api/ongingtradeStage/yes_action/{ongingtradeStageId}": {
+        "/api/ongingtradeStage/handleTradeStageAction/{ongingtradeStageId}/{actionType}": {
             "post": {
                 "tags": [
                     "OnGoingTradeStage"
                 ],
-                "summary": "Handle 'yes' action for a trade stage",
-                "operationId": "e66251fbb2ed4ee8e82df7056b0b3f95",
+                "summary": "Handle trade stage action",
+                "description": "Handle trade stage action",
+                "operationId": "handleTradeStageAction",
                 "parameters": [
                     {
                         "name": "ongingtradeStageId",
                         "in": "path",
-                        "description": "Ongoing trade stage ID",
+                        "description": "Onging trade stage ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "actionType",
+                        "in": "path",
+                        "description": "Action type",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Action successfully handled",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "integer|null"
-                                        }
-                                    },
-                                    "type": "object"
+                                    "type": "string"
                                 }
                             }
                         }
                     },
-                    "404": {
-                        "description": "Trade stage not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Trade stage not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     },
                     "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "An error occurred"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/ongingtradeStage/no_action/{ongingtradeStageId}": {
-            "post": {
-                "tags": [
-                    "OnGoingTradeStage"
-                ],
-                "summary": "Handle 'yes' action for a trade stage",
-                "operationId": "4bcd91a6c6ea3d694ce67d12357ec465",
-                "parameters": [
-                    {
-                        "name": "ongingtradeStageId",
-                        "in": "path",
-                        "description": "Ongoing trade stage ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Action successfully handled",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "MOVE_TO_NEXT_STEP or END_TRADE"
-                                        },
-                                        "data": {
-                                            "type": "integer|null",
-                                            "example": "Next step ID or null"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Trade stage not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Trade stage not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "An error message"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Internal server error"
                     }
                 },
                 "security": [
@@ -2959,62 +2874,6 @@
                                 }
                             }
                         }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/ongingtradeStage/handleTradeStageAction/{ongingtradeStageId}/{actionType}": {
-            "post": {
-                "tags": [
-                    "OnGoingTradeStage"
-                ],
-                "summary": "Handle trade stage action",
-                "description": "Handle trade stage action",
-                "operationId": "handleTradeStageAction",
-                "parameters": [
-                    {
-                        "name": "ongingtradeStageId",
-                        "in": "path",
-                        "description": "Onging trade stage ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "actionType",
-                        "in": "path",
-                        "description": "Action type",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "500": {
-                        "description": "Internal server error"
                     }
                 },
                 "security": [
