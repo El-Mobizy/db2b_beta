@@ -910,10 +910,9 @@ public function checkCategoryShop($ownerId, Request $request){
 
     private function createAd(Request $request){
 
-        $commission = 1.15;
         $title = htmlspecialchars($request->input('title'));
         $price = htmlspecialchars($request->input('price'));
-        $final_price = floatval($request->input('price'))*$commission;
+        $final_price = floatval($request->input('price'));
         $location_id = htmlspecialchars($request->input('location_id'));
         $category_id = htmlspecialchars($request->input('category_id'));
         $shop_id = htmlspecialchars($request->input('shop_id'));
