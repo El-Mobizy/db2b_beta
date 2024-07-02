@@ -37,6 +37,9 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
+
+
+
 Route::prefix('users')->group(function () {
     Route::post('/register', [UserController::class, 'register'])->name('register');
     Route::get('/getUser', [UserController::class, 'getUser'])->name('getUser');
@@ -272,6 +275,7 @@ Route::prefix('users')->group(function () {
         Route::get('/AdMerchant/{shopId}/{perPage}', [ShopController::class, 'AdMerchant'])->name('shop.AdMerchant');
 
         Route::get('/userShop', [ShopController::class, 'userShop'])->name('shop.userShop');
+        Route::get('categories/{shopId}', [ShopController::class, 'getShopCategorie'])->name('shop.getShopCategorie');
     });
 
     Route::prefix('role')->group(function () {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ad;
+use App\Models\Category;
 use App\Models\Client;
 use App\Models\File;
 use App\Models\Shop;
@@ -847,6 +848,66 @@ class ShopController extends Controller
             return response()->json([
                 'data'  => $userShop,
             ]);
+        } catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ],500);
+        }
+    }
+
+
+    /**
+ * @OA\Get(
+ *     path="/api/shop/categories/{shopId}",
+ *     summary="Get categories of a shop",
+ *     description="Retrieve all categories associated with a specific shop.",
+ *     tags={"Shop"},
+ *     @OA\Parameter(
+ *         name="shopId",
+ *         in="path",
+ *         required=true,
+ *         description="ID of the shop",
+ *         @OA\Schema(
+ *             type="integer"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of categories",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(ref="")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="An error message"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+    public function getShopCategorie($shopId){
+        try {
+            $shopCategories = ShopHasCategory::where('shop_id',$shopId)->get();
+            foreach($shopCategories as $shopCategorie){
+                $data[] = Category::whereId($shopCategorie->category_id)->first();
+            }
+            return response()->json([
+                'data'  => $data,
+            ]);
+
         } catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()

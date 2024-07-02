@@ -6893,6 +6893,63 @@
                 ]
             }
         },
+        "/api/shop/categories/{shopId}": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Get categories of a shop",
+                "description": "Retrieve all categories associated with a specific shop.",
+                "operationId": "65f15b74c91a3dd49498384cbcc22a31",
+                "parameters": [
+                    {
+                        "name": "shopId",
+                        "in": "path",
+                        "description": "ID of the shop",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of categories",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/tradeChat/updateTradeChatLastMessage/{tradeChatId}": {
             "post": {
                 "tags": [

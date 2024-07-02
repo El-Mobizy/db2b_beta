@@ -18,5 +18,8 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+-------fichier_inutile-------
+
 /public/assets
 /app/brouillon

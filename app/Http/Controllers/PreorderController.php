@@ -302,21 +302,23 @@ class PreorderController extends Controller
  */
 public function getPreorderPending(){
     try {
-        
-        // $preorder = Preorder::whereStatut(TypeOfType::whereLibelle('pending')->first()->id)->get();
 
-        $preorder = DB::select("SELECT * FROM preorders WHERE statut = (
-            SELECT id FROM type_of_types WHERE libelle = 'pending' AND deleted = false LIMIT 1 
-        )");
+        // $preorder = DB::select("SELECT * FROM preorders WHERE statut = (
+        //     SELECT id FROM type_of_types WHERE libelle = 'pending' AND deleted = false LIMIT 1 
+        // )");
 
-        if(count($preorder) == 0){
+        $preorders = Preorder::whereDeleted(0)->where('statut',TypeOfType::where('libelle','pending')->first()->id)
+        ->with('user')
+        ->paginate(10);
+
+        if(count($preorders) == 0){
             return response()->json([
                 'message' => 'No data found'
             ]);
         }
 
         return response()->json([
-            'data' => $preorder
+            'data' => $preorders
         ]);
 
     } catch (\Exception $e) {
@@ -755,7 +757,7 @@ public function getPreorderWitnAnswer(){
             $query->whereDeleted(0)->where('statut', TypeOfType::whereLibelle('validated')->first()->id);
         })->with(['preorder_answers' => function ($query) {
             $query->whereDeleted(0)->where('statut', TypeOfType::whereLibelle('validated')->first()->id);
-        }])->whereDeleted(0)->get();
+        }])->whereDeleted(0)->paginate(10);
 
 
 
@@ -831,7 +833,7 @@ public function getPreorderWithValidatedAnswers($uid)
 
         $preorder = Preorder::with(['preorder_answers' => function ($query) use ($validatedStatusId) {
             $query->where('statut', $validatedStatusId)->whereDeleted(0);
-        }])->with('file')->whereDeleted(0)->whereUid($uid)->get();
+        }])->with('file')->whereDeleted(0)->whereUid($uid)->paginate(10);
 
         return response()->json([
             'data' => $preorder
@@ -947,19 +949,18 @@ public function getSpecificPreorderAnswer($uid){
  */
 public function getPreorderValidated(){
     try {
-        // $preorder = Preorder::whereStatut(TypeOfType::whereLibelle('validated')->first()->id)->get();
 
-        $preorder = DB::select("SELECT * FROM preorders WHERE statut = (
-            SELECT id FROM type_of_types WHERE libelle = 'validated' AND deleted = false LIMIT 1
-        )");
+    $preorders = Preorder::whereDeleted(0)->where('statut',TypeOfType::where('libelle','validated')->first()->id)
+    ->with('user')
+    ->paginate(10);
 
-        if(count($preorder) == 0){
+        if(count($preorders) == 0){
             return response()->json([
                 'message' => 'No data found'
             ]);
         }
         return response()->json([
-            'data' => $preorder
+            'data' => $preorders
         ]);
 
     } catch (\Exception $e) {
@@ -1007,20 +1008,19 @@ public function getPreorderValidated(){
 */
 public function getPreorderRejected(){
 try {
-    // $preorder = Preorder::whereStatut(TypeOfType::whereLibelle('rejected')->first()->id)->get();
 
-    $preorder = DB::select("SELECT * FROM preorders WHERE statut = (
-        SELECT id FROM type_of_types WHERE libelle = 'rejected' AND deleted = false LIMIT 1
-    )");
+    $preorders = Preorder::whereDeleted(0)->where('statut',TypeOfType::where('libelle','rejected')->first()->id)
+    ->with('user')
+    ->paginate(10);
 
-    if(count($preorder) == 0){
+    if(count($preorders) == 0){
         return response()->json([
             'message' => 'No data found'
         ]);
     }
 
     return response()->json([
-        'data' => $preorder
+        'data' => $preorders
     ]);
 
 } catch (\Exception $e) {

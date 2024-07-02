@@ -459,7 +459,6 @@ class AdController extends Controller
     {
         try {
 
-            //todo:check if this ad not belong to a order
             $ad = Ad::where('uid',$uid)->first();
 
             if (!$ad) {
@@ -483,9 +482,9 @@ class AdController extends Controller
             $order_details = OrderDetail::where('ad_id',$ad->id)->whereDeleted(0)->get();
 
             foreach($order_details  as $order_detail){
-                if(Order::find($order_detail->order_id)->status != TypeOfType::whereLibelle('validated')->first()->id){
+                if(Order::find($order_detail->order_id)->status == TypeOfType::whereLibelle('validated')->first()->id){
                     return response()->json([
-                        'message' => "You can't delete a ad "
+                        'message' => "You can't delete a ad because it belong to a order "
                     ]);
                 }
             }
