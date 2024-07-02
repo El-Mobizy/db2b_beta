@@ -3971,6 +3971,77 @@
                 ]
             }
         },
+        "/api/order/getAllFinalizedOrders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Get all finalized orders",
+                "description": "Retrieve all orders that have OrderDetails with Trades having the status 'endtrade' or 'canceltrade'.",
+                "operationId": "c9056c517afafea3df16736f0c58e3e7",
+                "responses": {
+                    "200": {
+                        "description": "List of finalized orders",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        },
+                                        "count": {
+                                            "type": "integer",
+                                            "example": 10
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade statuses not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Trade statuses not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/permission/index": {
             "get": {
                 "tags": [

@@ -1381,6 +1381,112 @@ private function getCartAds($cartItem){
             ], 500);
         }
     }
+
+
+    /**
+ * @OA\Get(
+ *     path="/api/order/getAllFinalizedOrders",
+ *     summary="Get all finalized orders",
+ *     description="Retrieve all orders that have OrderDetails with Trades having the status 'endtrade' or 'canceltrade'.",
+ *     tags={"Orders"},
+ *  security={{"bearerAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of finalized orders",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(ref="")
+ *             ),
+ *             @OA\Property(
+ *                 property="count",
+ *                 type="integer",
+ *                 example=10
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Trade statuses not found",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Trade statuses not found"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="An error message"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+    public function getAllFinalizedOrders(){
+        try {
+            $endTradeStatusId = TypeOfType::whereLibelle('endtrade')->first()->id;
+            $cancelTradeStatusId = TypeOfType::whereLibelle('canceltrade')->first()->id;
+    
+            if (!$endTradeStatusId || !$cancelTradeStatusId) {
+                return response()->json([
+                    'error' => 'Trade statuses not found'
+                ], 404);
+            }
+    
+            $finalizedOrders = [];
+    
+            // Retrieve all orders
+            $orders = Order::all();
+    
+            foreach ($orders as $order) {
+                $orderDetails = OrderDetail::where('order_id', $order->id)->get();
+                $isFinalized = false;
+    
+                foreach ($orderDetails as $od) {
+                    $trade = Trade::where('order_detail_id', $od->id)
+                                  ->whereIn('status_id', [$endTradeStatusId, $cancelTradeStatusId])
+                                  ->first();
+    
+                    if ($trade) {
+                        $isFinalized = true;
+                        break;
+                    }
+                }
+    
+                if ($isFinalized) {
+                    $finalizedOrders[] = $order;
+                }
+            }
+    
+            if (empty($finalizedOrders)) {
+                return response()->json([
+                    'message' => 'No finalized orders found'
+                ], 200);
+            }
+    
+            return response()->json([
+                'data' => $finalizedOrders,
+                'count' => count($finalizedOrders)
+            ], 200);
+    
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
     
 
 

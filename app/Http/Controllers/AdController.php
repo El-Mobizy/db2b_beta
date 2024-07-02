@@ -16,6 +16,8 @@ use App\Interfaces\Interfaces\FileRepositoryInterface;
 use App\Models\Client;
 use App\Models\Country;
 use App\Models\File;
+use App\Models\Order;
+use App\Models\OrderDetail;
 use App\Models\ShopHasCategory;
 use App\Models\Shop;
 use App\Models\TypeOfType;
@@ -476,6 +478,16 @@ class AdController extends Controller
                 return response()->json([
                     'message' => "You can't delete a ad that you don't belong to"
                 ]);
+            }
+
+            $order_details = OrderDetail::where('ad_id',$ad->id)->whereDeleted(0)->get();
+
+            foreach($order_details  as $order_detail){
+                if(Order::find($order_detail->order_id)->status != TypeOfType::whereLibelle('validated')->first()->id){
+                    return response()->json([
+                        'message' => "You can't delete a ad "
+                    ]);
+                }
             }
 
 
