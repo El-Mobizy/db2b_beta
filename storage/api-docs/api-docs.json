@@ -1171,10 +1171,106 @@
                 }
             }
         },
+        "/api/category/updateCategorie/{id}": {
+            "post": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Update an existing category",
+                "description": "Update an existing category by ID",
+                "operationId": "e9c8560ad525a67343dd28ebfb326c21",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the category to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "New Category Title"
+                                    },
+                                    "attribute_group_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Update successfully!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Update successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category not found!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/chatMessage/createChatMessage/{tradeChatId}": {
             "post": {
                 "tags": [
-                    "chatMessage"
+                    "ChatMessage"
                 ],
                 "summary": "Create a chat message",
                 "operationId": "9aa6ec376405c1105883641a206431f7",
@@ -1281,7 +1377,7 @@
         "/api/chatMessage/markMessageAsRead/{chatMessageId}": {
             "post": {
                 "tags": [
-                    "chatMessage"
+                    "ChatMessage"
                 ],
                 "summary": "Mark a message as read",
                 "operationId": "07d13759bc433b2121efa31fa52d512b",
@@ -1356,7 +1452,7 @@
         "/api/chatMessage/markMessageAsUnRead/{chatMessageId}": {
             "post": {
                 "tags": [
-                    "chatMessage"
+                    "ChatMessage"
                 ],
                 "summary": "Mark a message as unread",
                 "operationId": "508e3bfdae060c2468eb36a3ddd1ff91",
@@ -5379,7 +5475,7 @@
                     {
                         "name": "perPage",
                         "in": "path",
-                        "description": "ID of the merchant or related entity",
+                        "description": "number of elements perpage",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6729,7 +6825,7 @@
         "/api/tradeChat/updateTradeChatLastMessage/{tradeChatId}": {
             "post": {
                 "tags": [
-                    "tradeChat"
+                    "TradeChat"
                 ],
                 "summary": "Update the last message of a trade chat",
                 "operationId": "59a37df7100e907274e2f19ebfadc092",
@@ -6820,7 +6916,7 @@
         "/api/tradeChat/markTradeChatAsSpam/{tradeChatId}": {
             "post": {
                 "tags": [
-                    "tradeChat"
+                    "TradeChat"
                 ],
                 "summary": "Mark a trade chat as spam",
                 "operationId": "c5334b208e764b40d3a92bcf4b2ce37c",
@@ -6895,7 +6991,7 @@
         "/api/tradeStage/archiveTradeChat/{tradeChatId}": {
             "post": {
                 "tags": [
-                    "tradeChat"
+                    "TradeChat"
                 ],
                 "summary": "Archive a trade chat",
                 "operationId": "aeaad299b645e293d78b45d058d4c87d",
@@ -6970,7 +7066,7 @@
         "/api/tradeChat/getMessageOfTradeChat/{tradeChatId}": {
             "get": {
                 "tags": [
-                    "tradeChat"
+                    "TradeChat"
                 ],
                 "summary": "Get messages of a trade chat",
                 "operationId": "ce4d176897174878ab68f3f153f4ac9a",
@@ -7899,7 +7995,7 @@
         "/api/tradeStage/createTradeStage": {
             "post": {
                 "tags": [
-                    "tradeStage"
+                    "TradeStage"
                 ],
                 "summary": "Create a trade stage",
                 "operationId": "2fcfd68b276570ac7dd845ebc030e8ae",
@@ -7979,7 +8075,7 @@
         "/api/trade-stages/updateTradeStage/{tradeStageId}": {
             "post": {
                 "tags": [
-                    "tradeStage"
+                    "TradeStage"
                 ],
                 "summary": "Update a trade stage",
                 "operationId": "f673919b3733e9ebc4ce20120861cf91",
@@ -8074,7 +8170,7 @@
         "/api/users/validateEmail": {
             "post": {
                 "tags": [
-                    "Validation"
+                    "Authentication"
                 ],
                 "summary": "Valider un e-mail",
                 "description": "Valide si l'e-mail fourni existe dans la base de données",

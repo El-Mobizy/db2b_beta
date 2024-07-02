@@ -17,7 +17,7 @@ class TradeStageController extends Controller
      * @OA\Post(
      *     path="/api/tradeStage/createTradeStage",
      *     summary="Create a trade stage",
-     *     tags={"tradeStage"},
+     *     tags={"TradeStage"},
      *     security={{"bearerAuth": {}}},
      *     @OA\RequestBody(
      *         required=true,
@@ -154,7 +154,7 @@ class TradeStageController extends Controller
      * @OA\Post(
      *     path="/api/trade-stages/updateTradeStage/{tradeStageId}",
      *     summary="Update a trade stage",
-     *     tags={"tradeStage"},
+     *     tags={"TradeStage"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="tradeStageId",

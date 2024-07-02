@@ -43,7 +43,7 @@
         <div style="width: 100%; height:3cm;background-color : white">
             <div class="container" >
                 <div class="a"></div>
-                <div class="a">    <img src="{{$message->embed(public_path('image/DB2B1.jpg')) }}"  style="width: 2cm; height:2cm"/>
+                <div class="a">    <img src="{{$message->embed(public_path('DB2B1.jpg')) }}"  style="width: 2cm; height:2cm"/>
                 </div>
                 <div class="a"></div>
             </div>

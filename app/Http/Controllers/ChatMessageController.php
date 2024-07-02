@@ -58,7 +58,7 @@ class ChatMessageController extends Controller
      * @OA\Post(
      *     path="/api/chatMessage/createChatMessage/{tradeChatId}",
      *     summary="Create a chat message",
-     *     tags={"chatMessage"},
+     *     tags={"ChatMessage"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="tradeChatId",
@@ -154,7 +154,7 @@ class ChatMessageController extends Controller
      * @OA\Post(
      *     path="/api/chatMessage/markMessageAsRead/{chatMessageId}",
      *     summary="Mark a message as read",
-     *     tags={"chatMessage"},
+     *     tags={"ChatMessage"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="chatMessageId",
@@ -217,7 +217,7 @@ class ChatMessageController extends Controller
  * @OA\Post(
  *     path="/api/chatMessage/markMessageAsUnRead/{chatMessageId}",
  *     summary="Mark a message as unread",
- *     tags={"chatMessage"},
+ *     tags={"ChatMessage"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(
  *         name="chatMessageId",

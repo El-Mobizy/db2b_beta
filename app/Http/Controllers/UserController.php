@@ -35,7 +35,7 @@ class UserController extends Controller
      *     path="/api/users/validateEmail",
      *     summary="Valider un e-mail",
      *     description="Valide si l'e-mail fourni existe dans la base de données",
-     *     tags={"Validation"},
+     *     tags={"Authentication"},
      *     @OA\RequestBody(
      *         required=true,
      *         description="Données d'entrée requises",

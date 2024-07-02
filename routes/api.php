@@ -180,6 +180,7 @@ Route::prefix('users')->group(function () {
     });
     Route::prefix('category')->group(function () {
         Route::post('/add', [CategoryController::class, 'add'])->name('category.add');
+        Route::post('/updateCategorie/{id}', [CategoryController::class, 'updateCategorie'])->name('category.updateCategorie');
         Route::get('/detail/{uid}', [CategoryController::class, 'showCategoryDetail'])->name('category.detail');
         Route::get('/all', [CategoryController::class, 'getAllCategories'])->name('category.all');
         Route::get('/search', [CategoryController::class, 'searchCategory'])->name('category.search');

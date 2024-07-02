@@ -1404,7 +1404,7 @@ public function write(Request $request, $PreordersAnswerUid){
 *         name="perPage",
 *         in="path",
 *         required=true,
-*         description="ID of the merchant or related entity",
+*         description="number of elements perpage",
 *         @OA\Schema(type="integer")
 *     ),
 *     @OA\Response(

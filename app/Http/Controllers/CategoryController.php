@@ -261,7 +261,7 @@ class CategoryController extends Controller
             $db = DB::connection()->getPdo();
             $search = htmlspecialchars($request->input('search'));
             $s = '%'.$search.'%';
-            $query = "SELECT * FROM categories WHERE title AND deleted = false LIKE :title";
+            $query = "SELECT * FROM categories WHERE title LIKE :title AND deleted = false ";
             $stmt = $db->prepare($query);
             $stmt->bindValue(':title',$s);
             $stmt->execute();
@@ -269,13 +269,81 @@ class CategoryController extends Controller
 
             return response()->json([
                 'data' => $categories
-            ]);
+            ],200);
         } catch (Exception $e) {
            return response()->json([
             'error' => $e->getMessage()
            ]);
         }
 
+    }
+
+
+    /**
+ * @OA\Post(
+ *     path="/api/category/updateCategorie/{id}",
+ *     tags={"Category"},
+ *          security={{"bearerAuth": {}}},
+ *     summary="Update an existing category",
+ *     description="Update an existing category by ID",
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="ID of the category to update",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="title", type="string", example="New Category Title"),
+ *             @OA\Property(property="attribute_group_id", type="integer", example=2)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Update successfully!",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Update successfully!")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Category not found!",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Category not found!")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Error message")
+ *         )
+ *     )
+ * )
+ */
+
+    public function updateCategorie($id,Request $request){
+        try {
+
+            $category = Category::find($id);
+            if(!$category){
+                return response()->json([
+                    'message' => 'Category not found!'
+                ],200);
+            }
+            $category->title = $request->title??$category->title;
+            $category->attribute_group_id = $request->attribute_group_id??$category->attribute_group_id;
+            $category->save();
+            return response()->json([
+                'message' => 'update sucessfully!'
+            ],200);
+        }  catch (Exception $e) {
+            return response()->json([
+             'error' => $e->getMessage()
+            ],500);
+         }
     }
     
 

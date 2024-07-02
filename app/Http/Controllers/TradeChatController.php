@@ -43,7 +43,7 @@ class TradeChatController extends Controller
      *     path="/api/tradeChat/updateTradeChatLastMessage/{tradeChatId}",
      * security={{"bearerAuth": {}} },    
      *     summary="Update the last message of a trade chat",
-     *     tags={"tradeChat"},
+     *     tags={"TradeChat"},
      *     @OA\Parameter(
      *         name="tradeChatId",
      *         in="path",
@@ -96,7 +96,7 @@ class TradeChatController extends Controller
      * @OA\Post(
      *     path="/api/tradeChat/markTradeChatAsSpam/{tradeChatId}",
      *     summary="Mark a trade chat as spam",
-     *     tags={"tradeChat"},
+     *     tags={"TradeChat"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="tradeChatId",
@@ -153,7 +153,7 @@ class TradeChatController extends Controller
      * @OA\Post(
      *     path="/api/tradeStage/archiveTradeChat/{tradeChatId}",
      *     summary="Archive a trade chat",
-     *     tags={"tradeChat"},
+     *     tags={"TradeChat"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="tradeChatId",
@@ -247,7 +247,7 @@ class TradeChatController extends Controller
      * @OA\Get(
      *     path="/api/tradeChat/getMessageOfTradeChat/{tradeChatId}",
      *     summary="Get messages of a trade chat",
-     *     tags={"tradeChat"},
+     *     tags={"TradeChat"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="tradeChatId",
