@@ -26,9 +26,11 @@ use App\Http\Controllers\TradeStageController;
 use App\Http\Controllers\TypeOfTypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebNotificationController;
+use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Ramsey\Uuid\Uuid;
 
 Route::get('/user', function (Request $request) {
     $personQuery = "SELECT * FROM person WHERE user_id = :userId";
@@ -80,7 +82,9 @@ Route::prefix('users')->group(function () {
         Route::prefix('wallet')->group(function () {
             Route::post('/createWallet', [CommissionWalletController::class, 'createWallet'])->name('wallet.createWallet');
             Route::get('/listWallets', [CommissionWalletController::class, 'listWallets'])->name('wallet.listWallets');
-            Route::post('/walletDetail/{commissionWalletId}', [CommissionWalletController::class, 'walletDetail'])->name('wallet.walletDetail');
+            Route::get('/walletDetail/{commissionWalletId}', [CommissionWalletController::class, 'walletDetail'])->name('wallet.walletDetail');
+            Route::get('/AuthSTDWalletDetail', [CommissionWalletController::class, 'AuthSTDWalletDetail'])->name('wallet.AuthSTDWalletDetail');
+            Route::get('/AuthWallet', [CommissionWalletController::class, 'AuthWallet'])->name('wallet.AuthWallet');
             // Route::post('/generateStandardWallet', [CommissionWalletController::class, 'generateStandardWallet'])->name('wallet.generateStandardWallet');
         });
 
@@ -110,7 +114,7 @@ Route::prefix('users')->group(function () {
         });
 
         Route::prefix('ad')->group(function () {
-
+            Route::get('/ads', [AdController::class, 'allAds'])->name('ad.allAds');
             Route::get('/marchand', [AdController::class, 'getMarchandAd'])->name('ad.marchand');
             Route::delete('/destroyAd/{uid}', [AdController::class, 'destroyAd'])->name('ad.destroyAdd');
         });
@@ -231,6 +235,9 @@ Route::prefix('users')->group(function () {
 
     Route::prefix('typeoftype')->group(function () {
         Route::post('/store', [TypeOfTypeController::class, 'store']);
+        Route::get('/show/{id}', [TypeOfTypeController::class, 'show']);
+        Route::post('/update/{id}', [TypeOfTypeController::class, 'update']);
+        Route::post('/delete/{id}', [TypeOfTypeController::class, 'delete']);
     });
 
     Route::prefix('attributeGroup')->group(function () {
@@ -270,7 +277,7 @@ Route::prefix('users')->group(function () {
         Route::get('/showShop/{uid}', [ShopController::class, 'showShop'])->name('shop.showShop');
         Route::post('/addShopFile/{filecodeShop}', [ShopController::class, 'addShopFile'])->name('preorder.addShopFile');
         Route::post('/updateShopFile/{uid}', [ShopController::class, 'updateShopFile'])->name('shop.updateShopFile');
-        Route::post('/addCategoryToSHop/{shopId}', [ShopController::class, 'addCategoryToSHop'])->name('shop.addCategoryToSHop');
+        Route::post('/addOrRetrieveCategoryToSHop/{shopId}', [ShopController::class, 'addOrRetrieveCategoryToSHop'])->name('shop.addOrRetrieveCategoryToSHop');
         Route::post('/becomeMerchant', [ShopController::class, 'becomeMerchant'])->name('shop.becomeMerchant');
         Route::get('/AdMerchant/{shopId}/{perPage}', [ShopController::class, 'AdMerchant'])->name('shop.AdMerchant');
 
@@ -301,10 +308,11 @@ Route::prefix('users')->group(function () {
     Route::prefix('tradeStage')->group(function () {
         Route::post('/createTradeStage', [TradeStageController::class, 'createTradeStage'])->name('tradeStage.createTradeStage');
         Route::post('/updateTradeStage/{tradeStageId}', [TradeStageController::class, 'updateTradeStage'])->name('tradeStage.updateTradeStage');
-        // Route::get('/displayTradeStages/{tradeId}', [TradeStageController::class, 'displayTradeStages'])->name('tradeStage.displayTradeStages');
-        // Route::post('/initializeTradeStage/{tradeId}', [TradeStageController::class, 'initializeTradeStage'])->name('tradeStage.initializeTradeStage');
-       
-        // Route::post('/makeAsDoneBy/{tradeStageId}', [TradeStageController::class, 'makeAsDoneBy'])->name('tradeStage.makeAsDoneBy');
-        // Route::get('/getTradeStageDone/{tradeId}', [TradeStageController::class, 'getTradeStageDone'])->name('tradeStage.getTradeStageDone');
-        // Route::get('/getTradeStageNotDoneYet/{tradeId}', [TradeStageController::class, 'getTradeStageNotDoneYet'])->name('tradeStage.getTradeStageNotDoneYet');
+        Route::get('/displayTradeStages/{tradeId}', [TradeStageController::class, 'displayTradeStages'])->name('tradeStageId.displayTradeStages');
+        Route::get('/index', [TradeStageController::class, 'index'])->name('tradeStageId.index');
+        Route::post('/delete/{tradeStageId}', [TradeStageController::class, 'delete'])->name('tradeStage.delete');
     });
+
+
+
+  

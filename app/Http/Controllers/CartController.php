@@ -289,20 +289,19 @@ class CartController extends Controller
                 ads.final_price, 
                 carts.id AS cart_id, 
                 carts.quantity, 
-                files.location AS image
+                (SELECT files.location FROM files WHERE files.referencecode = ads.file_code LIMIT 1) AS image
             FROM 
                 carts
             JOIN 
                 ads ON carts.ad_id = ads.id
-            LEFT JOIN 
-                files ON ads.file_code = files.referencecode
             WHERE 
                 carts.user_id = ?
-                 AND ads.deleted = false
+                AND ads.deleted = false
             ORDER BY 
                 carts.id DESC
             LIMIT ? OFFSET ?
         ";
+        
 
     // Calculer l'offset
     

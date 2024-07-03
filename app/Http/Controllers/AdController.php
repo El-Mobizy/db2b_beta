@@ -26,6 +26,41 @@ use Illuminate\Http\JsonResponse;
 
 class AdController extends Controller
 {
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/ads",
+     *     tags={"Ad"},
+     *     summary="Get all ads",
+     *     description="Returns a list of all ads",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Not Found"
+     *     )
+     * )
+     */
+    public function allAds(): JsonResponse
+    {
+        return response()->json(Ad::with('file')->with('ad_detail')->get());
+    }
+
  /**
  * Get All ads.
  *
@@ -382,13 +417,22 @@ class AdController extends Controller
         // $stmt->execute();
         // $ads = $stmt->fetchAll($db::FETCH_ASSOC);
 
-            $ads = Ad::with('ad_detail', 'file')
+            $ads = Ad::with('ad_detail')->with('file')
             ->orderBy('created_at', 'desc')
             ->where('deleted',false)
             ->where('owner_id',Auth::user()->id)->get();
+
+            foreach($ads as $ad){
+                $ad->category_title =  Category::find($ad->category_id)->title ;
+
+                if(File::where('referencecode',$ad->file_code)->exists()){
+                    $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+                }
+                $data[] = $ad;
+            }
             return response()->json([
                 'data' =>[
-                    'data'=> $ads,
+                    'data'=> $data,
                 ]
             ]);
 
@@ -612,15 +656,16 @@ class AdController extends Controller
          
 
     foreach($request->file('files') as $photo){
-        $service->validateFile($photo);
+        $errorvalidateFile = $service->validateFile($photo);
+        if($errorvalidateFile){
+            return $errorvalidateFile;
+        }
     }
 
     $checkAdAttribute = $service->checkAdAttribute($request,$request->input('category_id'));
     if($checkAdAttribute){
         return $checkAdAttribute;
      }
-
-        
      $checkNumberProductStore = $this->checkNumberProductStore($request);
 
 

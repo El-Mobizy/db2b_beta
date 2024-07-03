@@ -258,4 +258,103 @@ class CommissionWalletController extends Controller
         }
     }
 
+
+    /**
+ * @OA\Get(
+ *     path="/api/wallet/AuthWallet",
+ *     summary="Get authenticated user's wallets",
+ *     description="Retrieve all wallets associated with the authenticated user.",
+ *     tags={"Wallet"},
+ *     security={{"bearerAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successful operation",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(ref="")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+
+    public function AuthWallet(){
+        try {
+           $service = new Service();
+           $personId = $service->returnPersonIdAuth();
+           $wallets = CommissionWallet::where('person_id',$personId)->get();
+            return response()->json([
+                'data' =>$wallets
+            ],200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+ * @OA\Get(
+ *     path="/api/wallet/AuthSTDWalletDetail",
+ *     summary="Get authenticated user's STD wallets",
+ *     description="Get  STD wallet associated with the authenticated user.",
+ *     tags={"Wallet"},
+ *     security={{"bearerAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successful operation",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(ref="")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+    public function AuthSTDWalletDetail(){
+        try {
+            $service = new Service();
+            $personId = $service->returnPersonIdAuth();
+            $commissionId = Commission::whereShort('STD')->first()->id;
+            $wallets = CommissionWallet::where('person_id',$personId)->where('commission_id',$commissionId)->first();
+             return response()->json([
+                 'data' =>$wallets
+             ],200);
+         } catch (\Exception $e) {
+             return response()->json([
+                 'error' => $e->getMessage()
+             ]);
+         }
+    }
+
 }

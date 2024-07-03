@@ -49,7 +49,7 @@ class TradeStageController extends Controller
         try {
 
             $request->validate([
-                'stage_title' => 'required,'
+                'stage_title' => 'required'
             ]);
 
             $tradeStage = new TradeStage();
@@ -68,10 +68,55 @@ class TradeStageController extends Controller
         }
     }
 
-    public function  displayTradeStages($tradeId){
+
+    /**
+ * @OA\Get(
+ *     path="/api/tradeStage/displayTradeStages/{tradeStageId}",
+ *     summary="Display Trade Stage",
+ *     description="Afficher un Trade Stage spécifique par ID",
+ *     tags={"TradeStage"},
+ *     @OA\Parameter(
+ *         name="tradeStageId",
+ *         in="path",
+ *         required=true,
+ *         @OA\Schema(type="integer"),
+ *         description="ID du Trade Stage"
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Trade stage found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="data", type="object", ref="")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Trade stage not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="data", type="string", example="trade stage not found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="An error message")
+ *         )
+ *     ),
+ *     security={{ "bearerAuth":{} }}
+ * )
+ */
+
+    public function  displayTradeStages($tradeStageId){
         try {
+            $tradeStage =  TradeStage::whereId($tradeStageId)->first();
+            if(!$tradeStage){
+                return response()->json([
+                    'data' =>'trade stage not found'
+                ],400);
+            }
             return response()->json([
-                'data' => TradeStage::whereTradeId($tradeId)->whereDeleted(0)->get()
+                'data' =>$tradeStage
             ],200);
         } catch(Exception $e){
             return response()->json([
@@ -80,79 +125,11 @@ class TradeStageController extends Controller
         }
     }
 
-    public function initializeTradeStage($tradeId, Request $request){
-
-        try {
-
-            $verification = $this-> initializeTradeStageVerification($request);
-
-            if($verification){
-                return $verification;
-            }
-
-            foreach($request->input('stage_title') as $index => $value){
-                $this->createTradeStage(
-                    $tradeId,
-                    $request->input('stage_title')[$index],
-                    $request->input('steporder')[$index],
-                    $request->input('yes_action')[$index],
-                    $request->input('no_action')[$index],
-                );
-            }
-
-            return response()->json([
-                'message' => 'Trade stage created sucessfully'
-            ],200);
-
-        } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
-        }
-    }
-
-    public function initializeTradeStageVerification( Request $request){
-        try {
-
-            $validator = Validator::make($request->all(), [
-                'stage_title' => 'required',
-                'steporder' => 'required',
-                'yes_action' => 'required',
-                'no_action' => 'required',
-                // 'action_done_by' => 'required',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
-            }
-
-            if(
-                (count($request->input('stage_title')) != count($request->input('steporder')) )||
-                count($request->input('steporder')) != count($request->input('yes_action')) ||
-                count($request->input('yes_action')) != count($request->input('no_action'))  ||
-                // count($request->input('no_action')) != count($request->input('action_done_by')) ||
-                count($request->input('no_action')) != count($request->input('stage_title'))
-                 ){
-                return response()->json([
-                    'message' => 'Check tables length',
-                    'stage_title' =>count($request->input('stage_title')),
-                    'steporder'=> count($request->input('steporder')),
-                    'yes_action'=> count($request->input('yes_action')),
-                    'no_action' => count($request->input('no_action')),
-                    // 'action_done_by' => count($request->input('action_done_by')),
-                ],200);
-            }
-
-            } catch(Exception $e){
-                return response()->json([
-                    'error' => $e->getMessage()
-                ],500);
-            }
-    }
+    
 
     /**
      * @OA\Post(
-     *     path="/api/trade-stages/updateTradeStage/{tradeStageId}",
+     *     path="/api/tradeStage/updateTradeStage/{tradeStageId}",
      *     summary="Update a trade stage",
      *     tags={"TradeStage"},
      *     security={{"bearerAuth": {}}},
@@ -238,6 +215,104 @@ class TradeStageController extends Controller
         }
     }
 
+
+    /**
+ * @OA\Get(
+ *     path="/api/tradeStage/index",
+ *     summary="List Trade Stages",
+ *     description="Lister tous les Trade Stages dont le champ deleted est à false",
+ *     tags={"TradeStage"},
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of trade stages",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="data", type="array", @OA\Items(ref=""))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="An error message")
+ *         )
+ *     ),
+ *     security={{ "bearerAuth":{} }}
+ * )
+ */
+public function index()
+{
+    try {
+        $tradeStages = TradeStage::where('deleted', false)->get();
+        return response()->json([
+            'data' => $tradeStages
+        ], 200);
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+
+/**
+ * @OA\Post(
+ *     path="/api/tradeStage/delete/{id}",
+ *     summary="Delete Trade Stage",
+ *     description="Modifier la valeur du champ deleted à true",
+ *     tags={"TradeStage"},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="ID of the Trade Stage to delete",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Trade Stage deleted successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Trade Stage deleted successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Trade Stage not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Trade Stage not found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="An error message")
+ *         )
+ *     ),
+ *     security={{ "bearerAuth":{} }}
+ * )
+ */
+public function delete($id)
+{
+    try {
+        $tradeStage = TradeStage::find($id);
+        if (!$tradeStage) {
+            return response()->json([
+                'error' => 'Trade Stage not found'
+            ], 404);
+        }
+
+        $tradeStage->deleted = true;
+        $tradeStage->save();
+
+        return response()->json([
+            'message' => 'Trade Stage deleted successfully'
+        ], 200);
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
 
 }

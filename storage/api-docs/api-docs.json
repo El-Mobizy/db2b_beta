@@ -9,6 +9,40 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/ads": {
+            "get": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Get all ads",
+                "description": "Returns a list of all ads",
+                "operationId": "28678aada862072d115eecd8a50fdb96",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
         "/api/ad/all": {
             "get": {
                 "tags": [
@@ -2189,6 +2223,106 @@
                                 "schema": {
                                     "properties": {
                                         "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/wallet/AuthWallet": {
+            "get": {
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Get authenticated user's wallets",
+                "description": "Retrieve all wallets associated with the authenticated user.",
+                "operationId": "d65250feec0295b42878ad7950b8b001",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/wallet/AuthSTDWalletDetail": {
+            "get": {
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Get authenticated user's STD wallets",
+                "description": "Get  STD wallet associated with the authenticated user.",
+                "operationId": "de107022748848d4e9fbfc7fb803f036",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
                                             "type": "string"
                                         }
                                     },
@@ -6663,13 +6797,13 @@
                 ]
             }
         },
-        "/api/shop/addCategoryToSHop/{shopId}": {
+        "/api/shop/addOrRetrieveCategoryToSHop/{shopId}": {
             "post": {
                 "tags": [
                     "Shop"
                 ],
                 "summary": "Add category to shop",
-                "operationId": "21bf64333803aa0b114df2b1844b40bc",
+                "operationId": "9ab149696167191f71e4863807e598c0",
                 "parameters": [
                     {
                         "name": "shopId",
@@ -6948,6 +7082,66 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/tradeChat/createTradeChat/{tradeId}": {
+            "post": {
+                "tags": [
+                    "TradeChat"
+                ],
+                "summary": "Create Trade Chat",
+                "description": "Créer un nouveau Trade Chat",
+                "operationId": "6ebc95d0e37422dbdbfb315d567aea9f",
+                "parameters": [
+                    {
+                        "name": "tradeId",
+                        "in": "path",
+                        "description": "ID of the Trade",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade chat created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade chat created successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/tradeChat/updateTradeChatLastMessage/{tradeChatId}": {
@@ -8200,13 +8394,88 @@
                 ]
             }
         },
-        "/api/trade-stages/updateTradeStage/{tradeStageId}": {
+        "/api/tradeStage/displayTradeStages/{tradeStageId}": {
+            "get": {
+                "tags": [
+                    "TradeStage"
+                ],
+                "summary": "Display Trade Stage",
+                "description": "Afficher un Trade Stage spécifique par ID",
+                "operationId": "1a3f62f961d85453bfc858e868e06f66",
+                "parameters": [
+                    {
+                        "name": "tradeStageId",
+                        "in": "path",
+                        "description": "ID du Trade Stage",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade stage found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Trade stage not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "string",
+                                            "example": "trade stage not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tradeStage/updateTradeStage/{tradeStageId}": {
             "post": {
                 "tags": [
                     "TradeStage"
                 ],
                 "summary": "Update a trade stage",
-                "operationId": "f673919b3733e9ebc4ce20120861cf91",
+                "operationId": "3e455ffe3eeb038f81c42ff7d4a03650",
                 "parameters": [
                     {
                         "name": "tradeStageId",
@@ -8280,6 +8549,448 @@
                                         "error": {
                                             "type": "string",
                                             "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tradeStage/index": {
+            "get": {
+                "tags": [
+                    "TradeStage"
+                ],
+                "summary": "List Trade Stages",
+                "description": "Lister tous les Trade Stages dont le champ deleted est à false",
+                "operationId": "50e3d1eb8f74210224d21bd6ebe6b249",
+                "responses": {
+                    "200": {
+                        "description": "List of trade stages",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tradeStage/delete/{id}": {
+            "post": {
+                "tags": [
+                    "TradeStage"
+                ],
+                "summary": "Delete Trade Stage",
+                "description": "Modifier la valeur du champ deleted à true",
+                "operationId": "19b5ec53f5f5487c7d8d62c0c79bdec9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the Trade Stage to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trade Stage deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Trade Stage deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Trade Stage not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Trade Stage not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/typeoftype/store": {
+            "post": {
+                "tags": [
+                    "TypeOfType"
+                ],
+                "summary": "Create a new TypeOfType",
+                "description": "Créer un nouveau TypeOfType",
+                "operationId": "0acb95e884d6bbcdb337883943301c5f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "libelle": {
+                                        "type": "string",
+                                        "example": "New TypeOfType"
+                                    },
+                                    "codereference": {
+                                        "type": "string",
+                                        "example": "REF123"
+                                    },
+                                    "parent_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "TypeOfType created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "TypeOfType created successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/typeoftype/show/{id}": {
+            "get": {
+                "tags": [
+                    "TypeOfType"
+                ],
+                "summary": "Get TypeOfType by ID",
+                "description": "Récupérer un TypeOfType spécifique par son ID",
+                "operationId": "064b68d707428305241593184b8a83e1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du TypeOfType à récupérer",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "TypeOfType retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": ""
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "TypeOfType not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "TypeOfType not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/typeoftype/update/{id}": {
+            "post": {
+                "tags": [
+                    "TypeOfType"
+                ],
+                "summary": "Update TypeOfType",
+                "description": "Mettre à jour un TypeOfType spécifique par son ID",
+                "operationId": "cf3c87387e51db1eca0d56c675bdc1da",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du TypeOfType à mettre à jour",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "libelle": {
+                                        "type": "string",
+                                        "example": "Nouveau libellé"
+                                    },
+                                    "codereference": {
+                                        "type": "string",
+                                        "example": "Nouveau code de référence"
+                                    },
+                                    "parent_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "TypeOfType updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "TypeOfType updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "TypeOfType not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "TypeOfType not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/typeoftype/delete/{id}": {
+            "post": {
+                "tags": [
+                    "TypeOfType"
+                ],
+                "summary": "Delete TypeOfType",
+                "description": "Supprimer un TypeOfType spécifique par son ID",
+                "operationId": "8901bb925490ad5b769ed4ce6b549504",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du TypeOfType à supprimer",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "TypeOfType deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "TypeOfType deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "TypeOfType not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "TypeOfType not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error message"
                                         }
                                     },
                                     "type": "object"

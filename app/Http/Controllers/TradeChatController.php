@@ -11,6 +11,36 @@ use Illuminate\Support\Facades\Auth;
 
 class TradeChatController extends Controller
 {
+    /**
+ * @OA\Post(
+ *     path="/api/tradeChat/createTradeChat/{tradeId}",
+ *     summary="Create Trade Chat",
+ *     description="Créer un nouveau Trade Chat",
+ *     tags={"TradeChat"},
+ *     @OA\Parameter(
+ *         name="tradeId",
+ *         in="path",
+ *         required=true,
+ *         description="ID of the Trade",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Trade chat created successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Trade chat created successfully!")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="An error message")
+ *         )
+ *     ),
+ *     security={{ "bearerAuth":{} }}
+ * )
+ */
     public function createTradeChat($tradeId){
         try {
 

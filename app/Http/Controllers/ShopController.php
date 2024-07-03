@@ -590,7 +590,7 @@ class ShopController extends Controller
 
     /**
  * @OA\Post(
- *     path="/api/shop/addCategoryToSHop/{shopId}",
+ *     path="/api/shop/addOrRetrieveCategoryToSHop/{shopId}",
  *     summary="Add category to shop",
  *     tags={"Shop"},
  *     security={{"bearerAuth": {}}},
@@ -657,7 +657,7 @@ class ShopController extends Controller
  * )
  */
 
-    public function addCategoryToSHop( $shopId,Request $request){
+    public function addOrRetrieveCategoryToSHop( $shopId,Request $request){
         try{
 
             $request->validate([
@@ -672,18 +672,28 @@ class ShopController extends Controller
 
             $countCategory = ShopHasCategory::where('shop_id',$shopId)->whereDeleted(0)->count();
 
-            $limit = 3;
-
-            if($countCategory == $limit){
-                return response()->json([
-                    'message' =>"You have reached the maximum number of categories which is $limit you cannot add others"
-                ],200);
-            }
+          
 
             foreach($request->input('categoryIds') as $categoryId){
                 if(ShopHasCategory::where('shop_id',$shopId)->where('category_id',$categoryId)->whereDeleted(0)->exists()){
+
+                    if(Ad::where('shop_id',$shopId)->where('category_id',$categoryId)->whereDeleted(0)->exists())
+                    {
+                        return response()->json([
+                            'message' =>"Unable to delete a category that is associated with products in your store"
+                        ],400);
+                    }
+                    ShopHasCategory::where('shop_id',$shopId)->where('category_id',$categoryId)->delete();
                     return response()->json([
-                        'message' =>"You already add this category in your shop"
+                        'message' =>"Category retrieved successfuly"
+                    ],200);
+                }
+
+                $limit = 3;
+
+                if($countCategory == $limit){
+                    return response()->json([
+                        'message' =>"You have reached the maximum number of categories which is $limit you cannot add others"
                     ],200);
                 }
 

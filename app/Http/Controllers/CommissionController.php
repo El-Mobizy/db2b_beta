@@ -67,10 +67,10 @@ class CommissionController extends Controller
             $service = new Service();
 
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string',
-                'short' => 'required'
+                'name' => 'required|string|unique:commissions',
+                'short' => 'required|unique:commissions'
             ]);
-            
+
             if ($validator->fails()) {
                 return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
             }

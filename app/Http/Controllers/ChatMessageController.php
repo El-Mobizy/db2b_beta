@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\login;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\NotificationEmailwithoutfile;
+use App\Mail\NotificationEmailWithoutfile;
 use App\Mail\NotificationEmail;
 use App\Models\ChatMessage;
 use App\Models\Person;
@@ -24,7 +24,7 @@ class ChatMessageController extends Controller
                ];
 
             $receiver = User::find($reciever_id);
-               Mail::to($receiver->email)->send(new NotificationEmailwithoutfile($mail));
+               Mail::to($receiver->email)->send(new NotificationEmailWithoutfile($mail));
                return response()->json([
                 'message' =>$return
             ],200);

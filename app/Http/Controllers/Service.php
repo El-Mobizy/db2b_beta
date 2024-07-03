@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File as F ;
 use Ramsey\Uuid\Uuid;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class Service extends Controller
 {
@@ -80,12 +82,20 @@ class Service extends Controller
         if (!in_array($extension, $allowedExtensions)) {
             throw new \Exception('Veuillez télécharger une image (jpeg, jpg, png, gif)');
         }
+        $errorcheckImageSize = $this->checkImageSize($file);
+        if($errorcheckImageSize){
+            return $errorcheckImageSize;
+        }
     }
 
     public function uploadFiles(Request $request, $randomString,$location){
         foreach($request->file('files') as $photo){
-            $this->validateFile($photo);
+            $errorUploadFiles = $this->validateFile($photo);
             $this->storeFile($photo, $randomString, $location);
+
+            if($errorUploadFiles){
+                return $errorUploadFiles;
+            }
         }
     }
 
@@ -96,6 +106,17 @@ class Service extends Controller
         try {
 
             $db = DB::connection()->getPdo();
+
+            // $manager = new ImageManager(new Driver());
+
+            // $manager->read($photo);
+
+            // return  $manager->read($photo);
+
+            // access driver from image manager
+            // $driver = $manager->driver();
+
+            // $image = $manager->read('images/example.jpg');
 
             $size = filesize($photo);
             $ulid = Uuid::uuid1();
@@ -126,6 +147,15 @@ class Service extends Controller
            return response()->json([
             'error' => $e->getMessage()
            ]);
+        }
+    }
+
+    public function checkImageSize ($photo){
+        if(filesize($photo) >= 2097152){
+            return response()->json([
+                'message' =>'The image size exceeds what is normally required (< 2mo)',
+                'size' =>filesize($photo)
+            ]);
         }
     }
 
@@ -449,5 +479,39 @@ class Service extends Controller
     }
 }
 
+private function calculateCompressionQuality($image, $targetSizeBytes) {
+    // Valeurs initiales pour le taux de compression
+    $minQuality = 0; // Qualité minimale
+    $maxQuality = 100; // Qualité maximale
+    $quality = ($minQuality + $maxQuality) / 2; // Qualité initiale (moyenne)
+
+    // Tentatives pour ajuster le taux de compression et atteindre la taille cible
+    $attempts = 10; // Nombre d'itérations maximum
+
+    while ($attempts > 0) {
+        // Encode l'image avec le taux de compression actuel
+        $imageEncoded = $image->encode('jpg', $quality);
+
+        // Taille de l'image encodée
+        $encodedSize = strlen($imageEncoded);
+
+        // Comparer la taille encodée avec la taille cible
+        if ($encodedSize > $targetSizeBytes) {
+            // Si la taille encodée est trop grande, réduire la qualité
+            $maxQuality = $quality;
+        } else {
+            // Si la taille encodée est suffisamment petite, augmenter la qualité
+            $minQuality = $quality;
+        }
+
+        // Nouveau taux de compression (moyenne des valeurs minimale et maximale)
+        $quality = ($minQuality + $maxQuality) / 2;
+
+        // Réduire le nombre de tentatives restantes
+        $attempts--;
+    }
+
+    return $quality;
+}
 
 }

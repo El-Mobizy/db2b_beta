@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\NotificationEmailwithoutfile;
+use App\Mail\NotificationEmailWithoutfile;
 use App\Mail\NotificationEmail;
 use App\Models\Ad;
 use App\Models\Client;
@@ -109,7 +109,11 @@ class PreorderController extends Controller
             $preorder->statut =  TypeOfType::whereLibelle('pending')->first()->id;
 
             if ($request->hasFile('files')) {
-                $service->uploadFiles($request,$randomString,"preorder");
+                $errorUploadFile = $service->uploadFiles($request,$randomString,"preorder");
+
+                if($errorUploadFile){
+                    return $errorUploadFile;
+                }
             }
 
             $preorder->save();
