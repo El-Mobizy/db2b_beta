@@ -156,109 +156,43 @@ class AdController extends Controller
         }
     }
 
-    public function getAllRecentAdforAuth($page,$perPage = 5)
+    public function getAllRecentAdforAuth($perpage)
     {
         try {
-            // return 1;
-            if($perPage > 50){
-                $perPage = 50;
-            }
             $service = new Service();
-
-            $checkAuth=$service->checkAuth();
     
-            if($checkAuth){
-               return $checkAuth;
+            $checkAuth = $service->checkAuth();
+    
+            if ($checkAuth) {
+                return $checkAuth;
             }
-
+    
             $userId = Auth::user()->id;
-            // $ads = Ad::with('file')
-            //     ->leftJoin('favorites', function ($join) use ($userId) {
-            //         $join->on('ads.id', '=', 'favorites.ad_id')
-            //             ->where('favorites.user_id', '=', $userId)
-            //             ->where('favorites.deleted', '=', false);
-            //     })
-            //     ->select('ads.*', DB::raw('CASE WHEN favorites.id IS NULL THEN false ELSE true END as is_favorite'))
-            //     ->orderBy('created_at', 'desc')
-            //     ->where('ads.deleted', false)
-            //     ->paginate($perPage);
-
-            //     foreach($ads as $ad){
-            //         $ad->category_title =  Category::find($ad->category_id)->title ;
-
-            //         if(File::where('referencecode',$ad->file_code)->exists() ==1){
-            //             $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
-            //         }
-            //         $data[] = $ad;
-            //     }
     
-            // return response()->json([
-            //     'data' => $data
-            // ]);
-
-            $page = max(1, intval($page));
-        $perPage = intval($perPage);
-        $offset = $perPage * ($page - 1);
-
-            $query = "
-                SELECT 
-                    ads.*, 
-                    categories.title AS category_title,
-                    CASE WHEN favorites.id IS NULL THEN false ELSE true END AS is_favorite,
-                    files.location AS image
-                FROM 
-                    ads
-                LEFT JOIN 
-                    favorites ON ads.id = favorites.ad_id 
-                    AND favorites.user_id = :user_id 
-                    AND favorites.deleted = false
-                LEFT JOIN 
-                    categories ON ads.category_id = categories.id
-                LEFT JOIN 
-                    files ON ads.file_code = files.referencecode
-                WHERE 
-                    ads.deleted = false
-                     AND
-                ads.statut = 5
-
-                ORDER BY 
-                    ads.created_at DESC
-                LIMIT :limit OFFSET :offset
-            ";
+            $ads = Ad::with(['file', 'category'])
+                ->leftJoin('favorites', function ($join) use ($userId) {
+                    $join->on('ads.id', '=', 'favorites.ad_id')
+                        ->where('favorites.user_id', '=', $userId)
+                        ->where('favorites.deleted', '=', false);
+                })
+                ->select('ads.*', DB::raw('CASE WHEN favorites.id IS NULL THEN false ELSE true END as is_favorite'))
+                ->where('ads.deleted', false)
+                ->where('ads.statut', 5)
+                ->orderBy('ads.created_at', 'desc')
+                ->paginate($perpage);
     
-            $data = DB::select($query, [
-                'user_id' => $userId,
-                'limit' => $perPage,
-                'offset' => $offset
+            foreach ($ads as $ad) {
+                $ad->category_title =  Category::find($ad->category_id)->title ;
+                $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+            }
+    
+            return response()->json([
+                'data' => $ads,
             ]);
-    
-            $countQuery = "
-                SELECT 
-                    COUNT(*) AS total 
-                FROM 
-                    ads
-                LEFT JOIN 
-                    favorites ON ads.id = favorites.ad_id 
-                    AND favorites.user_id = :user_id 
-                    AND favorites.deleted = false
-                WHERE 
-                    ads.deleted = false
-            ";
-    
-            $total = DB::select($countQuery, [
-                'user_id' => $userId
-            ])[0]->total;
-    
-            $paginator = new \Illuminate\Pagination\LengthAwarePaginator($data, $total, $perPage, $page, [
-                'path' => request()->url(),
-                'query' => request()->query(),
-            ]);
-    
-            return response()->json(['data' => $paginator]);
         } catch (Exception $e) {
-           return response()->json([
-            'error' => $e->getMessage()
-           ]);
+            return response()->json([
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
@@ -266,20 +200,13 @@ class AdController extends Controller
  * Get recent ads.
  *
  * @OA\Get(
- *      path="/api/ad/all/{page}/{perPage}",
+ *      path="/api/ad/all/{perpage}",
  *      summary="Get recent ads.",
  *  security={{"bearerAuth": {}}},
  *   tags={"Ad"},
- *  @OA\Parameter(
- *          in="path",
- *          name="page",
- *          required=true,
- *          description="number of ad per page.",
- *          @OA\Schema(type="integer")
- *      ),
  *   @OA\Parameter(
  *          in="path",
- *          name="perPage",
+ *          name="perpage",
  *          required=true,
  *          description="number of ad per page.",
  *          @OA\Schema(type="integer")
@@ -302,84 +229,51 @@ class AdController extends Controller
  *      )
  * )
  */
-    public function getRecentAdd(Request $request,$page = 1,$perPage=5)
-    {
-        try {
+public function getRecentAdd(Request $request,$perpage)
+{
+    try {
+        if (Auth::user()) {
+            return $this->getAllRecentAdforAuth($perpage);
+        }
 
-            // return Auth::user();
-           
-
-            if(Auth::user()){
-                return $this->getAllRecentAdforAuth($page,$perPage);
-            }
-
-            // return 1;
-            // $ads = Ad::with('file')
-            // ->whereDeleted(0)
-            // ->orderBy('created_at', 'desc')
-            // ->paginate($perPage);
-
-            // foreach($ads as $ad){
-            //     $ad->category_title =  Category::find($ad->category_id)->title ;
-            //     if(File::where('referencecode',$ad->file_code)->exists() ==1){
-            //         $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
-            //     }
-            //     $data[] = $ad;
-            // }
-
-            $page = max(1, intval($page));
-            $perPage = max(5, intval($perPage));
-            $offset = $perPage * ($page - 1);
-
-            $ads = DB::select("
-            SELECT
-                ads.*,
-                categories.title AS category_title, 
-                files.location AS image
-            FROM
-                ads
-            LEFT JOIN
-                categories ON ads.category_id = categories.id
-            LEFT JOIN 
-                files ON ads.file_code = files.referencecode
-            WHERE 
-                ads.deleted = FALSE
-                AND
-                ads.statut = 5
-            ORDER BY 
-                ads.created_at DESC
-            LIMIT ? OFFSET ?
-        ", [$perPage, $offset]);
-
-        // Compter le nombre total de résultats
-        $total = DB::table('ads')
+        $ads = Ad::with(['file', 'category'])
             ->where('deleted', false)
-            ->count();
+            ->where('statut', TypeOfType::where('libelle','validated')->first()->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate($perpage);
 
-        // Créer une collection paginée
-        $paginator = new \Illuminate\Pagination\LengthAwarePaginator($ads, $total, $perPage, $page, [
-            'path' => $request->url(),
-            'query' => $request->query(),
-        ]);
+        foreach ($ads as $ad) {
+            $ad->category_title =  Category::find($ad->category_id)->title ;
+            $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+        }
 
         return response()->json([
-            'data' => $paginator,
+            'data' => $ads,
         ]);
-        } catch (Exception $e) {
-           return response()->json([
+    } catch (Exception $e) {
+        return response()->json([
             'error' => $e->getMessage()
-           ]);
-        }
+        ]);
     }
+}
 
         /**
      * Get All ads.
      *
      * @OA\Get(
-     *      path="/api/ad/marchand",
+     *      path="/api/ad/marchand/{perpage}",
      *      summary="Get all seller ads.",
      * security={{"bearerAuth": {}}},
      *   tags={"Ad"},
+     * @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         description="number of element perpage",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
      *      @OA\Response(
      *          response=200,
      *          description="Success. Return all seller ads.",
@@ -398,43 +292,27 @@ class AdController extends Controller
      *      )
      * )
      */
-    public function getMarchandAd()
+    public function getMarchandAd($perPage)
     {
         try {
 
-            $db = DB::connection()->getPdo();
-          
-        //   $query = "SELECT *
-        //   FROM ads
-        //   LEFT JOIN ad_details ON ads.id = ad_details.ad_id
-        //   LEFT JOIN files ON ads.file_code = files.referencecode
-        //   WHERE ads.deleted = false AND ads.owner_id =:id
-        //   ORDER BY ads.created_at DESC
-        //   ";
+                $ads = Ad::with('ad_detail', 'file')
+                    ->orderBy('created_at', 'desc')
+                    ->where('deleted', false)
+                    ->where('owner_id', Auth::user()->id)
+                    ->paginate($perPage);
 
-        // $stmt = $db->prepare($query);
-        // $stmt->bindValue(':id',Auth::user()->id);
-        // $stmt->execute();
-        // $ads = $stmt->fetchAll($db::FETCH_ASSOC);
+                    foreach ($ads as $ad) {
+                    $ad->category_title = Category::find($ad->category_id)->title;
 
-            $ads = Ad::with('ad_detail')->with('file')
-            ->orderBy('created_at', 'desc')
-            ->where('deleted',false)
-            ->where('owner_id',Auth::user()->id)->get();
-
-            foreach($ads as $ad){
-                $ad->category_title =  Category::find($ad->category_id)->title ;
-
-                if(File::where('referencecode',$ad->file_code)->exists()){
-                    $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+                    if (File::where('referencecode', $ad->file_code)->exists()) {
+                        $ad->image = File::where('referencecode', $ad->file_code)->first()->location;
+                    }
                 }
-                $data[] = $ad;
-            }
-            return response()->json([
-                'data' =>[
-                    'data'=> $data,
-                ]
-            ]);
+
+                return response()->json([
+                    'data'=> $ads
+                ], 200);
 
         } catch (Exception $e) {
         return response()->json([

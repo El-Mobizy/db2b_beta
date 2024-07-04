@@ -33,6 +33,7 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'code'
     ];
 
     /**
@@ -73,6 +74,10 @@ class User extends Authenticatable implements JWTSubject
 
     public function preorder_answers(){
         return $this->hasMany(PreorderAnswers::class);
+    }
+
+    public function reviews(){
+        return $this->hasMany(Review::class);
     }
     
 }

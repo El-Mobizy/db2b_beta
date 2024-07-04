@@ -115,7 +115,7 @@ Route::prefix('users')->group(function () {
 
         Route::prefix('ad')->group(function () {
             Route::get('/ads', [AdController::class, 'allAds'])->name('ad.allAds');
-            Route::get('/marchand', [AdController::class, 'getMarchandAd'])->name('ad.marchand');
+            Route::get('/marchand/{perpage}', [AdController::class, 'getMarchandAd'])->name('ad.marchand');
             Route::delete('/destroyAd/{uid}', [AdController::class, 'destroyAd'])->name('ad.destroyAdd');
         });
 
@@ -139,6 +139,7 @@ Route::prefix('users')->group(function () {
         Route::prefix('review')->group(function () {
             Route::post('/write/{PreordersAnswerUid}', [PreorderController::class, 'write'])->name('review.write');
             Route::get('/answerReviews/{PreordersAnswerUid}', [PreorderController::class, 'answerReviews'])->name('preorder.answerReviews');
+            Route::get('/answerReviewsPaginate/{PreordersAnswerUid}/{perpage}', [PreorderController::class, 'answerReviewsPaginate'])->name('preorder.answerReviewsPaginate');
           
         });
 
@@ -192,16 +193,18 @@ Route::prefix('users')->group(function () {
         Route::get('/detail/{uid}', [CategoryController::class, 'showCategoryDetail'])->name('category.detail');
         Route::get('/all', [CategoryController::class, 'getAllCategories'])->name('category.all');
         Route::get('/search', [CategoryController::class, 'searchCategory'])->name('category.search');
+        Route::get('/all/{paginate}', [CategoryController::class, 'getAllPaginateCategories'])->name('category.getAllPaginateCategories');
     });
 
     Route::prefix('country')->group(function () {
         Route::post('/load', [CountryController::class, 'load'])->name('country.load');
         Route::post('/add', [CountryController::class, 'add'])->name('country.add');
         Route::get('/all', [CountryController::class, 'getAllCountries'])->name('country.all');
+        Route::get('/all/{perpage}', [CountryController::class, 'getAllPaginateCountries'])->name('country.getAllPaginateCountries');
     });
 
     Route::prefix('ad')->group(function () {
-        Route::get('/all/{page}/{perPage}', [AdController::class, 'getRecentAdd'])->name('ad.recent');
+        Route::get('/all/{perPage}', [AdController::class, 'getRecentAdd'])->name('ad.recent');
         Route::get('/all', [AdController::class, 'getAllAd'])->name('ad.all');
         Route::post('/storeAd', [AdController::class, 'storeAd'])->name('ad.storeAd');
         Route::post('/editAd/{uid}', [AdController::class, 'editAd'])->name('ad.editAd');
@@ -256,16 +259,16 @@ Route::prefix('users')->group(function () {
 
 
     Route::prefix('preorder')->group(function () {
-        Route::get('/getPreorderValidated', [PreorderController::class, 'getPreorderValidated'])->name('preorder.getPreorderValidated');
+        Route::get('/getPreorderValidated/{perpage}', [PreorderController::class, 'getPreorderValidated'])->name('preorder.getPreorderValidated');
         Route::get('/getPreorderPending', [PreorderController::class, 'getPreorderPending'])->name('preorder.getPreorderPending');
         Route::get('/getPreorderWitnAnswer', [PreorderController::class, 'getPreorderWitnAnswer'])->name('preorder.getPreorderWitnAnswer');
         Route::get('/getPreorderRejected', [PreorderController::class, 'getPreorderRejected'])->name('preorder.getPreorderRejected');
-        Route::get('/getPreorderWithValidatedAnswers/{uid}', [PreorderController::class, 'getPreorderWithValidatedAnswers'])->name('preorder.getPreorderWithValidatedAnswers');
-        Route::get('/getAuthPreorderValidated', [PreorderController::class, 'getAuthPreorderValidated'])->name('preorder.getAuthPreorderValidated');
+        Route::get('/getPreorderWithValidatedAnswers/{uid}/{perpage}', [PreorderController::class, 'getPreorderWithValidatedAnswers'])->name('preorder.getPreorderWithValidatedAnswers');
+        Route::get('/getAuthPreorderValidated/{perpage}', [PreorderController::class, 'getAuthPreorderValidated'])->name('preorder.getAuthPreorderValidated');
     });
 
     Route::prefix('preorder_answer')->group(function () {
-        Route::get('/getPreorderAnswerValidated', [PreorderController::class, 'getPreorderAnswerValidated'])->name('preorder.getPreorderAnswerValidated');
+        Route::get('/getPreorderAnswerValidated/{perpage}', [PreorderController::class, 'getPreorderAnswerValidated'])->name('preorder.getPreorderAnswerValidated');
         Route::get('/getPreorderAnswerPending', [PreorderController::class, 'getPreorderAnswerPending'])->name('preorder.getPreorderAnswerPending');
         Route::get('/getPreorderAnswerRejected', [PreorderController::class, 'getPreorderAnswerRejected'])->name('preorder.getPreorderAnswerRejected');
         Route::get('/getSpecificPreorderAnswer/{uid}', [PreorderController::class, 'getSpecificPreorderAnswer'])->name('preorder.getSpecificPreorderAnswer');
@@ -282,6 +285,7 @@ Route::prefix('users')->group(function () {
         Route::get('/AdMerchant/{shopId}/{perPage}', [ShopController::class, 'AdMerchant'])->name('shop.AdMerchant');
 
         Route::get('/userShop', [ShopController::class, 'userShop'])->name('shop.userShop');
+        Route::get('/userPaginateShop/{perpage}', [ShopController::class, 'userPaginateShop'])->name('shop.userPaginateShop');
         Route::get('categories/{shopId}', [ShopController::class, 'getShopCategorie'])->name('shop.getShopCategorie');
     });
 

@@ -866,6 +866,71 @@ class ShopController extends Controller
     }
 
 
+      /**
+ * @OA\Get(
+ *     path="/api/shop/userPaginateShop/{perpage}",
+ *     summary="Get user's shop",
+ *     description="Retrieve the shop details for the authenticated user",
+ *     tags={"Shop"},
+ * @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         required=true,
+ *         description="number of element perpage",
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successful response",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(ref="")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="An error occurred while retrieving the shop details."
+ *             )
+ *         )
+ *     ),
+ *     security={
+ *         {"bearerAuth": {}}
+ *     }
+ * )
+ */
+
+ public function userPaginateShop($perpage){
+    try {
+        $service = new Service();
+        $clientId = $service->returnClientIdAuth();
+        $userShop = Shop::where('client_id',$clientId)
+        ->whereDeleted(0)
+        ->with('files')
+        ->paginate($perpage);
+
+        if(count(  $userShop) === 0){
+            return response()->json([
+                'message'  => "No shop found",
+            ]);
+        }
+        return response()->json([
+            'data'  => $userShop,
+        ]);
+    } catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
+}
+
+
     /**
  * @OA\Get(
  *     path="/api/shop/categories/{shopId}",

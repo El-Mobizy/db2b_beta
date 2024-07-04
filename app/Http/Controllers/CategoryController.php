@@ -200,20 +200,16 @@ class CategoryController extends Controller
     {
         try {
 
-            $db = DB::connection()->getPdo();
-            $query = "SELECT * FROM categories WHERE deleted = false";
-            $stmt = $db->prepare($query);
-            $stmt->execute();
-            // $categories = $stmt->fetchAll($db::FETCH_ASSOC);
-            $categories =  Category::whereDeleted(0)->get();
+            $categories =  Category::with('file')->whereDeleted(0)->get();
             foreach($categories as $categorie){
-                $categorie->category_icone = File::where('referencecode',$categorie->filecode)->first()->location;
-                $data[] = $categorie;
-               
+
+                if(File::where('referencecode',$categorie->filecode)->exists()){
+                    $categorie->category_icone = File::where('referencecode',$categorie->filecode)->first()->location;
+                }
             }
-           
+
             return response()->json([
-                'data' =>$data
+                'data' =>$categories
             ]);
 
         } catch (Exception $e) {
@@ -223,6 +219,63 @@ class CategoryController extends Controller
         }
 
     }
+
+     /**
+ * Récupérer toutes les catégories.
+ *
+ * @OA\Get(
+ *      path="/api/category/all/{perpage}",
+ *      summary="Récupérer toutes les catégories.",
+ *   tags={"Category"},
+ *  @OA\Parameter(
+ *          in="query",
+ *          name="perpage",
+ *          required=true,
+ *          description="Number of element perpage",
+ *          @OA\Schema(type="string")
+ *      ),
+ *      @OA\Response(
+ *          response=200,
+ *          description="Succès. Retourne toutes les catégories.",
+ *          @OA\JsonContent(
+ *              type="object",
+ *              @OA\Property(
+ *                  property="data",
+ *                  type="array",
+ *                  @OA\Items(ref="")
+ *              )
+ *          )
+ *      ),
+ *      @OA\Response(
+ *          response=500,
+ *          description="Erreur de serveur. Une erreur s'est produite lors du traitement de la requête."
+ *      )
+ * )
+ */
+
+ public function getAllPaginateCategories($perpage)
+ {
+     try {
+
+         $categories =  Category::with('file')->whereDeleted(0)->paginate($perpage);
+         foreach($categories as $categorie){
+
+            if(File::where('referencecode',$categorie->filecode)->exists()){
+                $categorie->category_icone = File::where('referencecode',$categorie->filecode)->first()->location;
+            }
+        }
+
+         return response()->json([
+             'data' =>$categories
+         ]);
+
+     } catch (Exception $e) {
+        return response()->json([
+         'error' => $e->getMessage()
+        ]);
+     }
+
+ }
 
 /**
  * @OA\Get(

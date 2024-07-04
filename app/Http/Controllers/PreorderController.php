@@ -218,7 +218,7 @@ class PreorderController extends Controller
           if($checkIfmerchant ==0){
               return response()->json([
                   'message' => 'You are not merchant'
-                  ],200);
+                  ],400);
                   }
 
 
@@ -239,7 +239,11 @@ class PreorderController extends Controller
         }
 
         if ($request->hasFile('files')) {
-            $service->uploadFiles($request,$randomString,"preorder_answers");
+            $errorUploadFile = $service->uploadFiles($request,$randomString,"preorder_answers");
+
+            if($errorUploadFile){
+                return $errorUploadFile;
+            }
         }
 
         // return($preorder_answer->preorder->user->email);
@@ -545,8 +549,17 @@ public function getPreorderPending(){
 
         /**
  * @OA\Get(
- *     path="/api/preorder_answer/getPreorderAnswerValidated",
+ *     path="/api/preorder_answer/getPreorderAnswerValidated/{perpage}",
  *     tags={"PreorderAnswers"},
+ * @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         description="number of item per page",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string",
+ *         )
+ *     ),
  *     summary="Get all validated preorders answer",
  *     description="Retrieves all preorders answer that have been validated.",
  *     @OA\Response(
@@ -579,19 +592,15 @@ public function getPreorderPending(){
  *     )
  * )
  */
-public function getPreorderAnswerValidated(){
+public function getPreorderAnswerValidated($perpage = 10){
     try {
-        // $preorder_answer = PreorderAnswers::whereStatut(TypeOfType::whereLibelle('validated')->first()->id)->get();
+        $preorder_answer = PreorderAnswers::whereStatut(TypeOfType::whereLibelle('validated')->first()->id)->paginate($perpage);
 
-        $preorder_answer = DB::select("SELECT * FROM preorder_answers WHERE statut = (
-            SELECT id FROM type_of_types WHERE libelle = 'validated' LIMIT 1
-        )");
-
-if(count($preorder_answer) == 0){
-    return response()->json([
-        'message' => 'No data found'
-    ]);
-}
+        if(count($preorder_answer) == 0){
+            return response()->json([
+                'message' => 'No data found'
+            ]);
+        }
 
         return response()->json([
             'data' => $preorder_answer,
@@ -779,13 +788,20 @@ public function getPreorderWitnAnswer(){
 
 /**
  * @OA\Get(
- *     path="/api/preorder/getPreorderWithValidatedAnswers/{uid}",
+ *     path="/api/preorder/getPreorderWithValidatedAnswers/{uid}/{perpage}",
  *     summary="Récupérer les informations d'une précommande avec les réponses validées",
  *     tags={"Preorder"},
  *     @OA\Parameter(
  *         name="uid",
  *         in="path",
  *         description="Identifiant unique de la précommande",
+ *         required=true,
+ *         @OA\Schema(type="string")
+ *     ),
+ *   @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         description="nombre d'éléments par page",
  *         required=true,
  *         @OA\Schema(type="string")
  *     ),
@@ -824,7 +840,7 @@ public function getPreorderWitnAnswer(){
  *     )
  * )
  */
-public function getPreorderWithValidatedAnswers($uid)
+public function getPreorderWithValidatedAnswers($uid,$perpage)
 {
     try {
         if(!Preorder::whereUid($uid)->first()){
@@ -837,7 +853,7 @@ public function getPreorderWithValidatedAnswers($uid)
 
         $preorder = Preorder::with(['preorder_answers' => function ($query) use ($validatedStatusId) {
             $query->where('statut', $validatedStatusId)->whereDeleted(0);
-        }])->with('file')->whereDeleted(0)->whereUid($uid)->paginate(10);
+        }])->with('file')->whereDeleted(0)->whereUid($uid)->paginate($perpage);
 
         return response()->json([
             'data' => $preorder
@@ -917,10 +933,19 @@ public function getSpecificPreorderAnswer($uid){
 
     /**
  * @OA\Get(
- *     path="/api/preorder/getPreorderValidated",
+ *     path="/api/preorder/getPreorderValidated/{perpage}",
  *     tags={"Preorder"},
  *     summary="Get all validated preorders",
  *     description="Retrieves all preorders that have been validated.",
+ * @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         description="nombre d'élément par page",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
  *     @OA\Response(
  *         response=200,
  *         description="A list of validated preorders",
@@ -951,12 +976,12 @@ public function getSpecificPreorderAnswer($uid){
  *     )
  * )
  */
-public function getPreorderValidated(){
+public function getPreorderValidated($perpage = 10){
     try {
 
     $preorders = Preorder::whereDeleted(0)->where('statut',TypeOfType::where('libelle','validated')->first()->id)
     ->with('user')
-    ->paginate(10);
+    ->paginate($perpage);
 
         if(count($preorders) == 0){
             return response()->json([
@@ -1222,11 +1247,18 @@ public function rejectPreorderAnswer($uid, Request $request){
 
 /**
  * @OA\Get(
- *     path="/api/preorder/getAuthPreorderValidated",
+ *     path="/api/preorder/getAuthPreorderValidated/{perpage}",
           * security={{"bearerAuth": {}}},
  *     summary="Retrieve the validated preorder for the authenticated user",
  *     description="This endpoint retrieves the validated preorder for the authenticated user. It returns a JSON response containing the preorder data.",
  *     tags={"Preorder"},
+ *    @OA\Parameter(
+*         name="perpage",
+*         in="path",
+*         required=true,
+*         description="number of elements perpage",
+*         @OA\Schema(type="integer")
+*     ),
  *     @OA\Response(
  *         response=200,
  *         description="Successful operation",
@@ -1250,26 +1282,33 @@ public function rejectPreorderAnswer($uid, Request $request){
  *     security={{"bearerAuth": {}}}
  * )
  */
-public function getAuthPreorderValidated(){
+public function getAuthPreorderValidated($perpage){
     try {
         // $preorder = Preorder::whereStatut(TypeOfType::whereLibelle('validated')->first()->id)->whereUserId(Auth::user()->id)->get();
 
-        $preorder = DB::select("
-        SELECT *
-        FROM preorders
-        WHERE statut = (SELECT id FROM type_of_types WHERE libelle = 'validated') AND deleted = false
-          AND user_id = ?
-    ", [Auth::user()->id]);
+    //     $preorder = DB::select("
+    //     SELECT *
+    //     FROM preorders
+    //     WHERE statut = (SELECT id FROM type_of_types WHERE libelle = 'validated') AND deleted = false
+    //       AND user_id = ?
+    // ", [Auth::user()->id]);
+
+    $validatedStatusId = TypeOfType::where('libelle', 'validated')->value('id');
+
+    $preorders = Preorder::where('statut', $validatedStatusId)
+                         ->where('deleted', false)
+                         ->where('user_id', Auth::user()->id)
+                         ->paginate($perpage);
 
 
-    if(count($preorder) == 0){
+    if(count($preorders) == 0){
         return response()->json([
             'message' => 'No data found'
         ]);
     }
 
         return response()->json([
-            'data' => $preorder
+            'data' => $preorders
         ]);
 
     } catch (\Exception $e) {
@@ -1382,13 +1421,17 @@ public function write(Request $request, $PreordersAnswerUid){
         $receiver_id= $r->user->id;
 
        $message = new ChatMessageController();
-      $mes =  $message->sendNotification($receiver_id,$title,$body, 'comment submited successfully !');
+    //   $mes =  $message->sendNotification($receiver_id,$title,$body, 'comment submited successfully !');
 
-      if($mes){
-        return response()->json([
-              'message' =>$mes->original['message']
-        ]);
-      }
+    //   if($mes){
+    //     return response()->json([
+    //           'message' =>$mes->original['message']
+    //     ]);
+    //   }
+
+    return response()->json([
+        'message' => 'comment submited successfully !'
+        ],200);
 
     }catch(Exception $e){
         return response()->json([
@@ -1523,7 +1566,7 @@ public function getValidatedPreordersWithAnswers($preorderUid,$perPage)
                                              ->whereDeleted(0)
                                              ->where('statut', $validatedStatus)
                                              ->orderBy('created_at', 'desc')
-                                             ->paginate($perPage);
+                                             ->paginate(intval($perPage));
 
 
             return response()->json([
@@ -1718,7 +1761,7 @@ public function getValidatedPreordersWithAnswers($preorderUid,$perPage)
     public function answerReviews($preorderAnswerUid){
         try{
 
-            $reviews = Review::whereDeleted(0)->where('preorder_answer_uid',$preorderAnswerUid)->with('file')->get();
+            $reviews = Review::whereDeleted(0)->where('preorder_answer_uid',$preorderAnswerUid)->with('file')->with('user')->get();
             return response()->json([
                 'data' => $reviews
             ]);
@@ -1729,5 +1772,68 @@ public function getValidatedPreordersWithAnswers($preorderUid,$perPage)
             ]);
         }
     }
+
+        /**
+ * @OA\Get(
+ *     path="/api/review/answerReviewsPaginate/{preorderAnswerUid}/{perpage}",
+ *     summary="Get reviews for a specific preorder answer",
+ *     tags={"Review"},
+ * security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="preorderAnswerUid",
+ *         in="path",
+ *         required=true,
+ *         description="Uid of preorder answer",
+ *         @OA\Schema(type="string")
+ *     ),
+ * @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         description="number of element perpage",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="data", type="array", @OA\Items(ref=""))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Not Found",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string")
+ *         )
+ *     )
+ * )
+ */
+public function answerReviewsPaginate($preorderAnswerUid,$perpage){
+    try{
+
+        $reviews = Review::whereDeleted(0)->where('preorder_answer_uid',$preorderAnswerUid)->with('file')->with('user')->paginate($perpage);
+        return response()->json([
+            'data' => $reviews
+        ]);
+
+    }catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ]);
+    }
+}
 
 }

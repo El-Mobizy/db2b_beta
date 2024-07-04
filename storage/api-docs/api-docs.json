@@ -81,26 +81,17 @@
                 ]
             }
         },
-        "/api/ad/all/{page}/{perPage}": {
+        "/api/ad/all/{perpage}": {
             "get": {
                 "tags": [
                     "Ad"
                 ],
                 "summary": "Get recent ads.",
                 "description": "Get recent ads.",
-                "operationId": "f4ce9f06046ccb35678d2a79cfe05c00",
+                "operationId": "16c596848b49b7789279bd8a67d85fa5",
                 "parameters": [
                     {
-                        "name": "page",
-                        "in": "path",
-                        "description": "number of ad per page.",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "perPage",
+                        "name": "perpage",
                         "in": "path",
                         "description": "number of ad per page.",
                         "required": true,
@@ -139,14 +130,25 @@
                 ]
             }
         },
-        "/api/ad/marchand": {
+        "/api/ad/marchand/{perpage}": {
             "get": {
                 "tags": [
                     "Ad"
                 ],
                 "summary": "Get all seller ads.",
                 "description": "Get All ads.",
-                "operationId": "b7823d82f0a81e723b4947135a7abc36",
+                "operationId": "7bdefb252008592fd2318c548e69adc2",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "number of element perpage",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success. Return all seller ads.",
@@ -1137,6 +1139,50 @@
                 "summary": "Récupérer toutes les catégories.",
                 "description": "Récupérer toutes les catégories.",
                 "operationId": "5417b653892ac2baf32d3d12510c72a5",
+                "responses": {
+                    "200": {
+                        "description": "Succès. Retourne toutes les catégories.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur de serveur. Une erreur s'est produite lors du traitement de la requête."
+                    }
+                }
+            }
+        },
+        "/api/category/all/{perpage}": {
+            "get": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Récupérer toutes les catégories.",
+                "description": "Récupérer toutes les catégories.",
+                "operationId": "76c7cc6af9f2c0c15115a7500766be51",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "query",
+                        "description": "Number of element perpage",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Succès. Retourne toutes les catégories.",
@@ -2389,6 +2435,50 @@
                     },
                     "500": {
                         "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/api/country/all/{perpage}": {
+            "get": {
+                "tags": [
+                    "Country"
+                ],
+                "summary": "Get all country.",
+                "description": "Récupérer tous les pays.",
+                "operationId": "105e2351a7ecf0cf69649e3542bf3035",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "number of element perpage",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success. Return all countries.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Serveur error."
                     }
                 }
             }
@@ -4759,14 +4849,25 @@
                 ]
             }
         },
-        "/api/preorder_answer/getPreorderAnswerValidated": {
+        "/api/preorder_answer/getPreorderAnswerValidated/{perpage}": {
             "get": {
                 "tags": [
                     "PreorderAnswers"
                 ],
                 "summary": "Get all validated preorders answer",
                 "description": "Retrieves all preorders answer that have been validated.",
-                "operationId": "b4f4af81eef27919ffff6b5d86cb4f23",
+                "operationId": "b4513efe9a885f572f9db9e2ee7643c0",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "number of item per page",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "A list of validated preorders answer",
@@ -5022,18 +5123,27 @@
                 }
             }
         },
-        "/api/preorder/getPreorderWithValidatedAnswers/{uid}": {
+        "/api/preorder/getPreorderWithValidatedAnswers/{uid}/{perpage}": {
             "get": {
                 "tags": [
                     "Preorder"
                 ],
                 "summary": "Récupérer les informations d'une précommande avec les réponses validées",
-                "operationId": "c55c27a8242f4854aff4e861322a0c48",
+                "operationId": "eb3fe03698ea46532b4e78e6fd3e802b",
                 "parameters": [
                     {
                         "name": "uid",
                         "in": "path",
                         "description": "Identifiant unique de la précommande",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "nombre d'éléments par page",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -5162,14 +5272,25 @@
                 }
             }
         },
-        "/api/preorder/getPreorderValidated": {
+        "/api/preorder/getPreorderValidated/{perpage}": {
             "get": {
                 "tags": [
                     "Preorder"
                 ],
                 "summary": "Get all validated preorders",
                 "description": "Retrieves all preorders that have been validated.",
-                "operationId": "0eaa4d816604703d6b961892c949da7d",
+                "operationId": "ea4f1929e49ececc5a6b006763a40313",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "nombre d'élément par page",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "A list of validated preorders",
@@ -5510,14 +5631,25 @@
                 ]
             }
         },
-        "/api/preorder/getAuthPreorderValidated": {
+        "/api/preorder/getAuthPreorderValidated/{perpage}": {
             "get": {
                 "tags": [
                     "Preorder"
                 ],
                 "summary": "Retrieve the validated preorder for the authenticated user",
                 "description": "This endpoint retrieves the validated preorder for the authenticated user. It returns a JSON response containing the preorder data.",
-                "operationId": "54951bc2d99bd8373ad07a0cda591974",
+                "operationId": "3a4f09dd8dfa80a558173b63bc43236a",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "number of elements perpage",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -5951,6 +6083,90 @@
                         "name": "preorderAnswerUid",
                         "in": "path",
                         "description": "Uid of preorder answer",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/review/answerReviewsPaginate/{preorderAnswerUid}/{perpage}": {
+            "get": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Get reviews for a specific preorder answer",
+                "operationId": "633841015ce70e216a9c32e068755381",
+                "parameters": [
+                    {
+                        "name": "preorderAnswerUid",
+                        "in": "path",
+                        "description": "Uid of preorder answer",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "number of element perpage",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -6989,6 +7205,63 @@
                 "summary": "Get user's shop",
                 "description": "Retrieve the shop details for the authenticated user",
                 "operationId": "getUserShop",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred while retrieving the shop details."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shop/userPaginateShop/{perpage}": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Get user's shop",
+                "description": "Retrieve the shop details for the authenticated user",
+                "operationId": "6c9d1d48ed952eec9dbbf6c822be8bc9",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "number of element perpage",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful response",

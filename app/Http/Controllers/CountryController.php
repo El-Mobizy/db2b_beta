@@ -12,81 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 class CountryController extends Controller
 {
-  
 
-    // /**
-    //  * @OA\Post(
-    //  *      path="/api/country/add",
-    //  *      summary="Ajouter un pays.",
-    //  *      tags={"Country"},
-    //  *      @OA\RequestBody(
-    //  *          required=true,
-    //  *          description="Données requises pour ajouter un pays.",
-    //  *          @OA\MediaType(
-    //  *              mediaType="multipart/form-data",
-    //  *              @OA\Schema(
-    //  *                  required={"fullname", "shortcode", "callcode", "file"},
-    //  *                  @OA\Property(property="fullname", type="string", example="Nom complet du pays"),
-    //  *                  @OA\Property(property="shortcode", type="string", example="Code court du pays"),
-    //  *                  @OA\Property(property="callcode", type="string", example="Code d'appel du pays"),
-    //  *                  @OA\Property(property="files[]", type="string", format="binary", description="Fichier d'image du drapeau du pays (jpeg, jpg, png)")
-    //  *              )
-    //  *          )
-    //  *      ),
-    //  *      @OA\Response(
-    //  *          response=200,
-    //  *          description="Succès. Le pays a été ajouté avec succès."
-    //  *      ),
-    //  *      @OA\Response(
-    //  *          response=400,
-    //  *          description="Requête invalide. Veuillez fournir toutes les données requises et vérifier les contraintes de validation."
-    //  *      ),
-    //  *      @OA\Response(
-    //  *          response=500,
-    //  *          description="Erreur de serveur. Une erreur s'est produite lors du traitement de la requête."
-    //  *      )
-    //  * )
-    //  */
-
-    public function add(Request $request)
-    {
-        try {
-            $db = DB::connection()->getPdo();
-            $request->validate([
-                'fullname' => 'required|unique:countries|max:255',
-                'shortcode' => 'required|unique:countries|max:10',
-                'callcode' => 'required|unique:countries|max:255',
-                'files' => ''
-            ]);
-
-            $fullname =  htmlspecialchars($request->input('fullname'));
-            $shortcode =  htmlspecialchars($request->input('shortcode'));
-            $callcode =  htmlspecialchars($request->input('callcode'));
-
-            $service = new Service();
-
-            $country = new Country();
-            $randomString = $service->generateRandomAlphaNumeric(7,$country,'flag');
-            $country->fullname = $fullname;
-            $country->shortcode = $shortcode;
-            $country->callcode = $callcode;
-            $country->flag = $randomString;
-            $country->uid = $service->generateUid($country);
-            $country->save();
-
-
-            $service->uploadFiles($request,$randomString,"country");
-
-            return response()->json([
-                'message' => 'country added successfully!'
-            ]);
-        } catch (Exception $e) {
-           return response()->json([
-            'error' => $e->getMessage()
-           ]);
-        }
-
-    }
 
 /**
  * Récupérer tous les pays.
@@ -200,5 +126,59 @@ class CountryController extends Controller
             'message' => 'Country generate successfuly'
         ]);
     }
+
+
+    /**
+ * Récupérer tous les pays.
+ *
+ * @OA\Get(
+ *      path="/api/country/all/{perpage}",
+ *      summary="Get all country.",
+ *   tags={"Country"},
+ * @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         description="number of element perpage",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *      @OA\Response(
+ *          response=200,
+ *          description="Success. Return all countries.",
+ *          @OA\JsonContent(
+ *              type="object",
+ *              @OA\Property(
+ *                  property="data",
+ *                  type="array",
+ *                  @OA\Items(ref="")
+ *              )
+ *          )
+ *      ),
+ *      @OA\Response(
+ *          response=500,
+ *          description="Serveur error."
+ *      )
+ * )
+ */
+
+ public function getAllPaginateCountries($perpage=10)
+ {
+     try {
+
+
+         $countries = Country::whereDeleted(false)->where('banned',false)->paginate($perpage);
+         return response()->json([
+             'data' => $countries
+         ]);
+
+     } catch (Exception $e) {
+        return response()->json([
+         'error' => $e->getMessage()
+        ]);
+     }
+
+ }
 
 }

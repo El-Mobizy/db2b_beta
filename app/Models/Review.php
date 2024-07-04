@@ -14,4 +14,12 @@ class Review extends Model
         return $this->hasMany(File::class,'referencecode','filecode');
     }
 
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
+    
+    public function preorder_answer(){
+        return $this->belongsTo(PreorderAnswers::class);
+    }
+
 }

@@ -107,17 +107,6 @@ class Service extends Controller
 
             $db = DB::connection()->getPdo();
 
-            // $manager = new ImageManager(new Driver());
-
-            // $manager->read($photo);
-
-            // return  $manager->read($photo);
-
-            // access driver from image manager
-            // $driver = $manager->driver();
-
-            // $image = $manager->read('images/example.jpg');
-
             $size = filesize($photo);
             $ulid = Uuid::uuid1();
             $ulidPhoto = $ulid->toString();

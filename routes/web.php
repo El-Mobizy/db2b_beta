@@ -21,37 +21,3 @@ Route::get('/', function () {
     return redirect()->away($url);
 });
 
-
-
-
-Route::get('/createFile', function(){
-    return view('file');
-
- });
- Route::post('/storeFile', function(Request $request){
-     $request->validate([
-         'image' => 'required'
-     ]);
-
-     $photo = $request->image;
-
-     $manager = new ImageManager(new Driver());
-
-     $manager->read("DB2B1.jpg");
-
-     return   $manager->read("DB2B1.jpg");
-    //  dd(filesize($request->image));
-     $file =new File();
-     $type = $photo->getClientOriginalExtension();
-     $ulid = Uuid::uuid1();
-     $ulidPhoto = $ulid->toString();
-     $file->filename = md5(uniqid()) . '.' . $type;
-     $file->type =  $type;
-     $photoName = uniqid() . '.' . $photo->getClientOriginalExtension();
-     $file->location=  url("/image/test/" . $photoName);
-     $file->size =  $size = filesize($photo);
-     $file->referencecode = '1234567';
-     $file->uid =  $ulidPhoto ;
-     $file->save();
-
- })->name('file.store');
