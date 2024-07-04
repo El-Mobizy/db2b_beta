@@ -123,7 +123,7 @@ class PreorderController extends Controller
                 $body ="Your pre-order has been registered, please wait while an administrator analyzes it. We'll let you know what happens next. Thank you!";
 
 
-               $message = new ChatMessageController();
+              $message = new ChatMessageController();
               $mes =  $message->sendNotification(Auth::user()->id,$title,$body, 'preorder created successfully !');
 
               if($mes){

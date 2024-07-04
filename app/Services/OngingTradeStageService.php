@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\ChatMessageController;
 use App\Http\Controllers\CommissionWalletController;
 use App\Http\Controllers\EscrowController;
 use App\Http\Controllers\OrderController;
@@ -85,7 +86,7 @@ class OngingTradeStageService
             ]);
         }
     }
-    
+
     public function endTrade($tradeStage, $trade) {
         $tradeStage->update(['complete' => true]);
         $allStagesCompleted = $trade->onging_trade_stage->every('complete') ? 1 : 0;
@@ -315,6 +316,7 @@ class OngingTradeStageService
         if ($errorUpdateUserWallet) {
             return $errorUpdateUserWallet;
         }
+
     
         $escrow = new EscrowController();
         $escrowOrder = Escrow::where('order_id', $trade->order_detail->order_id)->first();
