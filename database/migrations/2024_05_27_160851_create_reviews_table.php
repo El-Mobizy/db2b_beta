@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            // $table->foreignId('preorder_answer_id')->nullable()->constrained('preorder_answers');
             $table->uuid('preorder_answer_uid')->references('uid')->on('preorder_answers');
             $table->foreignId('parent_id')->nullable()->constrained('reviews');
             $table->text('content');

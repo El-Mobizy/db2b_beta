@@ -30,7 +30,7 @@ class AdController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/ads",
+     *     path="/api/ad/ads",
      *     tags={"Ad"},
      *     summary="Get all ads",
      *     description="Returns a list of all ads",
@@ -111,13 +111,15 @@ class AdController extends Controller
             }
 
             return response()->json([
-                'data' => $data
-            ]);
+                'data' => $data,
+                'status' => 'success',
+                'message' => 'list of products'
+            ],200);
 
         } catch (Exception $e) {
            return response()->json([
             'error' => $e->getMessage()
-           ]);
+           ],500);
         }
     }
 
@@ -147,12 +149,14 @@ class AdController extends Controller
                 }
     
             return response()->json([
-                'data' => $data
-            ]);
+                'data' => $data,
+                'status' => 'success',
+                'message' => 'List of all products to display for a logged-in user'
+            ],200);
         } catch (Exception $e) {
            return response()->json([
             'error' => $e->getMessage()
-           ]);
+           ],500);
         }
     }
 
@@ -188,11 +192,13 @@ class AdController extends Controller
     
             return response()->json([
                 'data' => $ads,
-            ]);
+                 'status' => 'success',
+                'message' => 'A paginated list of all products to be displayed to a logged-in user'
+            ],200);
         } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
-            ]);
+            ],500);
         }
     }
 
@@ -249,6 +255,8 @@ public function getRecentAdd(Request $request,$perpage)
 
         return response()->json([
             'data' => $ads,
+            'status' => 'success',
+            'message' => 'A paginated list of all products to be displayed to a user'
         ]);
     } catch (Exception $e) {
         return response()->json([
@@ -311,7 +319,9 @@ public function getRecentAdd(Request $request,$perpage)
                 }
 
                 return response()->json([
-                    'data'=> $ads
+                    'data'=> $ads,
+                    'status' => 'success',
+                    'message' => 'List of all products to display for a logged-in user'
                 ], 200);
 
         } catch (Exception $e) {
@@ -404,7 +414,7 @@ public function getRecentAdd(Request $request,$perpage)
             $order_details = OrderDetail::where('ad_id',$ad->id)->whereDeleted(0)->get();
 
             foreach($order_details  as $order_detail){
-                if(Order::find($order_detail->order_id)->status == TypeOfType::whereLibelle('validated')->first()->id){
+                if(Order::find($order_detail->order_id)->status != TypeOfType::whereLibelle('validated')->first()->id){
                     return response()->json([
                         'message' => "You can't delete a ad because it belong to a order "
                     ]);
@@ -448,7 +458,6 @@ public function getRecentAdd(Request $request,$perpage)
  *                 @OA\Property(property="category_id", type="integer", example=1),
  *                 @OA\Property(property="shop_id", type="integer", example=1),
  *  @OA\Property(property="price", type="double", example=1),
- * @OA\Property(property="final_price", type="double", example=1),
  *               @OA\Property(
  *                     property="value_entered[]",
  *                     type="array",
@@ -819,7 +828,6 @@ public function checkCategoryShop($ownerId, Request $request){
                 'value_entered' => 'required|array',
                 'files' =>'',
                 'price' => 'required',
-                'final_price' => 'required'
             ])){
                 $e = new Exception();
                 return response()->json([

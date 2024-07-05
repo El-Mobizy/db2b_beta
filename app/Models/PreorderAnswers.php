@@ -8,6 +8,21 @@ use Illuminate\Database\Eloquent\Model;
 class PreorderAnswers extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'user_id',
+        'preorder_id',
+        'parent_id',
+        'deleted',
+        'reject_reason',
+        'filecode',
+        'content',
+        'statut',
+        'validated_by_id',
+        'validated_on',
+        'uid',
+        'price',
+        'delivery_time'
+    ];
     public function preorder(){
         return $this->belongsTo(Preorder::class);
     }

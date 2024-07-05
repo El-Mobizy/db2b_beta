@@ -10,8 +10,13 @@ class Client extends Model
     use HasFactory;
 
     protected $fillable = [
-        'is_merchant'
+        'person_id',
+        'is_merchant',
+        'is_deliverer',
+        'uid',
+        'deleted',
     ];
+
 
     public function person(){
         return $this->belongsTo(Person::class);

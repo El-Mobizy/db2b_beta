@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class Review extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'user_id',
+        'preorder_answer_uid',
+        'parent_id',
+        'content',
+        'filecode',
+        'deleted',
+        'uid',
+    ];
 
     public function file()
     {

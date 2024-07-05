@@ -9,6 +9,25 @@ class Preorder extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'title',
+        'filecode',
+        'description',
+        'price',
+        'statut',
+        'user_id',
+        'address',
+        'reject_reason',
+        'location_id',
+        'category_id',
+        'validated_by_id',
+        'validated_on',
+        'deleted',
+        'uid',
+        'maximumbudget',
+        'minimumbudget',
+    ];
+
     public function country(){
         return $this->belongsTo(Country::class);
     }

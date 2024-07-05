@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Cart extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'user_id',
+        'ad_id',
+        'quantity',
+    ];
 
     public function ads(){
         return $this->belongsTo(Ad::class);

@@ -87,7 +87,7 @@ class OrderController extends Controller
                 }
 
 
-                    $flatAds = array_merge(...$ads);//applatir le tableau
+                    $flatAds = array_merge(...$ads);
 
                     $total = array_sum(array_map(function ($item) {
                         return floatval($item['final_price_product']) * $item['quantity_product'];
@@ -1486,6 +1486,66 @@ private function getCartAds($cartItem){
             ], 500);
         }
     }
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/order/userOrders/{perpage}",
+     *     summary="Get all orders of the authenticated user",
+     *     description="Returns a list of all orders placed by the authenticated user",
+     *     tags={"Orders"},
+     *  @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         required=true,
+ *         description="number of elements per page",
+ *         @OA\Schema(type="integer")
+ *     ),
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error"
+     *     )
+     * )
+     */
+    public function userOrders($perpage)
+    {
+        try {
+
+            $service = new Service();
+
+            $checkAuth=$service->checkAuth();
+            if($checkAuth){
+               return $checkAuth;
+            }
+            
+            $user = Auth::user();
+
+            $orders = Order::where('user_id', $user->id)->paginate($perpage);
+
+            return response()->json([
+                'data' => $orders
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+        
+    }
+
     
     
 

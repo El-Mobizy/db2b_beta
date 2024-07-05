@@ -9,6 +9,19 @@ class Category extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'title',
+        'slug',
+        'total_ads',
+        'parent_id',
+        'link_category_id',
+        'attribute_group_id',
+        'deleted',
+        'is_top',
+        'filecode',
+        'uid',
+    ];
+
     public function preorders(){
         return $this->hasMany(Preorder::class);
     }

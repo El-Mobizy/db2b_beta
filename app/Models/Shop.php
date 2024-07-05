@@ -8,6 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Shop extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'client_id',
+        'title',
+        'description',
+        'filecode',
+        'shop_url',
+        'uid',
+        'deleted',
+    ];
     public function files()
     {
         return $this->hasMany(File::class,'referencecode','filecode');

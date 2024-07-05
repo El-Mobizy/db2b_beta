@@ -100,7 +100,6 @@ class Service extends Controller
     }
 
 
-    // 'PDF', 'DOC', 'DOX', 'PPTX'
 
     private function storeFile( $photo, $randomString, $location){
         try {

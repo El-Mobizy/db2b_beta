@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
-  
 /**
  * @OA\Post(
  *     path="/api/cart/addToCart/{adId}",
@@ -115,66 +114,62 @@ class CartController extends Controller
     
 
     /**
- * @OA\Delete(
- *     path="/api/cart/removeToCart",
- *     summary="Remove a product from the cart",
- *     tags={"Cart"},
- * security={{"bearerAuth": {}}},
- *     @OA\RequestBody(
- *         @OA\MediaType(
- *             mediaType="application/json",
- *             @OA\Schema(
- *                 @OA\Property(
- *                     property="ad_id",
- *                     type="integer",
- *                     description="The ID of the product to remove from the cart"
- *                 )
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Product removed from the cart successfully",
- *         @OA\JsonContent(
- *             @OA\Property(
- *                 property="message",
- *                 type="string",
- *                 example="Ad remove to cart successfully!"
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Invalid input"
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthorized"
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Server error"
- *     )
- * )
- */
-    
-    public function removeToCart(Request $request){
-        try {
-            $item = $this->getCartItem($request);
-            $cartItem = $item['cartItem'];
+     * @OA\Delete(
+     *     path="/api/cart/removeToCart/{adId}",
+     *     summary="Remove a product from the cart",
+     *     tags={"Cart"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="adId",
+     *         in="path",
+     *         required=true,
+     *         description="The ID of the ad",
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Product removed from the cart successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Ad removed from cart successfully!"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid input"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
+     */
 
+    
+    public function removeToCart($adId){
+        try {
+           $cartItem = Cart::where('user_id',Auth::user()->id)
+           ->where('ad_id',intval($adId))
+           ->first();
             if(!$cartItem){
                 return response()->json([
-                    'message' => ' check if this ad exist '
-                ],200);
+                    'message' => ' check if this ad exist in your cart'
+                ],400);
             }
 
-            Cart::where('user_id',  $item['userId'])
-            ->where('ad_id', $request->ad_id)
-            ->delete();
+           $cartItem->delete();
 
             return response()->json([
-                'message' => ' Ad remove to cart successfully!'
+                'message' => 'Ad remove from cart successfully !'
             ],200);
 
         } catch(Exception $e){

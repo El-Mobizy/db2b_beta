@@ -931,7 +931,7 @@ class ShopController extends Controller
 }
 
 
-    /**
+/**
  * @OA\Get(
  *     path="/api/shop/categories/{shopId}",
  *     summary="Get categories of a shop",

@@ -8,4 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class AttributeGroup extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'attribute_id',
+        'group_title_id',
+        'deleted',
+        'uid',
+    ];
 }

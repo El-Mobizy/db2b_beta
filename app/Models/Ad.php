@@ -10,7 +10,21 @@ class Ad extends Model
     use HasFactory;
 
     protected $fillable = [
-        'statut'
+        'title',
+        'statut',
+        'file_code',
+        'reject_reason',
+        'validated_on',
+        'deleted',
+        'uid',
+        'category_id',
+        'owner_id',
+        'location_id',
+        'validated_by_id',
+        'shop_id',
+        'ad_code',
+        'price',
+        'final_price'
     ];
 
     public function ad_detail()

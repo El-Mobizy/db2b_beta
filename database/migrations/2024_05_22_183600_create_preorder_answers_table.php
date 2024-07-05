@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('preorder_id')->constrained('preorders');
-            // $table->uuid('preorder_uid')->references('uid')->on('preorders');
             $table->foreignId('parent_id')->nullable()->constrained('preorder_answers');
             $table->boolean('deleted')->default(0);
             $table->text('reject_reason')->nullable();

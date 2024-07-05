@@ -63,7 +63,7 @@ Route::prefix('users')->group(function () {
         Route::post('wallet/generateStandardWallet', [CommissionWalletController::class, 'generateStandardWallet'])->name('wallet.generateStandardWallet');
         Route::prefix('cart')->group(function () {
             Route::post('/addToCart/{ad_id}', [CartController::class, 'addToCart'])->name('cart.addToCart');
-            Route::delete('/removeToCart', [CartController::class, 'removeToCart'])->name('cart.removeToCart');
+            Route::delete('/removeToCart/{adId}', [CartController::class, 'removeToCart'])->name('cart.removeToCart');
             Route::get('/getUserCart/{page}/{perPage}', [CartController::class, 'getUserCart'])->name('cart.getUserCart');
             Route::post('/incrementQuantity', [CartController::class, 'incrementQuantity'])->name('cart.incrementQuantity');
             Route::post('/decrementQuantity', [CartController::class, 'decrementQuantity'])->name('cart.decrementQuantity');
@@ -104,7 +104,7 @@ Route::prefix('users')->group(function () {
             Route::get('/getOrderEndTrade/{orderId}', [OrderController::class, 'getOrderEndTrade'])->name('order.getOrderEndTrade');
             Route::get('/getOrderCanceledTrade/{orderId}', [OrderController::class, 'getOrderCanceledTrade'])->name('order.getOrderCanceledTrade');
             Route::get('/getAllFinalizedOrders', [OrderController::class, 'getAllFinalizedOrders'])->name('order.getAllFinalizedOrders');
-           
+            Route::get('/userOrders/{perpage}', [OrderController::class, 'userOrders'])->name('order.userOrders');
         });
 
         Route::get('/user', [UserController::class, 'userAuth']);

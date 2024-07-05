@@ -9,14 +9,14 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/api/ads": {
+        "/api/ad/ads": {
             "get": {
                 "tags": [
                     "Ad"
                 ],
                 "summary": "Get all ads",
                 "description": "Returns a list of all ads",
-                "operationId": "28678aada862072d115eecd8a50fdb96",
+                "operationId": "0e4a79e0ae065f2a31062c012874bb8e",
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -317,11 +317,6 @@
                                         "example": 1
                                     },
                                     "price": {
-                                        "type": "number",
-                                        "format": "double",
-                                        "example": 1
-                                    },
-                                    "final_price": {
                                         "type": "number",
                                         "format": "double",
                                         "example": 1
@@ -740,28 +735,24 @@
                 ]
             }
         },
-        "/api/cart/removeToCart": {
+        "/api/cart/removeToCart/{adId}": {
             "delete": {
                 "tags": [
                     "Cart"
                 ],
                 "summary": "Remove a product from the cart",
-                "operationId": "12d0dba4faf906b44fce2926dcc77dc7",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "ad_id": {
-                                        "description": "The ID of the product to remove from the cart",
-                                        "type": "integer"
-                                    }
-                                },
-                                "type": "object"
-                            }
+                "operationId": "f9fcd741cb74a43a36d4885bcdb1a6ba",
+                "parameters": [
+                    {
+                        "name": "adId",
+                        "in": "path",
+                        "description": "The ID of the ad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
-                },
+                ],
                 "responses": {
                     "200": {
                         "description": "Product removed from the cart successfully",
@@ -771,7 +762,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Ad remove to cart successfully!"
+                                            "example": "Ad removed from cart successfully!"
                                         }
                                     },
                                     "type": "object"
@@ -4257,6 +4248,53 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/order/userOrders/{perpage}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Get all orders of the authenticated user",
+                "description": "Returns a list of all orders placed by the authenticated user",
+                "operationId": "fc5f24ea4ee75cf432c410726f7c4523",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "number of elements per page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 },
                 "security": [
