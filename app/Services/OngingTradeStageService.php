@@ -94,6 +94,7 @@ class OngingTradeStageService
             return $this->completeTrade($trade,$tradeStage);
            
         } else {
+            $tradeStage->update(['complete' => false]);
             return response()->json([
                 'message' => 'Check if all stages are completed'
             ], 200);
@@ -283,21 +284,33 @@ class OngingTradeStageService
         if (!$statut_trade_id || !$status_order_id || !$statut_escrow_id) {
             return $this->statusNotFoundResponse();
         }
-    
-        $credit = $trade->order_detail->price * $trade->order_detail->quantity;
-        $this->refundBuyer($trade, $credit,$tradeStage);
-    
-        $trade->enddate = now();
-        $trade->status_id = $statut_trade_id;
-        $trade->save();
-    
-        Order::whereId($trade->order_detail->order_id)->update(['status' => $status_order_id]);
 
-        return $this->checkAndValidateSpecificOrder($trade->order_detail->order_id);
+        $tradeStage->update(['complete' => true]);
+        $allStagesCompleted = $trade->onging_trade_stage->every('complete') ? 1 : 0;
+        if ($allStagesCompleted == 1) {
+            $credit = $trade->order_detail->price * $trade->order_detail->quantity;
+            $this->refundBuyer($trade, $credit,$tradeStage);
+        
+            $trade->enddate = now();
+            $trade->status_id = $statut_trade_id;
+            $trade->save();
+        
+            Order::whereId($trade->order_detail->order_id)->update(['status' => $status_order_id]);
+
+            return $this->checkAndValidateSpecificOrder($trade->order_detail->order_id);
+        
+            return response()->json([
+                'message' => 'Trade canceled successfully'
+            ]);
+           
+        } else {
+            $tradeStage->update(['complete' => false]);
+            return response()->json([
+                'message' => 'Check if all stages are completed'
+            ], 200);
+        }
     
-        return response()->json([
-            'message' => 'Trade canceled successfully'
-        ]);
+        
     }
     
     public function refundBuyer($trade, $credit,$tradeStage) {
