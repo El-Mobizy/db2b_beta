@@ -10,6 +10,7 @@ use App\Http\Controllers\CommissionController;
 use App\Http\Controllers\CommissionWalletController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\DeliveryAgencyController;
+use App\Http\Controllers\EscrowController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\OngingTradeStageController;
@@ -245,6 +246,11 @@ Route::prefix('users')->group(function () {
 
     Route::prefix('attributeGroup')->group(function () {
         Route::post('/store', [AttributeGroupController::class, 'store']);
+    });
+
+    Route::prefix('escrow')->group(function () {
+        Route::get('/getEscrow/{perpage}', [EscrowController::class, 'getEscrow']);
+        Route::get('/showEscrow/{id}', [EscrowController::class, 'showEscrow']);
     });
 
 

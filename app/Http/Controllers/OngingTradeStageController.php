@@ -368,6 +368,12 @@ class OngingTradeStageController extends Controller
         }
 
         $trade = $ongingstage->findTrade($tradeStage->trade_id);
+        $escrowOrder = Escrow::where('order_id', $trade->order_detail->order_id)->first();
+        if (!$escrowOrder) {
+            return response()->json([
+                'message' => 'Order not paid yet !'
+            ], 400);
+        }
         if ($ongingstage->isTradeFinished($trade)) {
             return $ongingstage->tradeFinishedResponse();
         }

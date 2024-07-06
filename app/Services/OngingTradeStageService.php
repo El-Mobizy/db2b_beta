@@ -234,17 +234,13 @@ class OngingTradeStageService
                 $validatedStatusId = TypeOfType::where('libelle', 'validated')->first()->id;
                 $order->status = $validatedStatusId;
                 $order->save();
+
+                $escrowOrder = Escrow::where('order_id', $trade->order_detail->order_id)->first();
+                $escrowOrder->update(['status' => 'ended']);
+
             }
 
-            $escrowOrder = Escrow::where('order_id', $trade->order_detail->order_id)->first();
-            if (!$escrowOrder) {
-                return response()->json([
-                    'message' => 'Order not paid yet'
-                ], 400);
-            }
-
-            $escrowOrder->update(['status' => 'ended']);
-    
+            
             return response()->json([
                 'message' => 'Order checked and updated successfully!'
             ], 200);
@@ -325,6 +321,7 @@ class OngingTradeStageService
                 'message' => 'Order not paid yet'
             ], 400);
         }
+
     
         if ($escrowOrder->amount <= 0 || ($escrowOrder->amount < $credit)) {
             $tradeStage->update(['complete' => false]);

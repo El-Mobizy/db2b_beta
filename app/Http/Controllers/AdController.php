@@ -517,7 +517,7 @@ public function getRecentAdd(Request $request,$perpage)
 
         $this->validateRequest($request);
 
-        if ($request->price < 0) {
+        if ($request->price <= 0) {
             return response()->json([
                 'message' => 'The price must be greater than 0'
                 ],200);
@@ -575,7 +575,7 @@ public function getRecentAdd(Request $request,$perpage)
         $this->saveAdDetails($request, $ad);
 
         $title= "Confirmation of Your Product Shipment";
-        $body ="Your pre-Product has been registered, please wait while an administrator analyzes it. We'll let you know what happens next. Thank you!";
+        $body ="Your product has been registered, please wait while an administrator analyzes it. We'll let you know what happens next. Thank you!";
 
 
       $message = new ChatMessageController();
