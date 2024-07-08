@@ -102,7 +102,8 @@ class AdController extends Controller
             ->where('deleted',false) ->where('ads.statut',5)->get();
 
             foreach($ads as $ad){
-                $ad->category_title =  Category::find($ad->category_id)->title ;
+                $ad->category_title =  Category::find($ad->category_id)->title;
+                $ad->issynchronized = true ;
 
                 if(File::where('referencecode',$ad->file_code)->exists()){
                     $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
@@ -141,6 +142,7 @@ class AdController extends Controller
 
                 foreach($ads as $ad){
                     $ad->category_title =  Category::find($ad->category_id)->title ;
+                    $ad->issynchronized = true ;
 
                     if(File::where('referencecode',$ad->file_code)->exists() ==1){
                         $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
@@ -186,6 +188,7 @@ class AdController extends Controller
                 ->paginate($perpage);
     
             foreach ($ads as $ad) {
+                $ad->issynchronized = true ;
                 $ad->category_title =  Category::find($ad->category_id)->title ;
                 $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
             }
@@ -251,6 +254,7 @@ public function getRecentAdd(Request $request,$perpage)
         foreach ($ads as $ad) {
             $ad->category_title =  Category::find($ad->category_id)->title ;
             $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+            $ad->issynchronized = true ;
         }
 
         return response()->json([
@@ -843,12 +847,14 @@ public function checkCategoryShop($ownerId, Request $request){
 
         $title = htmlspecialchars($request->input('title'));
         $price = htmlspecialchars($request->input('price'));
-        $final_price = floatval($request->input('price'));
         $location_id = htmlspecialchars($request->input('location_id'));
         $category_id = htmlspecialchars($request->input('category_id'));
         $shop_id = htmlspecialchars($request->input('shop_id'));
+        $shop = Shop::whereId($shop_id)->first();
         $owner_id = Auth::user()->id;
         $statut = TypeOfType::whereLibelle('pending')->first()->id;
+        $percent = $shop->commission/100;
+        $final_price = ($percent*$price) + $price;
 
 
         $service = new Service();

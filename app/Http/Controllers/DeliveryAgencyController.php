@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CommissionWallet;
 use App\Models\DeliveryAgency;
+use App\Models\Order;
+use App\Models\TypeOfType;
+use App\Services\OngingTradeStageService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -92,35 +96,65 @@ class DeliveryAgencyController extends Controller
 
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(DeliveryAgency $deliveryAgency)
-    {
-        //
+    public function checkWalletBalance($deliveryPersonId, $orderAmount) {
+       $service = new Service();
+       $walletBalance = $service->returnSTDPersonWalletBalance($deliveryPersonId);
+
+       if($walletBalance < $orderAmount){
+            return response()->json([
+                'message' => 'You cannot take this delivery because your wallet balance is below the order amount.'
+            ], 404);
+       }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(DeliveryAgency $deliveryAgency)
-    {
-        //
+    public function storeEscrowDelivery($deliveryPersonId, $orderId){
+        try {
+            $escrowDelivery = new EscrowDelivery();
+            $escrowDelivery->person_id = $deliveryPersonId;
+            $escrowDelivery->order_id = $orderId;
+            $escrowDelivery->order_amount = Order::whereId($orderId)->amount;
+            $escrowDelivery->delivery_agent_amount = $escrowDelivery->order_amount;
+            $escrowDelivery->status = TypeOfType::where('libelle','pending')->first()->id; 
+            $escrowDelivery->pickup_date = null; // Date de prise en charge 
+            $escrowDelivery->delivery_date = null; // Date de livraison 
+            $escrowDelivery->created_at = now();
+            $escrowDelivery->updated_at = now();
+            $escrowDelivery->save();
+        } catch (Exception $e) {
+            return response()->json([
+             'error' => $e->getMessage()
+            ]);
+         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, DeliveryAgency $deliveryAgency)
-    {
-        //
-    }
+    public function reserveAmount($deliveryPersonId, $orderId) {
+        try {
+            $order = Order::find($orderId);
+            if (!$order) {
+                return response()->json(['error' => 'Order not found'], 404);
+            }
+    
+            $wallet = CommissionWallet::where('person_id', $deliveryPersonId)->first();
+            if (!$wallet) {
+                return response()->json(['error' => 'Wallet not found'], 404);
+            }
+    
+            $errorcheckWalletBalance = $this->checkWalletBalance($deliveryPersonId, $order->amount);
+            if($errorcheckWalletBalance){
+                return $errorcheckWalletBalance;
+            }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(DeliveryAgency $deliveryAgency)
-    {
-        //
+            $updateWallet = new OngingTradeStageService();
+    
+           $this->storeEscrowDelivery($deliveryPersonId, $orderId);
+    
+            return response()->json(['success' => 'Amount reserved successfully'], 200);
+    
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
+    
+    
+    
 }

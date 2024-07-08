@@ -64,7 +64,20 @@ class CategoryController extends Controller
             $ulid = Uuid::uuid1();
             $ulidCategory = $ulid->toString();
             $title =  htmlspecialchars($request->input('title'));
-            $parent_id = $request->input('parent_id') !== null ? intval($request->input('parent_id')) : null;
+            // $parent_id = $request->input('parent_id') !== null ? intval($request->input('parent_id')) : null;
+
+            if($request->input('parent_id') !== null){
+                $parent_id = intval($request->input('parent_id'));
+               if($request->file('files') == null  ){
+                    return response()->json([
+                        'message' => 'file is required'
+                    ],200);
+               }
+               $file = new Service();
+               $file->uploadFiles($request,$randomString,"category");
+            }else{
+                $parent_id = null;
+            }
 
             $filecode = $randomString;
             $slug = Str::slug($title);
@@ -83,8 +96,7 @@ class CategoryController extends Controller
             $statement->bindParam(6,  $created_at);
             $statement->bindParam(7,  $updated_at);
 
-            $file = new Service();
-            $file->uploadFiles($request,$randomString,"category");
+           
 
             $statement->execute();
             return response()->json([
@@ -276,6 +288,121 @@ class CategoryController extends Controller
      }
 
  }
+
+ /**
+ * @OA\Get(
+ *     path="/api/category/getAllSubSubcategory",
+ *     summary="Get all sub-subcategories",
+ *     tags={"SubSubcategories"},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successful operation",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(ref="")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+ public function getAllSubSubcategory()
+{
+    try {
+        $subSubcategories = Category::with('file')->whereDeleted(0)->whereNotNull('parent_id')->get();
+
+        foreach ($subSubcategories as $subSubcategory) {
+            if (File::where('referencecode', $subSubcategory->filecode)->exists()) {
+                $subSubcategory->category_icone = File::where('referencecode', $subSubcategory->filecode)->first()->location;
+            }
+        }
+
+        return response()->json([
+            'data' => $subSubcategories
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+/**
+ * @OA\Get(
+ *     path="/api/category/getAllPaginateSubSubcategory/paginate",
+ *     summary="Get paginated sub-subcategories",
+ *     tags={"SubSubcategories"},
+ *     @OA\Parameter(
+ *         name="perpage",
+ *         in="query",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="integer",
+ *             example=10
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successful operation",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(ref="")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+public function getAllPaginateSubSubcategory($perpage)
+{
+    try {
+        $subSubcategories = Category::with('file')->whereDeleted(0)->whereNotNull('parent_id')->paginate(intval($perpage));
+
+        foreach ($subSubcategories as $subSubcategory) {
+            if (File::where('referencecode', $subSubcategory->filecode)->exists()) {
+                $subSubcategory->category_icone = File::where('referencecode', $subSubcategory->filecode)->first()->location;
+            }
+        }
+
+        return response()->json([
+            'data' => $subSubcategories
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ]);
+    }
+}
 
 /**
  * @OA\Get(

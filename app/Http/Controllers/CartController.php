@@ -284,7 +284,8 @@ class CartController extends Controller
                 ads.final_price, 
                 carts.id AS cart_id, 
                 carts.quantity, 
-                (SELECT files.location FROM files WHERE files.referencecode = ads.file_code LIMIT 1) AS image
+                (SELECT files.location FROM files WHERE files.referencecode = ads.file_code LIMIT 1) AS image,
+                true AS isSynchronized
             FROM 
                 carts
             JOIN 
@@ -316,6 +317,8 @@ class CartController extends Controller
             carts.user_id = ?
     ";
     $total = DB::select($totalQuery, [$user->id])[0]->total;
+
+
 
     $paginator = new \Illuminate\Pagination\LengthAwarePaginator($data, $total, $perPage, $page, [
         'path' => request()->url(),

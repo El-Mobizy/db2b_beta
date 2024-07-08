@@ -195,6 +195,8 @@ Route::prefix('users')->group(function () {
         Route::get('/all', [CategoryController::class, 'getAllCategories'])->name('category.all');
         Route::get('/search', [CategoryController::class, 'searchCategory'])->name('category.search');
         Route::get('/all/{paginate}', [CategoryController::class, 'getAllPaginateCategories'])->name('category.getAllPaginateCategories');
+        Route::get('/getAllPaginateSubSubcategory/{paginate}', [CategoryController::class, 'getAllPaginateSubSubcategory'])->name('category.getAllPaginateSubSubcategory');
+        Route::get('/getAllSubSubcategory', [CategoryController::class, 'getAllSubSubcategory'])->name('category.getAllSubSubcategory');
     });
 
     Route::prefix('country')->group(function () {

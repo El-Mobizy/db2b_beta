@@ -6,6 +6,7 @@ use App\Models\Ad;
 use App\Models\AttributeGroup;
 use App\Models\Category;
 use App\Models\Client;
+use App\Models\CommissionWallet;
 use App\Models\Country;
 use App\Models\File;
 use Exception;
@@ -467,39 +468,11 @@ class Service extends Controller
     }
 }
 
-private function calculateCompressionQuality($image, $targetSizeBytes) {
-    // Valeurs initiales pour le taux de compression
-    $minQuality = 0; // Qualité minimale
-    $maxQuality = 100; // Qualité maximale
-    $quality = ($minQuality + $maxQuality) / 2; // Qualité initiale (moyenne)
-
-    // Tentatives pour ajuster le taux de compression et atteindre la taille cible
-    $attempts = 10; // Nombre d'itérations maximum
-
-    while ($attempts > 0) {
-        // Encode l'image avec le taux de compression actuel
-        $imageEncoded = $image->encode('jpg', $quality);
-
-        // Taille de l'image encodée
-        $encodedSize = strlen($imageEncoded);
-
-        // Comparer la taille encodée avec la taille cible
-        if ($encodedSize > $targetSizeBytes) {
-            // Si la taille encodée est trop grande, réduire la qualité
-            $maxQuality = $quality;
-        } else {
-            // Si la taille encodée est suffisamment petite, augmenter la qualité
-            $minQuality = $quality;
-        }
-
-        // Nouveau taux de compression (moyenne des valeurs minimale et maximale)
-        $quality = ($minQuality + $maxQuality) / 2;
-
-        // Réduire le nombre de tentatives restantes
-        $attempts--;
-    }
-
-    return $quality;
+public function returnSTDPersonWalletBalance($personId){
+    $wallet = CommissionWallet::where('person_id',$personId)->first();
+    return $wallet->balance;
 }
+
+// EscrowDelivery(id, person_id, order_id, delivery_agent_amount, order_amount, status, pickup_date, delivery_date, created_at, updated_at)
 
 }

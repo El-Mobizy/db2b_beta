@@ -63,7 +63,7 @@ class OngingTradeStageService
             return $this->handleNoAction($tradeStage, $trade);
         }
     }
-    
+
     public function handleYesAction($tradeStage, $trade) {
         if ($tradeStage->yes_action == 'MOVE_TO_NEXT_STEP') {
             return $this->moveToNextStep($tradeStage);
