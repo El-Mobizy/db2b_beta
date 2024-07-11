@@ -230,6 +230,8 @@ Route::prefix('users')->group(function () {
         Route::post('/acceptOrder/{orderUid}', [DeliveryAgencyController::class, 'acceptOrder'])->name('deliveryAgency.acceptOrder');
         Route::get('/getAvailableOrders', [DeliveryAgencyController::class, 'getAvailableOrders'])->name('deliveryAgency.getAvailableOrders');
         Route::post('/becomeDeliveryAgent', [DeliveryAgencyController::class, 'becomeDeliveryAgent'])->name('deliveryAgency.becomeDeliveryAgent');
+        Route::get('/getDeliveryAgent', [DeliveryAgencyController::class, 'getDeliveryAgent'])->name('deliveryAgency.getDeliveryAgent');
+        Route::get('/getDeliveryAgentConcernedByOrder/{orderUid}', [DeliveryAgencyController::class, 'getDeliveryAgentConcernedByOrder'])->name('deliveryAgency.getDeliveryAgentConcernedByOrder');
     });
 
     Route::prefix('favorite')->group(function () {

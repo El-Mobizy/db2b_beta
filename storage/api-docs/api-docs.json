@@ -2993,6 +2993,45 @@
                 ]
             }
         },
+        "/api/deliveryAgency/getDeliveryAgent": {
+            "get": {
+                "tags": [
+                    "Delivery Agences"
+                ],
+                "summary": "Get all delivery agents",
+                "operationId": "d4b4980e17329b23246e4532b1582784",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/escrow/getEscrow/{perpage}": {
             "get": {
                 "tags": [

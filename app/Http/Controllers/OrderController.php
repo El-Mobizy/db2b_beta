@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Shop;
 use App\Models\Trade;
+use App\Models\User;
 use App\Models\Transaction;
 use App\Models\TypeOfType;
 use Exception;
@@ -64,7 +65,7 @@ class OrderController extends Controller
  *     )
  * )
  */
-    public function CreateAnOrder(){
+    public function CreateAnOrder($l = 0){
 
         // DB::beginTransaction();
         try{
@@ -108,6 +109,10 @@ class OrderController extends Controller
 
                 foreach( Cart::where('user_id', $user->id)->get() as $cart){
                     $cart->delete();
+                }
+
+                if($l==1){
+                    return $orderId;
                 }
 
                 return response()->json(
@@ -959,7 +964,6 @@ private function getCartAds($cartItem){
                 ],200);
             }
             $checkIfOrderIsPaid = $this->checkIfOrderIsPaid($orderId);
-            // return 1;
 
             if($checkIfOrderIsPaid){
                 return $checkIfOrderIsPaid;
@@ -994,6 +998,10 @@ private function getCartAds($cartItem){
 
        $order->save();
 
+       return 1;
+
+       $this->notifyParty($order->uid);
+
 //Secured
             return response()->json(
                 ['message' => 'Payement done Successfully'
@@ -1004,6 +1012,30 @@ private function getCartAds($cartItem){
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    public function notifyParty($orderUid){
+        $order = Order::where('uid',$orderUid)->first();
+
+        $this->notifyBuyer($orderUid);
+
+        $orderDetails = OrderDetail::where('order_id',$order->id);
+        
+
+        foreach($orderDetails as $orderDetail){
+            $ad = Ad::whereId($orderDetail->ad_id)->first();
+            $seller = User::whereId($ad->owner_id)->first();
+            $this->notifySeller($seller->id);
+        }
+
+        $notification = new DeliveryAgencyController();
+            $message = $notification->notifyDeliveryAgents($orderUid);
+
+            if($message){
+                return response()->json([
+                    'message' =>$message
+              ]);
+            }
     }
 
     public function createEscrow($orderId){
@@ -1271,7 +1303,7 @@ private function getCartAds($cartItem){
             $order =  Order::find($orderId);
             $data = [];
             foreach(OrderDetail::where('order_id',$order->id)->get() as $od){
-                $trades = Trade::where('order_detail_id',$od->id)->where('admin_validate',false)->first();
+                $trades = Trade::where('order_detail_id',$od->id)->where('admin_validate',true)->first();
                 if($trades != null){
                 $data[] =$trades;}
             }
@@ -1593,23 +1625,38 @@ private function getCartAds($cartItem){
     public function CreateAndPayOrder(){
         try{
 
-            $CreateAnOrder = $this->CreateAnOrder();
-           
-            
-            $jsonString = $CreateAnOrder;
+            $service = new Service();
 
-            $array = json_decode($CreateAnOrder);
+            $checkAuth=$service->checkAuth();
+            if($checkAuth){
+               return $checkAuth;
+            }
 
-            // return $CreateAnOrder;
-            
+            $orderId= $this->CreateAnOrder(1);
 
-            return [$CreateAnOrder];
-            $orderId = 1;
+            if(!is_numeric($orderId)){
+                return response()->json([
+                    'message' => 'It may be that you have already created the order because your cart is empty, consult the list of your orders to pay for it there'
+              ],200);
+            }
 
             $PayOrder = $this->PayOrder($orderId);
-            if($PayOrder){
-                return $PayOrder;
+            if ($PayOrder) {
+                $response = [];
+
+                if (isset($PayOrder->original['message'])) {
+                    $response['message'] = $PayOrder->original['message'];
+                }
+
+                if (isset($PayOrder->original['error'])) {
+                    $response['error'] = $PayOrder->original['error'];
+                }
+
+                return response()->json([
+                    'message' => $response['message']->original['message']
+                ]);
             }
+
 
         }catch (\Exception $e) {
             return response()->json([
@@ -1617,6 +1664,47 @@ private function getCartAds($cartItem){
             ], 500);
         }
     }
+
+    public function notifyBuyer($orderUid) {
+        try {
+
+            $user = User::whereId(Order::whereUid($orderUid)->first()->user_id)
+            ->first();
+
+           $service = new Service();
+           $personId = $service->returnPersonIdAuth();
+           $balance = $service->returnSTDPersonWalletBalance($personId);
+
+            $title = "Payment Successful: Wallet Debited";
+            $body = "Your order has been placed successfully. Your wallet has been debited, and your new balance is $balance XOF. Thank you for your purchase!";
+
+           $message = new ChatMessageController();
+
+            $message->sendNotification($user->id,$title,$body, 'a');
+
+    
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function notifySeller($userId) {
+        try {
+
+            $title = "New Order Placed: Action Required";
+            $body = "One of your products has just been ordered. Please start the necessary steps to complete the transaction. Thank you!";
+
+           $message = new ChatMessageController();
+
+            $message->sendNotification($userId,$title,$body, 'b');
+
+    
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+   
 
 
 

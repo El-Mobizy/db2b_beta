@@ -412,9 +412,7 @@ class UserController extends Controller
                             Log::info('Login confirmation email sent to user ID: ' . Auth::user()->id);
                             $n = $n + 1;
                         }
-                        
-                       
-            
+
                         // $mes = $message->sendNotification(Auth::user()->id,$title,$body, 'code sent successfully !');
             
                         // if($mes){
@@ -544,7 +542,7 @@ class UserController extends Controller
                 // 'password_confirmation' => 'required|string',
                 'country_id' => 'required'
             ]);
-            
+
             if ($validator->fails()) {
                 return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
             }
@@ -563,6 +561,16 @@ class UserController extends Controller
           $last_ip_login = $request->ip();
           $created_at = date('Y-m-d H:i:s');
           $updated_at = date('Y-m-d H:i:s');
+
+          $testEmail = new TestEmailController();
+
+          $test = $testEmail->verifyEmail($request->email);
+     
+          if($test == 'undeliverable'){
+             return response()->json([
+                 'message' => "Please enter a functional email address",
+             ], 200);
+          }
 
           $query = "INSERT INTO users (email, phone, password,uid,last_ip_login,created_at,updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
 

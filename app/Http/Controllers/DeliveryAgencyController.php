@@ -8,6 +8,7 @@ use App\Models\EscrowDelivery;
 use App\Models\Order;
 use App\Models\Person;
 use App\Models\TypeOfType;
+use App\Models\User;
 use App\Services\OngingTradeStageService;
 use Exception;
 use Illuminate\Http\Request;
@@ -159,6 +160,10 @@ class DeliveryAgencyController extends Controller
             ]);
 
             $service = new Service();
+            $checkAuth=$service->checkAuth();
+            if($checkAuth){
+               return $checkAuth;
+            }
             $personId =$service->returnPersonIdAuth();
             // return $personId;
 
@@ -306,6 +311,12 @@ class DeliveryAgencyController extends Controller
             }
 
             $service = new Service();
+
+            $checkAuth=$service->checkAuth();
+            if($checkAuth){
+               return $checkAuth;
+            }
+
             $order = Order::whereId(Order::whereUid($orderUid)->first()->id)->first();
 
             $pendingStatusId = TypeOfType::where('libelle', 'pending')->first()->id;
@@ -317,13 +328,19 @@ class DeliveryAgencyController extends Controller
 
 
             $deliveryPersonId= $service->checkIfDeliveryAgent();
-            
+
             if($deliveryPersonId == 0){
                 return response()->json(['error' => 'Only delivery people can accept orders'], 404);
             }
             $personUid = Person::whereId($deliveryPersonId)->first()->uid;
 
             $existAcceptingOrder = EscrowDelivery::where('order_uid',$orderUid)->where('person_uid',$personUid)->where('status',$pendingStatusId)->exists();
+
+            $checkIfIndividualHaveOrderInProgress = EscrowDelivery::where('person_uid',$personUid)->where('status',$pendingStatusId)->count();
+
+            if($checkIfIndividualHaveOrderInProgress >= 2 && DeliveryAgency::where('person_id',$deliveryPersonId)->first()->agent_type == 'individual' ){
+                return response()->json(['error' => 'You already have orders in progress'], 404);
+            }
 
             // return  $existAcceptingOrder;
 
@@ -417,5 +434,114 @@ class DeliveryAgencyController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+
+    public function notifyDeliveryAgents($orderUid) {
+        try {
+
+            $data = $this->getDeliveryAgentConcernedByOrder($orderUid);
+
+           $title =  "New Order in Your Area: Immediate Action Required";
+           $body =  "A new order has just been placed in your area. Please log in to your account to view and accept the delivery. Your timely response is essential. Thank you!";
+           $message = new ChatMessageController();
+
+           foreach($data as $item){
+            $mes = $message->sendNotification($item->id,$title,$body, 'Payement done Successfully !');
+           }
+
+           if($mes){
+            return response()->json([
+                  'message' =>$mes->original['message']
+                // $mes
+            ]);
+          }
+    
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getDeliveryAgentConcernedByOrder($orderUid){
+        try{
+            $data= [];
+            $deliveryAgents = $this->getDeliveryAgent(1);
+           $userLocation = Person::whereId(Order::whereUid($orderUid)->first()->user_id)->first()->country_id ;
+
+
+           foreach($deliveryAgents as $deliveryAgent){
+            if(Person::whereUserId($deliveryAgent->id)->first()->country_id == $userLocation){
+                $data[] = $deliveryAgent ;
+             }
+           }
+
+           return $data;
+
+           
+
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+   
+    }
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/deliveryAgency/getDeliveryAgent",
+     *     summary="Get all delivery agents",
+     *     tags={"Delivery Agences"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+
+    public function getDeliveryAgent($list =0){
+        try{
+
+            // return $this->getDeliveryAgentConcernedByOrder('008bd858-3ef0-11ef-8c56-00ff5210c7f1');
+            $service = new Service();
+            $users = User::whereDeleted(0)->get();
+            $data = [];
+     
+            foreach($users as $user){
+                $personId =$service->returnUserPersonId($user->id);
+                $personUid = Person::whereId($personId)->first()->uid;
+                $exist = DeliveryAgency::where('person_id',$personId)->exists();
+     
+                if($exist){
+                 $data [] = $user;
+                 }
+             }
+
+             if($list == 1){
+                return $data;
+             }
+     
+             return response()->json([
+                 'data' => $data
+             ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
 
 }
