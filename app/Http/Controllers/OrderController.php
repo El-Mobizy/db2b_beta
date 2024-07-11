@@ -998,7 +998,7 @@ private function getCartAds($cartItem){
 
        $order->save();
 
-       return 1;
+    //    return 1;
 
        $this->notifyParty($order->uid);
 
@@ -1029,13 +1029,13 @@ private function getCartAds($cartItem){
         }
 
         $notification = new DeliveryAgencyController();
-            $message = $notification->notifyDeliveryAgents($orderUid);
+        $message = $notification->notifyDeliveryAgents($orderUid);
 
-            if($message){
-                return response()->json([
-                    'message' =>$message
-              ]);
-            }
+            // if($message){
+            //     return response()->json([
+            //         'message' =>$message
+            //   ]);
+            // }
     }
 
     public function createEscrow($orderId){
@@ -1653,7 +1653,8 @@ private function getCartAds($cartItem){
                 }
 
                 return response()->json([
-                    'message' => $response['message']->original['message']
+                    'message' => $PayOrder->original['message']
+                    // 'message' => $response['message']->original['message']
                 ]);
             }
 
