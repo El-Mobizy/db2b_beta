@@ -64,7 +64,7 @@ class OrderController extends Controller
  *     )
  * )
  */
-    public function CreateAnOrder(Request $request){
+    public function CreateAnOrder(){
 
         // DB::beginTransaction();
         try{
@@ -111,7 +111,9 @@ class OrderController extends Controller
                 }
 
                 return response()->json(
-                    ['message' => 'Order created successffuly'
+                    [
+                        'message' => 'Order created successfully',
+                        'orderId' =>  $orderId
                 ],200);
 
                 // DB::commit();
@@ -1267,9 +1269,11 @@ private function getCartAds($cartItem){
     public function orderTrade($orderId){
         try{
             $order =  Order::find($orderId);
+            $data = [];
             foreach(OrderDetail::where('order_id',$order->id)->get() as $od){
-                $trades = Trade::where('order_detail_id',$od->id)->first();
-                $data[] =$trades;
+                $trades = Trade::where('order_detail_id',$od->id)->where('admin_validate',false)->first();
+                if($trades != null){
+                $data[] =$trades;}
             }
             return response()->json(
                 ['data' =>$data
@@ -1546,6 +1550,77 @@ private function getCartAds($cartItem){
         
     }
 
+
+
+    /**
+     * @OA\Post(
+     *     path="/api/order/CreateAndPayOrder",
+     *     summary="Create and Pay an Order",
+     * security={{"bearerAuth":{}}},
+     *     description="This endpoint creates an order and then proceeds to pay for it.",
+     *     operationId="CreateAndPayOrder",
+     *     tags={"Orders"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order created and paid successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Order created and paid successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Bad request")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Order not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="An error occurred while processing your request")
+     *         )
+     *     )
+     * )
+     */
+    public function CreateAndPayOrder(){
+        try{
+
+            $CreateAnOrder = $this->CreateAnOrder();
+           
+            
+            $jsonString = $CreateAnOrder;
+
+            $array = json_decode($CreateAnOrder);
+
+            // return $CreateAnOrder;
+            
+
+            return [$CreateAnOrder];
+            $orderId = 1;
+
+            $PayOrder = $this->PayOrder($orderId);
+            if($PayOrder){
+                return $PayOrder;
+            }
+
+        }catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    
     
     
 

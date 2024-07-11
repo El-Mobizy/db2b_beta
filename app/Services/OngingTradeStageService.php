@@ -11,11 +11,14 @@ use App\Models\Favorite;
 use App\Models\Ad;
 use App\Models\Category;
 use App\Models\CommissionWallet;
+use App\Models\DeliveryAgency;
 use App\Models\Escrow;
+use App\Models\EscrowDelivery;
 use App\Models\File;
 use App\Models\OngingTradeStage;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Person;
 use App\Models\Trade;
 use App\Models\TypeOfType;
 use Exception;
@@ -122,12 +125,11 @@ class OngingTradeStageService
         $walletSeller = $this->getOrCreateWallet($sellerPersonId);
         $credit = $trade->order_detail->price * $trade->order_detail->quantity;
         $sellerAmount = $walletSeller->balance + $credit;
-    
+
         $errorUpdateUserWallet = $this->updateUserWallet($sellerPersonId, $sellerAmount);
         if ($errorUpdateUserWallet) {
             return $errorUpdateUserWallet;
         }
-    
         return $this->processEscrow($trade, $credit, $walletSeller, $sellerUserId,$tradeStage);
     }
     
@@ -227,21 +229,36 @@ class OngingTradeStageService
     
                 if ($trade->status_id !== $endTradeStatusId && $trade->status_id !== $cancelTradeStatusId) {
                     $allTradesHaveDesiredStatus = false;
-                    break; 
+                    break;
                 }
             }
-    
+
             if ($allTradesHaveDesiredStatus) {
                 $validatedStatusId = TypeOfType::where('libelle', 'validated')->first()->id;
+                $paidStatusId = TypeOfType::where('libelle', 'paid')->first()->id;
                 $order->status = $validatedStatusId;
                 $order->save();
 
                 $escrowOrder = Escrow::where('order_id', $trade->order_detail->order_id)->first();
                 $escrowOrder->update(['status' => 'ended']);
 
+                $errorrefundDeliveryAgent = $this->refundDeliveryAgent($orderId);
+                if($errorrefundDeliveryAgent){
+                    return $errorrefundDeliveryAgent;
+                }
+
+                // EscrowDelivery::where('order_uid',Order::whereId($orderId)->first()->uid)->update(['status'=>$paidStatusId]);
+
+                $errorfundDeliveryAgent = $this->fundDeliveryAgent($orderId);
+                if($errorfundDeliveryAgent){
+                    return $errorfundDeliveryAgent;
+                }
+
+                EscrowDelivery::where('order_uid',Order::whereId($orderId)->first()->uid)->update(['status'=>$validatedStatusId]);
+
             }
 
-            
+
             return response()->json([
                 'message' => 'Order checked and updated successfully!'
             ], 200);
@@ -260,7 +277,7 @@ class OngingTradeStageService
             return $this->cancelTrade($tradeStage, $trade);
         }
     }
-    
+
     public function moveToPrevStep($tradeStage) {
         if ($tradeStage->previous_step_id != null) {
             return response()->json([
@@ -274,13 +291,13 @@ class OngingTradeStageService
             ]);
         }
     }
-    
+
     public function cancelTrade($tradeStage, $trade) {
         $tradeStage->update(['complete' => true]);
         $statut_trade_id = TypeOfType::whereLibelle('canceltrade')->first()->id;
         $status_order_id = TypeOfType::whereLibelle('started')->first()->id;
         $statut_escrow_id = TypeOfType::whereLibelle('partially_released')->first()->id;
-    
+
         if (!$statut_trade_id || !$status_order_id || !$statut_escrow_id) {
             return $this->statusNotFoundResponse();
         }
@@ -290,27 +307,26 @@ class OngingTradeStageService
         if ($allStagesCompleted == 1) {
             $credit = $trade->order_detail->price * $trade->order_detail->quantity;
             $this->refundBuyer($trade, $credit,$tradeStage);
-        
+
             $trade->enddate = now();
             $trade->status_id = $statut_trade_id;
             $trade->save();
-        
+
             Order::whereId($trade->order_detail->order_id)->update(['status' => $status_order_id]);
 
             return $this->checkAndValidateSpecificOrder($trade->order_detail->order_id);
-        
+
             return response()->json([
                 'message' => 'Trade canceled successfully'
             ]);
-           
+
         } else {
             $tradeStage->update(['complete' => false]);
             return response()->json([
                 'message' => 'Check if all stages are completed'
             ], 200);
         }
-    
-        
+
     }
     
     public function refundBuyer($trade, $credit,$tradeStage) {
@@ -347,27 +363,59 @@ class OngingTradeStageService
                 'sellerAmount' => $buyerAmount
             ], 200);
         }
-    
+
         $errorDebitEscrow = $escrow->debitEscrow($escrowOrder->id, $credit);
         if ($errorDebitEscrow) {
             return $errorDebitEscrow;
         }
-    
+
         $transactionId = $orderController->createTransaction($trade->order_detail->order_id, $walletBuyer, $buyerUserId, $buyerUserId, $credit);
         $errorCreateAllowTransaction = $orderController->createAllowTransaction($transactionId);
         if ($errorCreateAllowTransaction) {
             return $errorCreateAllowTransaction;
         }
-    
+
         $escrowOrder->update(['status' => 'partially_released']);
 
-       
-
     }
-    
+
     public function errorResponse($e) {
         return response()->json([
             'error' => $e->getMessage()
         ], 500);
+    }
+
+    public function refundDeliveryAgent($orderId){
+        $order = Order::find($orderId);
+        $deliveryAgentEscrowDelivery = EscrowDelivery::where('order_uid',$order->uid)->first();
+        // return $order->uid;
+        $deliveryAgentPersonUid = $deliveryAgentEscrowDelivery->person_uid;
+        $deliveryAgentPersonid = Person::whereUid($deliveryAgentPersonUid)->first()->id;
+        $wallet = CommissionWallet::where('person_id',$deliveryAgentPersonid)->first();
+        $credit = $deliveryAgentEscrowDelivery->delivery_agent_amount + $wallet->balance;
+
+        $orderController = new OrderController();
+        $errorUpdateDeliveryAgentWallet = $orderController->updateUserWallet($deliveryAgentPersonid, $credit);
+        if ($errorUpdateDeliveryAgentWallet) {
+            return $errorUpdateDeliveryAgentWallet;
+        }
+    }
+
+    public function fundDeliveryAgent($orderId){
+        $order = Order::find($orderId);
+        $escrowOrder = Escrow::where('order_id', $orderId)->first();
+        $deliveryAgentEscrowDelivery = EscrowDelivery::where('order_uid',$order->uid)->first();
+        $deliveryAgentPersonUid = $deliveryAgentEscrowDelivery->person_uid;
+        $deliveryAgentPersonid = Person::whereUid($deliveryAgentPersonUid)->first()->id;
+
+        $wallet = CommissionWallet::where('person_id',$deliveryAgentPersonid)->first();
+
+        $credit = floatval($escrowOrder->amount)*(DeliveryAgency::where('person_id',$deliveryAgentPersonid)->first()->commission / 100  ) + $wallet->balance;
+
+        $orderController = new OrderController();
+        $errorUpdateDeliveryAgentWallet = $orderController->updateUserWallet($deliveryAgentPersonid, $credit);
+        if ($errorUpdateDeliveryAgentWallet) {
+            return $errorUpdateDeliveryAgentWallet;
+        }
     }
 }

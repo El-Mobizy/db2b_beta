@@ -8,7 +8,9 @@ use App\Models\Category;
 use App\Models\Client;
 use App\Models\CommissionWallet;
 use App\Models\Country;
+use App\Models\DeliveryAgency;
 use App\Models\File;
+use App\Models\Person;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -411,6 +413,25 @@ class Service extends Controller
     }
    }
 
+   public function returnPersonUidAuth(){
+    try {
+        if (!Auth::user()) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ]);
+        }
+
+        $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+        $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
+
+        return $person->uid;
+    } catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
+   }
+
    public function returnUserPersonId($userId){
     try {
 
@@ -471,6 +492,18 @@ class Service extends Controller
 public function returnSTDPersonWalletBalance($personId){
     $wallet = CommissionWallet::where('person_id',$personId)->first();
     return $wallet->balance;
+}
+
+public function checkIfDeliveryAgent(){
+    
+    $personId =$this->returnPersonIdAuth();
+    $personUid = Person::whereId($personId)->first()->uid;
+    $exist = DeliveryAgency::where('person_id',$personId)->exists();
+    if($exist){
+        return $personId;
+    }else{
+        return 0;
+    }
 }
 
 // EscrowDelivery(id, person_id, order_id, delivery_agent_amount, order_amount, status, pickup_date, delivery_date, created_at, updated_at)

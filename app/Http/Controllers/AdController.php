@@ -21,6 +21,7 @@ use App\Models\OrderDetail;
 use App\Models\ShopHasCategory;
 use App\Models\Shop;
 use App\Models\TypeOfType;
+use App\Models\User;
 use App\Services\Useful;
 use Illuminate\Http\JsonResponse;
 
@@ -1206,18 +1207,96 @@ public function checkIfAdIsValidated($adUid){
     }
 }
 
+
+    /**
+     * @OA\Get(
+     *     path="/api/ad/getAdDetail/{adUid}",
+     *     summary="Get ad details",
+     *     description="Retrieve detailed information about an advertisement by its UID.",
+     *     tags={"Ad"},
+     *     @OA\Parameter(
+     *         name="adUid",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="string"),
+     *         description="UID of the advertisement"
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="title", type="string", example="Ad Title"),
+     *                     @OA\Property(property="ad_code", type="string", example="AD123456"),
+     *                     @OA\Property(property="final_price", type="number", format="float", example=99.99),
+     *       @OA\Property(property="description", type="string", example="description"),
+     *                     @OA\Property(property="image", type="string", example="http://example.com/image.jpg"),
+     *                     @OA\Property(property="owner_uid", type="string", example="UID12345"),
+     *                     @OA\Property(property="shop_uid", type="string", example="SHOP12345"),
+     *                     @OA\Property(property="shop_title", type="string", example="Shop Title"),
+     *                     @OA\Property(property="files", type="array", @OA\Items(ref="")),
+     *                     @OA\Property(property="category_uid", type="string", example="CAT12345"),
+     *                     @OA\Property(property="category_title", type="string", example="Category Title"),
+     *                     @OA\Property(property="attributes", type="array", @OA\Items(ref=""))
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Ad not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Ad not found!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="An error occurred")
+     *         )
+     *     ),
+     *     security={
+     *         {"bearerAuth": {}}
+     *     }
+     * )
+     */
+
 public function getAdDetail($adUid){
     try {
         $ad =  Ad::where('uid',$adUid)->first() ;
 
-        if(!$ad){
+           if(!$ad){
             return response()->json([
                 'message' => 'Ad not found !'
             ]);
         }
 
+        $attributes = AdDetail::where('ad_id',$ad->id)->whereDeleted(false)->get();
+
+
+        $data[] = [
+            'title' => $ad->title,
+            'ad_code' => $ad->ad_code,
+            'final_price' => $ad->final_price,
+            'description' => $ad->description,
+            'image' =>  File::where('referencecode',$ad->file_code)->first()->location,
+            'owner_uid' =>  User::find($ad->owner_id)->uid,
+            'shop_uid' => Shop::find($ad->shop_id)->uid,
+            'shop_title' => Shop::find($ad->shop_id)->title,
+            'files' =>  File::whereReferencecode($ad->file_code)->whereDeleted(0)->get(),
+            'category_uid' =>  Category::find($ad->category_id)->uid,
+            'category_title' =>Category::find($ad->category_id)->title,
+            'attributes' =>  $attributes
+        ];
+
+     
+
         return response()->json([
-            'data' => AdDetail::where('ad_id',$ad->id)->whereDeleted(false)->get()
+            'data' => $data
         ]);
 
     } catch(Exception $e){

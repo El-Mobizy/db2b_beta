@@ -21,7 +21,7 @@ return new class extends Migration
             $table->boolean('is_viewed_by_seller')->default(false);
             $table->string('ref', 100);
             $table->float('amount');
-            $table->dateTime('enddate');
+            $table->dateTime('enddate')->nullable();
             $table->boolean('received_by_client')->nullable();
             $table->boolean('delivered_by_seller')->nullable();
             $table->boolean('admin_validate')->default(false);

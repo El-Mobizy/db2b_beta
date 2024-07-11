@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\EscrowDelivery;
 use App\Models\OngingTradeStage;
+use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Person;
 use App\Models\Trade;
 use App\Models\TradeChat;
 use App\Models\TypeOfType;
@@ -787,6 +790,27 @@ class TradeController extends Controller
         }
     }
 
+
+    public function checkDeliveryAgentTradeStage($tradeId,$stage){
+        try {
+
+            $service = new Service();
+            $personId = $service->returnPersonIdAuth();
+            $trade = Trade::find($tradeId);
+
+            if(Person::whereId($personId)->first()->uid == EscrowDelivery::where('order_uid',Order::whereId($trade->order_detail->order_id)->first()->uid)->person_uid && $stage->action_done_by =='DELIVERYAGENT'){
+               return true;
+            }
+        } catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ],500);
+        }
+    }
+
+
+    
+
     public function getEndTrade(){
         try {
             $statut_trade_id = TypeOfType::whereLibelle('endtrade')->first()->id;
@@ -808,6 +832,168 @@ class TradeController extends Controller
             ],500);
         }
     }
+
+
+
+    /**
+ * @OA\Post(
+ *     path="/api/trade/validateTrade/{id}",
+ * security={{"bearerAuth":{}}},
+ *     summary="Validate a trade",
+ *     description="Set admin_validate to true for a given trade.",
+ *     operationId="validateTrade",
+ *     tags={"Trade"},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         description="ID of the trade to validate",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="integer"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Trade validated successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Trade validated successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Trade not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Trade not found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="An error occurred")
+ *         )
+ *     )
+ * )
+ */
+public function validateTrade($tradeId) {
+    try {
+        // Récupérer le trade en utilisant l'ID
+        $trade = Trade::find($tradeId);
+
+        // Vérifier si le trade existe
+        if (!$trade) {
+            return response()->json([
+                'error' => 'Trade not found'
+            ], 404);
+        }
+
+        // Mettre à jour le champ admin_validate à true
+        $trade->admin_validate = true;
+        $trade->save();
+
+        return response()->json([
+            'message' => 'Trade validated successfully'
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+
+/**
+ * @OA\Get(
+ *     path="/api/trade/getAllTrades/{perpage}",
+ *     summary="Get all trades",
+ *     description="Retrieve a list of all trades.",
+ *     operationId="getAllTrades",
+ *     tags={"Trade"},
+ *  @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         description="number of element perpage",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *  security={{"bearerAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of all trades",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(ref="")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="An error occurred")
+ *         )
+ *     )
+ * )
+ */
+public function getAllTrades($perpage) {
+    try {
+        $trades = Trade::orderBy('created_at', 'desc')->paginate($perpage);
+        return response()->json(['data' => $trades], 200);
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * @OA\Get(
+ *     path="/api/trade/getUnvalidatedTrades/{perpage}",
+ *     summary="Get unvalidated trades",
+ *     description="Retrieve a list of trades that are not yet validated.",
+ *     operationId="getUnvalidatedTrades",
+ *     tags={"Trade"},
+ *  @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         description="number of element perpage",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *  security={{"bearerAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of unvalidated trades",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(ref="")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="An error occurred")
+ *         )
+ *     )
+ * )
+ */
+public function getUnvalidatedTrades($perpage) {
+    try {
+        $trades = Trade::where('admin_validate', false)->orderBy('created_at', 'desc')->paginate($perpage);
+        return response()->json(['data' => $trades], 200);
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+
   
 }
 

@@ -28,6 +28,7 @@ use App\Http\Controllers\TypeOfTypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebNotificationController;
 use App\Models\File;
+use App\Services\OngingTradeStageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -106,6 +107,7 @@ Route::prefix('users')->group(function () {
             Route::get('/getOrderCanceledTrade/{orderId}', [OrderController::class, 'getOrderCanceledTrade'])->name('order.getOrderCanceledTrade');
             Route::get('/getAllFinalizedOrders', [OrderController::class, 'getAllFinalizedOrders'])->name('order.getAllFinalizedOrders');
             Route::get('/userOrders/{perpage}', [OrderController::class, 'userOrders'])->name('order.userOrders');
+            Route::post('/CreateAndPayOrder', [OrderController::class, 'CreateAndPayOrder'])->name('order.CreateAndPayOrder');
         });
 
         Route::get('/user', [UserController::class, 'userAuth']);
@@ -156,7 +158,10 @@ Route::prefix('users')->group(function () {
             Route::get('/getTradeStageNotDoneYet/{tradeId}', [TradeController::class, 'getTradeStageNotDoneYet'])->name('tradeStage.getTradeStageNotDoneYet');
             Route::get('/getTradeStage/{tradeId}', [TradeController::class, 'getTradeStage'])->name('tradeStage.getTradeStage');
             Route::get('/getAuthTradeStage/{tradeId}', [TradeController::class, 'getAuthTradeStage'])->name('tradeStage.getAuthTradeStage');
-              Route::get('/getTradeChat/{tradeId}', [TradeController::class, 'getTradeChat'])->name('tradeStage.getTradeChat');
+            Route::get('/getTradeChat/{tradeId}', [TradeController::class, 'getTradeChat'])->name('tradeStage.getTradeChat');
+            Route::post('/validateTrade/{tradeId}', [TradeController::class, 'validateTrade'])->name('trade.validateTrade');
+            Route::get('/getAllTrades/{perpage}', [TradeController::class, 'getAllTrades'])->name('trade.getAllTrades');
+            Route::get('/getUnvalidatedTrades/{perpage}', [TradeController::class, 'getUnvalidatedTrades'])->name('trade.getUnvalidatedTrades');
         });
 
         Route::prefix('ongingtradeStage')->group(function () {
@@ -222,6 +227,9 @@ Route::prefix('users')->group(function () {
 
     Route::prefix('deliveryAgency')->group(function () {
         Route::post('/add/{id}', [DeliveryAgencyController::class, 'add'])->name('deliveryAgency.add');
+        Route::post('/acceptOrder/{orderUid}', [DeliveryAgencyController::class, 'acceptOrder'])->name('deliveryAgency.acceptOrder');
+        Route::get('/getAvailableOrders', [DeliveryAgencyController::class, 'getAvailableOrders'])->name('deliveryAgency.getAvailableOrders');
+        Route::post('/becomeDeliveryAgent', [DeliveryAgencyController::class, 'becomeDeliveryAgent'])->name('deliveryAgency.becomeDeliveryAgent');
     });
 
     Route::prefix('favorite')->group(function () {
@@ -324,6 +332,9 @@ Route::prefix('users')->group(function () {
         Route::get('/index', [TradeStageController::class, 'index'])->name('tradeStageId.index');
         Route::post('/delete/{tradeStageId}', [TradeStageController::class, 'delete'])->name('tradeStage.delete');
     });
+
+    Route::post('/refundDeliveryAgent/{id}', [OngingTradeStageService::class, 'refundDeliveryAgent'])->name('tradeStage.refundDeliveryAgent');
+    Route::post('/fundDeliveryAgent/{id}', [OngingTradeStageService::class, 'fundDeliveryAgent'])->name('tradeStage.fundDeliveryAgent');
 
 
 

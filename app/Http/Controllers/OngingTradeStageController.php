@@ -172,6 +172,7 @@ class OngingTradeStageController extends Controller
 
             $checkBuyerTradeStage = $tradeCheck->checkBuyerTradeStage($tradeId,$tradeStage);
             $checkSellerTradeStage = $tradeCheck->checkSellerTradeStage($tradeId,$tradeStage);
+            $checkDeliveryAgentTradeStage = $tradeCheck->checkDeliveryAgentTradeStage($tradeId,$tradeStage);
 
             if($tradeStage->action_done_by =='BUYER'){
                 if(!$checkBuyerTradeStage){
@@ -183,6 +184,14 @@ class OngingTradeStageController extends Controller
 
             if($tradeStage->action_done_by =='SELLER'){
                 if(!$checkSellerTradeStage){
+                    return response()->json([
+                        'message' => 'NOT ALLOWED'
+                    ],200);
+                }
+            }
+
+            if($tradeStage->action_done_by =='DELIVERYAGENT'){
+                if(!$checkDeliveryAgentTradeStage){
                     return response()->json([
                         'message' => 'NOT ALLOWED'
                     ],200);
