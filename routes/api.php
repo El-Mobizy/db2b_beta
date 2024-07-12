@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\AdController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttributeGroupController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryAttributesController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatMessageController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CommissionController;
 use App\Http\Controllers\CommissionWalletController;
 use App\Http\Controllers\CountryController;
@@ -323,11 +325,7 @@ Route::prefix('users')->group(function () {
     });
 
 
-    Route::get('/returnClientIdAuth', [Service::class, 'returnClientIdAuth'])->name('service.returnClientIdAuth');
 
-    Route::get('/order/ordersIndex', [OrderController::class, 'ordersIndex'])->name('order.ordersIndex');
-
-    Route::post('/notifyParty/{orderUid}', [OrderController::class, 'notifyParty'])->name('order.notifyParty');
 
 
     Route::prefix('tradeStage')->group(function () {
@@ -338,9 +336,27 @@ Route::prefix('users')->group(function () {
         Route::post('/delete/{tradeStageId}', [TradeStageController::class, 'delete'])->name('tradeStage.delete');
     });
 
+    Route::prefix('merchant')->group(function () {
+        Route::get('/getMerchant', [ClientController::class, 'getMerchant'])->name('merchant.getMerchant');
+    });
+
+
+// other
+
+
     Route::post('/refundDeliveryAgent/{id}', [OngingTradeStageService::class, 'refundDeliveryAgent'])->name('tradeStage.refundDeliveryAgent');
+
     Route::post('/fundDeliveryAgent/{id}', [OngingTradeStageService::class, 'fundDeliveryAgent'])->name('tradeStage.fundDeliveryAgent');
 
+    Route::get('/returnClientIdAuth', [Service::class, 'returnClientIdAuth'])->name('service.returnClientIdAuth');
 
+    Route::get('/order/ordersIndex', [OrderController::class, 'ordersIndex'])->name('order.ordersIndex');
 
+    Route::post('/notifyParty/{orderUid}', [OrderController::class, 'notifyParty'])->name('order.notifyParty');
+
+    Route::prefix('admin')->group(function () {
+        Route::post('/create/{id}', [AdminController::class, 'create'])->name('admin.create');
+        Route::post('/delete/{id}', [AdminController::class, 'delete'])->name('admin.delete');
+        Route::get('/adminUserAccount', [Service::class, 'adminUserAccount'])->name('admin.adminUserAccount');
+    });
   

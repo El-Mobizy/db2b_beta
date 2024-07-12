@@ -1827,6 +1827,46 @@
                 ]
             }
         },
+        "/api/merchant/getMerchant": {
+            "get": {
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Retrieve a list of merchants",
+                "description": "Get all users who are marked as merchants and are not deleted.",
+                "operationId": "0d34d74907aa9677438b1b1f1d167b46",
+                "responses": {
+                    "200": {
+                        "description": "List of merchants",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/commission/store": {
             "post": {
                 "tags": [

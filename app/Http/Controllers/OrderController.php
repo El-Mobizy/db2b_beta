@@ -872,19 +872,19 @@ private function getCartAds($cartItem){
             // return [gettype($ads), $ads];
 
             $flatAds = array_merge(...$ads);//applatir le tableau (❁´◡`❁)
-                    
+
                     $total = array_sum(array_map(function ($item) {
                         return floatval($item['final_price_product']) * $item['quantity_product'];
                         }, $flatAds));
 
-                        
+
                         if ($cartItems->isEmpty()) {
                             return response()->json(['error' => 'Cart is empty'], 400);
                          }
-                            
+
                         $orderId = $this->storeOrder($total);
 
-                        
+
                         foreach ($ads as $tab) {
                             $this->storeOrderDetail($tab,$orderId);
                         }
@@ -1628,7 +1628,8 @@ private function getCartAds($cartItem){
             
             $user = Auth::user();
 
-            $orders = Order::where('user_id', $user->id)->paginate($perpage);
+            $orders = Order::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')->paginate($perpage);
 
             return response()->json([
                 'data' => $orders

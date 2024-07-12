@@ -426,6 +426,7 @@ class DeliveryAgencyController extends Controller
                 ->whereHas('user.person', function ($query) use ($personLocation) {
                     $query->where('country_id',$personLocation);
                 })
+                ->orderBy('created_at', 'desc')
                 ->get();
     
             return response()->json(['data' => $orders]);

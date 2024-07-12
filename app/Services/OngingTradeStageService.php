@@ -253,18 +253,16 @@ class OngingTradeStageService
                     return $errorrefundDeliveryAgent;
                 }
 
-                // EscrowDelivery::where('order_uid',Order::whereId($orderId)->first()->uid)->update(['status'=>$paidStatusId]);
-
                 $errorfundDeliveryAgent = $this->fundDeliveryAgent($orderId);
                 if($errorfundDeliveryAgent){
                     return $errorfundDeliveryAgent;
                 }
 
+                $this->notifyAgentDeliveryCredit($order->id);
+
                 EscrowDelivery::where('order_uid',Order::whereId($orderId)->first()->uid)->update(['status'=>$validatedStatusId]);
 
             }
-
-            
 
 
             return response()->json([
@@ -447,6 +445,33 @@ class OngingTradeStageService
 
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function notifyAgentDeliveryCredit($orderId){
+        try {
+            $order = Order::find($orderId);
+            $escrowDelivery = EscrowDelivery::where('order_uid', $order->uid)->first();
+            $deliveryPersonUid = $escrowDelivery->person_uid;
+            $deliveryPersonId = Person::whereUid($deliveryPersonUid)->first()->id;
+    
+            $wallet = CommissionWallet::where('person_id', $deliveryPersonId)->first();
+            $balance = $wallet->balance;
+    
+            $title = "Delivery Completed Successfully!";
+            $body = "The delivery for order #{$order->uid} has been completed successfully. Your wallet has been credited. Your new balance is {$balance} XOF.";
+    
+            $message = new ChatMessageController();
+            $message->sendNotification(Person::whereId($deliveryPersonId)->first()->user_id, $title, $body,'');
+    
+            return response()->json([
+                'message' => 'Notification sent successfully'
+            ], 200);
+    
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

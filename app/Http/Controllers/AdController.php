@@ -574,13 +574,17 @@ public function getRecentAdd(Request $request,$perpage)
 
 
 
-        $file = new Service();
-        $file->uploadFiles($request, $ad->file_code,'ad');
+        $service->uploadFiles($request, $ad->file_code,'ad');
 
         $this->saveAdDetails($request, $ad);
 
         $title= "Confirmation of Your Product Shipment";
         $body ="Your product has been registered, please wait while an administrator analyzes it. We'll let you know what happens next. Thank you!";
+
+        $titleAdmin = " New Product Awaiting Validation ";
+        $bodyAdmin = "A new product has just been added to the system. Please log in to your account to review and validate the product. Your prompt attention is required. Thank you!";
+
+        $service->notifyAdmin($titleAdmin,$bodyAdmin);
 
 
       $message = new ChatMessageController();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ad;
+use App\Models\Admin;
 use App\Models\AttributeGroup;
 use App\Models\Category;
 use App\Models\Client;
@@ -11,6 +12,7 @@ use App\Models\Country;
 use App\Models\DeliveryAgency;
 use App\Models\File;
 use App\Models\Person;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -503,6 +505,41 @@ public function checkIfDeliveryAgent(){
         return $personId;
     }else{
         return 0;
+    }
+}
+
+public function adminUserAccount(){
+    try{
+        $users = User::whereDeleted(0)->get();
+        $admins = [];
+        
+        foreach($users as $user){
+            $personId = $this->returnUserPersonId($user->id);
+            if(DB::table('admin')->where('person_id', $personId)->exists()){
+                $admins[] = $user;
+            }
+        }
+        return $admins;
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function notifyAdmin($title,$body){
+    try{
+       $admins = $this->adminUserAccount();
+       $message = new ChatMessageController();
+
+       foreach($admins as $user){
+            $message->sendNotification($user->id,$title,$body, '');
+       }
+
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
     }
 }
 

@@ -32,6 +32,10 @@ class Person extends Model
         return $this->hasOne(Client::class);
     }
 
+    public function admin(){
+        return $this->hasOne(Admin::class);
+    }
+
     public function commission_wallets(){
         return $this->hasMany(CommissionWallet::class)->whereDeleted(0);
     }

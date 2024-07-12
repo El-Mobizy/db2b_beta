@@ -123,8 +123,19 @@ class PreorderController extends Controller
                 $body ="Your pre-order has been registered, please wait while an administrator analyzes it. We'll let you know what happens next. Thank you!";
 
 
+                $titleAdmin = " New Preorder Awaiting Validation ";
+                $bodyAdmin = "A new preorder has just been added to the system. Please log in to your account to review and validate the preorder. Your prompt attention is required. Thank you!";
+
+
               $message = new ChatMessageController();
+
+              //notify buyer
               $mes =  $message->sendNotification(Auth::user()->id,$title,$body, 'preorder created successfully !');
+
+               //notify admin
+               $service->notifyAdmin($titleAdmin,$bodyAdmin);
+
+
 
               if($mes){
                 return response()->json([
@@ -1835,5 +1846,18 @@ public function answerReviewsPaginate($preorderAnswerUid,$perpage){
         ]);
     }
 }
+
+
+ public function getMerchantCOncernedByPreorder(){
+    try{
+        $data= [];
+       
+
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+ }
 
 }
