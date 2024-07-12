@@ -103,6 +103,7 @@ Route::prefix('users')->group(function () {
             Route::post('/payOrder/{orderId}', [OrderController::class, 'payOrder'])->name('order.payOrder');
             Route::post('/addFund', [OrderController::class, 'addFund'])->name('order.addFund');
             Route::get('/orderTrade/{orderId}', [OrderController::class, 'orderTrade'])->name('order.orderTrade');
+            Route::get('/orderValidatedTrade/{orderId}', [OrderController::class, 'orderValidatedTrade'])->name('order.orderValidatedTrade');
             Route::get('/getOrderEndTrade/{orderId}', [OrderController::class, 'getOrderEndTrade'])->name('order.getOrderEndTrade');
             Route::get('/getOrderCanceledTrade/{orderId}', [OrderController::class, 'getOrderCanceledTrade'])->name('order.getOrderCanceledTrade');
             Route::get('/getAllFinalizedOrders', [OrderController::class, 'getAllFinalizedOrders'])->name('order.getAllFinalizedOrders');
@@ -325,6 +326,8 @@ Route::prefix('users')->group(function () {
     Route::get('/returnClientIdAuth', [Service::class, 'returnClientIdAuth'])->name('service.returnClientIdAuth');
 
     Route::get('/order/ordersIndex', [OrderController::class, 'ordersIndex'])->name('order.ordersIndex');
+
+    Route::post('/notifyParty/{orderUid}', [OrderController::class, 'notifyParty'])->name('order.notifyParty');
 
 
     Route::prefix('tradeStage')->group(function () {

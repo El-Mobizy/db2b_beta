@@ -428,7 +428,10 @@ class OrderController extends Controller
                return $checkAuth;
             }
 
-          $orders = Order::where('user_id',Auth::user()->id)->with('order_details_not_deleted')->get();
+            $orders = Order::where('user_id', Auth::user()->id)
+            ->with('order_details_not_deleted')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
             return response()->json(
                 ['data' =>$orders 
@@ -1019,23 +1022,19 @@ private function getCartAds($cartItem){
 
         $this->notifyBuyer($orderUid);
 
-        $orderDetails = OrderDetail::where('order_id',$order->id);
-        
+        $orderDetails = OrderDetail::where('order_id',$order->id)->get();
+
 
         foreach($orderDetails as $orderDetail){
             $ad = Ad::whereId($orderDetail->ad_id)->first();
             $seller = User::whereId($ad->owner_id)->first();
-            $this->notifySeller($seller->id);
+             $this->notifySeller($seller->id);
         }
 
         $notification = new DeliveryAgencyController();
-        $message = $notification->notifyDeliveryAgents($orderUid);
+        $notification->notifyDeliveryAgents($orderUid);
 
-            // if($message){
-            //     return response()->json([
-            //         'message' =>$message
-            //   ]);
-            // }
+           
     }
 
     public function createEscrow($orderId){
@@ -1137,7 +1136,7 @@ private function getCartAds($cartItem){
                     ['message' => 'Fund your account'
                 ],200);
             }
-          
+
         } catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()
@@ -1299,6 +1298,66 @@ private function getCartAds($cartItem){
  */
 
     public function orderTrade($orderId){
+        try{
+            $order =  Order::find($orderId);
+            $data = [];
+            foreach(OrderDetail::where('order_id',$order->id)->get() as $od){
+                $trades = Trade::where('order_detail_id',$od->id)->first();
+                if($trades != null){
+                $data[] =$trades;}
+            }
+            return response()->json(
+                ['data' =>$data
+            ],200);
+
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+
+     /**
+ * @OA\Get(
+ *     path="/api/order/orderValidatedTrade/{orderId}",
+ *     tags={"Trade"},
+ *   security={{"bearerAuth":{}}},
+ *     summary="Get order transactions",
+ *     description="Get the transactions for an order by its ID",
+ *     @OA\Parameter(
+ *         name="orderId",
+ *         in="path",
+ *         required=true,
+ *         description="ID of the order",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Order transactions retrieved successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="data", type="array", @OA\Items(ref=""))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Order not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Order not found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Internal Server Error")
+ *         )
+ *     )
+ * )
+ */
+
+
+    public function orderValidatedTrade($orderId){
         try{
             $order =  Order::find($orderId);
             $data = [];
@@ -1683,7 +1742,6 @@ private function getCartAds($cartItem){
 
             $message->sendNotification($user->id,$title,$body, 'a');
 
-    
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

@@ -131,6 +131,11 @@ class OngingTradeStageService
         if ($errorUpdateUserWallet) {
             return $errorUpdateUserWallet;
         }
+
+        $productName = Ad::whereId($trade->order_detail->ad_id)->first()->title;
+
+        $this->notifySellerCredit($sellerUserId,$sellerPersonId,$productName);
+
         return $this->processEscrow($trade, $credit, $walletSeller, $sellerUserId,$tradeStage);
     }
     
@@ -421,4 +426,28 @@ class OngingTradeStageService
             return $errorUpdateDeliveryAgentWallet;
         }
     }
+
+
+    public function notifySellerCredit($sellerUserId,$sellerPersonId,$productName){
+        try {
+
+           $service = new Service();
+           $balance = $service->returnSTDPersonWalletBalance($sellerPersonId);
+
+            $title = "Payment Received for Your Product";
+            $body = "We are pleased to inform you that the payment for your product, $productName, has been successfully processed. The amount has been credited to your account, bringing your current balance to $balance XOF.
+
+            Thank you for your continued partnership.
+
+            Best regards,";
+
+           $message = new ChatMessageController();
+
+            $message->sendNotification($sellerUserId,$title,$body, 'a');
+
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 }

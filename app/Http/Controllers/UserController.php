@@ -425,9 +425,9 @@ class UserController extends Controller
                         return response()->json([
                             'user' => $user,
                             'access_token' => $token,
-                            'token_type' => 'Bearer',
-                            'expires_in' => Auth::factory()->getTTL() * 60,
-                            'n' => $n
+                            // 'token_type' => 'Bearer',
+                            // 'expires_in' => Auth::factory()->getTTL() * 60,
+                            // 'n' => $n
                         ]);
                     } else {
                         return response()->json(['error' => 'Mot de passe invalide.'], 200);
@@ -806,9 +806,9 @@ class UserController extends Controller
                 $person = DB::selectOne($personQuery, ['userId' =>Auth::user()->id]);
                 $client = Client::where('person_id', $person->id)->first();
                 $data = [
-                    'User details' =>Auth::user(),
-                    'Person detail' => $person,
-                    'client detail' => $client
+                    'User_details' =>Auth::user(),
+                    'Person_detail' => $person,
+                    'client_detail' => $client
                 ];
                 unset(Auth::user()->code);
                 return response()->json([
