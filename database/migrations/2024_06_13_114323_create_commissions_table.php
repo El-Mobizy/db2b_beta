@@ -31,6 +31,7 @@ return new class extends Migration
         DB::table('commissions')->insert([
             ['name' => 'Commission Standard', 'short' =>'STD' ,'created_at' => now(), 'updated_at' => now(),'uid'=>'30c588a0-356f-11ef-8aee-00ff5210c7f1'],
             ['name' => 'Commission Bonus', 'short' =>'BNS' ,'created_at' => now(), 'updated_at' => now(),'uid'=>'30c588a0-356f-11ef-2afe-00ff5210c7f1'],
+            ['name' => 'Bonus Delivery Commission', 'short' =>'DLV' ,'created_at' => now(), 'updated_at' => now(),'uid'=>'30c588a0-356f-11ef-2aff-00ff5210c7f1'],
         ]);
     }
 

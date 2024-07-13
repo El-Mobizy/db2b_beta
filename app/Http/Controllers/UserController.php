@@ -402,13 +402,13 @@ class UserController extends Controller
 
                         $title=  'Help us protect your account';
                         $body =$codes;
-                        $message = new ChatMessageController();
+                        $mail = new MailController();
                         $n=0;
                         // if( $mes =  $message->sendLoginConfirmationNotification(Auth::user()->id,$title,$body, 'code sent successfully !')){
                         //     $n = $n+1;
                         // }
 
-                        if ($mes = $message->sendLoginConfirmationNotification(Auth::user()->id, $title, $body, 'code sent successfully !')) {
+                        if ($mes = $mail->sendLoginConfirmationNotification(Auth::user()->id, $title, $body, 'code sent successfully !')) {
                             Log::info('Login confirmation email sent to user ID: ' . Auth::user()->id);
                             $n = $n + 1;
                         }
@@ -599,8 +599,8 @@ class UserController extends Controller
 
           $user = User::Where('email',$email)->first();
   
-          $message = new ChatMessageController();
-          $mes = $message->sendNotification($user->id,$title,$body, 'User created successfully!');
+          $mail = new MailController();
+          $mes = $mail->sendNotification($user->id,$title,$body, 'User created successfully!');
           if($mes){
               return response()->json([
                 'message' =>$mes->original['message']
@@ -1185,8 +1185,8 @@ class UserController extends Controller
                     $title= "Recovery your password";
                     $body ="Go to quotidishop.com to update your password";
 
-                   $message = new ChatMessageController();
-                  $mes =  $message->sendNotification(User::where('email',$email)->first()->id,$title,$body, 'Email sent successfully !');
+                   $mail = new MailController();
+                  $mes =  $mail->sendNotification(User::where('email',$email)->first()->id,$title,$body, 'Email sent successfully !');
 
                   if($mes){
                     return response()->json([
@@ -1493,8 +1493,8 @@ public function new_code($id) {
             
             $title=  'Help us protect your account';
             $body =$user->code;
-            $message = new ChatMessageController();
-            $mes =  $message->sendLoginConfirmationNotification(Auth::user()->id,$title,$body, 'code sent successfully !');
+            $mail = new MailController();
+            $mes =  $mail->sendLoginConfirmationNotification(Auth::user()->id,$title,$body, 'code sent successfully !');
             // dd('allo');
 
           

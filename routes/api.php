@@ -89,6 +89,7 @@ Route::prefix('users')->group(function () {
             Route::get('/walletDetail/{commissionWalletId}', [CommissionWalletController::class, 'walletDetail'])->name('wallet.walletDetail');
             Route::get('/AuthSTDWalletDetail', [CommissionWalletController::class, 'AuthSTDWalletDetail'])->name('wallet.AuthSTDWalletDetail');
             Route::get('/AuthWallet', [CommissionWalletController::class, 'AuthWallet'])->name('wallet.AuthWallet');
+            Route::post('/addFund', [CommissionWalletController::class, 'addFund'])->name('wallet.addFund');
             // Route::post('/generateStandardWallet', [CommissionWalletController::class, 'generateStandardWallet'])->name('wallet.generateStandardWallet');
         });
 
@@ -103,7 +104,7 @@ Route::prefix('users')->group(function () {
             Route::get('/ordersIndex', [OrderController::class, 'ordersIndex'])->name('order.ordersIndex');
             Route::post('/orderManyItem', [OrderController::class, 'orderManyItem'])->name('order.orderManyItem');
             Route::post('/payOrder/{orderId}', [OrderController::class, 'payOrder'])->name('order.payOrder');
-            Route::post('/addFund', [OrderController::class, 'addFund'])->name('order.addFund');
+          
             Route::get('/orderTrade/{orderId}', [OrderController::class, 'orderTrade'])->name('order.orderTrade');
             Route::get('/orderValidatedTrade/{orderId}', [OrderController::class, 'orderValidatedTrade'])->name('order.orderValidatedTrade');
             Route::get('/getOrderEndTrade/{orderId}', [OrderController::class, 'getOrderEndTrade'])->name('order.getOrderEndTrade');
@@ -177,9 +178,6 @@ Route::prefix('users')->group(function () {
             Route::post('/handleTradeStageAction/{ongingtradeStageId}/{actionType}', [OngingTradeStageController::class, 'handleTradeStageAction'])->name('order.handleTradeStageAction');
         });
 
-        Route::prefix('tradeStage')->group(function () {
-            
-        });
 
         Route::prefix('tradeChat')->group(function () {
             Route::post('/createTradeChat/{tradeId}', [TradeChatController::class, 'createTradeChat'])->name('tradeChat.createTradeChat');

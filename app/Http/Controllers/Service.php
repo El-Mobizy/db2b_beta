@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\AttributeGroup;
 use App\Models\Category;
 use App\Models\Client;
+use App\Models\Commission;
 use App\Models\CommissionWallet;
 use App\Models\Country;
 use App\Models\DeliveryAgency;
@@ -507,8 +508,8 @@ class Service extends Controller
     }
 }
 
-public function returnSTDPersonWalletBalance($personId){
-    $wallet = CommissionWallet::where('person_id',$personId)->first();
+public function returnSTDPersonWalletBalance($personId,$typeId='STD'){
+    $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',Commission::whereShort($typeId)->first()->id)->first();
     return $wallet->balance;
 }
 
@@ -546,10 +547,10 @@ public function adminUserAccount(){
 public function notifyAdmin($title,$body){
     try{
        $admins = $this->adminUserAccount();
-       $message = new ChatMessageController();
+       $mail = new MailController();
 
        foreach($admins as $user){
-            $message->sendNotification($user->id,$title,$body, '');
+            $mail->sendNotification($user->id,$title,$body, '');
        }
 
     } catch (Exception $e) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Commission;
 use App\Models\CommissionWallet;
 use App\Models\DeliveryAgency;
 use App\Models\EscrowDelivery;
@@ -230,8 +231,8 @@ class DeliveryAgencyController extends Controller
             if (!$order) {
                 return response()->json(['error' => 'Order not found'], 404);
             }
-            
-            $wallet = CommissionWallet::where('person_id', $deliveryPersonId)->first();
+            $typeId = Commission::whereShort('STD')->first()->id;
+            $wallet = CommissionWallet::where('person_id', $deliveryPersonId)->where('commission_id',$typeId)->first();
             if (!$wallet) {
                 return response()->json(['error' => 'Wallet not found'], 404);
             }
@@ -341,7 +342,7 @@ class DeliveryAgencyController extends Controller
             if($checkIfIndividualHaveOrderInProgress >= 2 && DeliveryAgency::where('person_id',$deliveryPersonId)->first()->agent_type == 'individual' ){
                 return response()->json(['error' => 'You already have orders in progress'], 404);
             }
-
+            
             // return  $existAcceptingOrder;
 
             if($existAcceptingOrder){
@@ -349,15 +350,16 @@ class DeliveryAgencyController extends Controller
                     'message' => 'Order already accepted'
                 ], 200);
             }
-
+            
             $deliveryPersonUid = Person::find($deliveryPersonId)->uid;
-
+            
             // return  $deliveryPersonUid;
-
+            
             $errorcheckWalletBalance = $this->checkWalletBalance($deliveryPersonId, $order->amount);
             if($errorcheckWalletBalance){
                 return $errorcheckWalletBalance;
             }
+            // return 1;
 
             $errorreserveAmount = $this->reserveAmount($deliveryPersonId, $orderUid);
             if($errorreserveAmount){
@@ -447,7 +449,8 @@ class DeliveryAgencyController extends Controller
            $message = new ChatMessageController();
 
            foreach($data as $item){
-            $mes = $message->sendNotification($item->id,$title,$body, 'Payement done Successfully !');
+            $mail = new MailController();
+            $mes = $mail->sendNotification($item->id,$title,$body, 'Payement done Successfully !');
            }
 
            if($mes){

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Commission;
 use App\Models\CommissionWallet;
+use App\Services\WalletService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -212,7 +214,7 @@ class CommissionWalletController extends Controller
         }
     }
 
-    public function generateStandardWallet(){
+    public function generateStandardWallet($type = 'STD'){
         try {
             $service = new Service();
 
@@ -220,9 +222,7 @@ class CommissionWalletController extends Controller
             $wallet = new CommissionWallet();
             $wallet->balance = 0;
             $wallet->prev_balance = 0;
-            // return 1;
-            $wallet->commission_id = Commission::where('short','STD')->first()->id;
-            // return Commission::where('short','STD')->first()->id;
+            $wallet->commission_id = Commission::where('short',$type)->first()->id;
             $wallet->person_id = $personId;
             $wallet->uid= $service->generateUid($wallet);
             $wallet->save();
@@ -237,13 +237,13 @@ class CommissionWalletController extends Controller
         }
     }
 
-    public function generateStandardUnAuthWallet($personId){
+    public function generateStandardUnAuthWallet($personId,$type='STD'){
         try {
             $service = new Service();
             $wallet = new CommissionWallet();
             $wallet->balance = 0;
             $wallet->prev_balance = 0;
-            $wallet->commission_id = Commission::where('short','STD')->first()->id;
+            $wallet->commission_id = Commission::where('short',$type)->first()->id;
             $wallet->person_id = $personId;
             $wallet->uid= $service->generateUid($wallet);
             $wallet->save();
@@ -356,5 +356,72 @@ class CommissionWalletController extends Controller
              ]);
          }
     }
+
+
+       /**
+ * @OA\Post(
+ *     path="/api/wallet/addFund",
+ *     tags={"Wallet"},
+ *   security={{"bearerAuth":{}}},
+ *     summary="Add funds to a user's wallet",
+ *     description="Add funds to a user's wallet",
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"amount"},
+ *             @OA\Property(property="amount", type="number", example=100.00)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Funds added successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Successfully credited wallet")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Validation error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Validation error")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Internal Server Error")
+ *         )
+ *     )
+ * )
+ */
+
+ public function addFund(Request $request){
+    try{
+        $request->validate([
+            'amount' => 'required'
+        ]);
+        $typeId = Commission::whereShort('STD')->first()->id;
+        $service = new Service();
+        $personId = $service->returnPersonIdAuth();
+        $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
+
+        if(!$wallet){
+            $this->generateStandardWallet();
+        }
+
+        $credit =  $request->amount + CommissionWallet::where('person_id',$personId)->first()->balance;
+
+        (new WalletService())->updateUserWallet($personId,$credit);
+        return response()->json(
+            ['message' => 'Successfully credited wallet'
+        ],200);
+
+    }catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ]);
+    }
+}
 
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Ad;
 use App\Models\AllowTransaction;
 use App\Models\Cart;
+use App\Models\Commission;
 use App\Models\CommissionWallet;
 use App\Models\Escrow;
 use App\Models\Order;
@@ -14,6 +15,7 @@ use App\Models\Trade;
 use App\Models\User;
 use App\Models\Transaction;
 use App\Models\TypeOfType;
+use App\Services\WalletService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -993,7 +995,7 @@ private function getCartAds($cartItem){
             ],200);
         }
 
-        $this->updateUserWallet($personId,$diff);
+        (new WalletService())->updateUserWallet($personId,$diff);
 
         $this->createEscrow($orderId);
 
@@ -1129,7 +1131,8 @@ private function getCartAds($cartItem){
             }
 
             $personId = $service->returnPersonIdAuth();
-            $wallet = CommissionWallet::where('person_id',$personId)->first();
+            $typeId = Commission::whereShort('STD')->first()->id;
+            $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
 
             if(!$wallet){
                 return response()->json(
@@ -1153,8 +1156,8 @@ private function getCartAds($cartItem){
             $order = Order::find($orderId);
             $orderAmount = $order->amount;
 
-
-            $wallet = CommissionWallet::where('person_id',$personId)->first();
+            $typeId = Commission::whereShort('STD')->first()->id;
+            $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
             $walletAmount = $wallet->balance;
 
             $diff = $walletAmount - $orderAmount;
@@ -1168,96 +1171,9 @@ private function getCartAds($cartItem){
         }
     }
 
-    public function updateUserWallet($personId,$diff){
-        try{
+    
 
-            $wallet = CommissionWallet::where('person_id',$personId)->first();
-            $walletAmount = $wallet->balance;
-
-            CommissionWallet::where('person_id',$personId)->update([
-                'prev_balance' => $walletAmount
-            ]);
-
-            CommissionWallet::where('person_id',$personId)->update([
-                'balance' => $diff
-            ]);
-        }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
- * @OA\Post(
- *     path="/api/order/addFund",
- *     tags={"Orders"},
- *   security={{"bearerAuth":{}}},
- *     summary="Add funds to a user's wallet",
- *     description="Add funds to a user's wallet",
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\JsonContent(
- *             required={"amount"},
- *             @OA\Property(property="amount", type="number", example=100.00)
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Funds added successfully",
- *         @OA\JsonContent(
- *             @OA\Property(property="message", type="string", example="Successfully credited wallet")
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Validation error",
- *         @OA\JsonContent(
- *             @OA\Property(property="message", type="string", example="Validation error")
- *         )
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Internal Server Error",
- *         @OA\JsonContent(
- *             @OA\Property(property="error", type="string", example="Internal Server Error")
- *         )
- *     )
- * )
- */
-
-    public function addFund(Request $request){
-        try{
-            $request->validate([
-                'amount' => 'required'
-            ]);
-            $service = new Service();
-            $personId = $service->returnPersonIdAuth();
-            $wallet = CommissionWallet::where('person_id',$personId)->first();
-
-            if(!$wallet){
-                $com = new CommissionWalletController;
-                $com->generateStandardWallet();
-
-                if($com){
-                    return $com;
-                }
-            }
-            // return 1;
-
-            $credit =  $request->amount + CommissionWallet::where('person_id',$personId)->first()->balance;
-
-            $this->updateUserWallet($personId,$credit);
-            return response()->json(
-                ['message' => 'Successfully credited wallet'
-            ],200);
-
-        }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
+ 
 
     /**
  * @OA\Get(
@@ -1739,9 +1655,9 @@ private function getCartAds($cartItem){
             $title = "Payment Successful: Wallet Debited";
             $body = "Your order has been placed successfully. Your wallet has been debited, and your new balance is $balance XOF. Thank you for your purchase!";
 
-           $message = new ChatMessageController();
+           $mail = new MailController();
 
-            $message->sendNotification($user->id,$title,$body, 'a');
+            $mail->sendNotification($user->id,$title,$body, '');
 
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -1754,9 +1670,8 @@ private function getCartAds($cartItem){
             $title = "New Order Placed: Action Required";
             $body = "One of your products has just been ordered. Please start the necessary steps to complete the transaction. Thank you!";
 
-           $message = new ChatMessageController();
-
-            $message->sendNotification($userId,$title,$body, 'b');
+            $mail = new MailController();
+            $mail->sendNotification($userId,$title,$body, '');
 
     
         } catch (Exception $e) {

@@ -3,14 +3,17 @@
 namespace App\Services;
 
 use App\Http\Controllers\ChatMessageController;
+use App\Http\Controllers\CommissionController;
 use App\Http\Controllers\CommissionWalletController;
 use App\Http\Controllers\DeliveryAgencyController;
 use App\Http\Controllers\EscrowController;
+use App\Http\Controllers\MailController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Service;
 use App\Models\Favorite;
 use App\Models\Ad;
 use App\Models\Category;
+use App\Models\Commission;
 use App\Models\CommissionWallet;
 use App\Models\DeliveryAgency;
 use App\Models\Escrow;
@@ -108,7 +111,6 @@ class OngingTradeStageService
     public function completeTrade($trade,$tradeStage) {
         $statut_trade_id = TypeOfType::whereLibelle('endtrade')->first()->id;
         $status_order_id = TypeOfType::whereLibelle('started')->first()->id;
-        // return 1;
         $statut_escrow_id = TypeOfType::whereLibelle('partially_released')->first()->id;
     
         if (!$statut_trade_id || !$status_order_id || !$statut_escrow_id) {
@@ -150,16 +152,17 @@ class OngingTradeStageService
     }
     
     public function getOrCreateWallet($sellerPersonId) {
-        $walletSeller = CommissionWallet::where('person_id', $sellerPersonId)->first();
+        $typeId = Commission::whereShort('STD')->first()->id;
+        $walletSeller = CommissionWallet::where('person_id', $sellerPersonId)->where('commission_id',$typeId)->first();
         if (!$walletSeller) {
             (new CommissionWalletController())->generateStandardUnAuthWallet($sellerPersonId);
-            $walletSeller = CommissionWallet::where('person_id', $sellerPersonId)->first();
+            $walletSeller = CommissionWallet::where('person_id', $sellerPersonId)->where('commission_id',$typeId)->first();
         }
         return $walletSeller;
     }
     
     public function updateUserWallet($personId, $amount) {
-        return (new OrderController())->updateUserWallet($personId, $amount);
+        return (new WalletService())->updateUserWallet($personId, $amount);
     }
     
     public function processEscrow($trade, $credit, $walletSeller, $sellerUserId,$tradeStage) {
@@ -337,13 +340,14 @@ class OngingTradeStageService
     
     public function refundBuyer($trade, $credit,$tradeStage) {
         $service = $this->getService();
+        $typeId = Commission::whereShort('STD')->first()->id;
         $buyerUserId = Order::find($trade->order_detail->order_id)->user_id;
         $buyerPersonId = $service->returnUserPersonId($buyerUserId);
-        $walletBuyer = CommissionWallet::where('person_id', $buyerPersonId)->first();
+        $walletBuyer = CommissionWallet::where('person_id', $buyerPersonId)->where('commission_id',$typeId)->first();
         $buyerAmount = $walletBuyer->balance + $credit;
     
         $orderController = new OrderController();
-        $errorUpdateUserWallet = $orderController->updateUserWallet($buyerPersonId, $buyerAmount);
+        $errorUpdateUserWallet = (new WalletService())->updateUserWallet($buyerPersonId, $buyerAmount);
         if ($errorUpdateUserWallet) {
             return $errorUpdateUserWallet;
         }
@@ -392,16 +396,17 @@ class OngingTradeStageService
     }
 
     public function refundDeliveryAgent($orderId){
+
+        $walletService = new WalletService();
+        $typeId = Commission::whereShort('STD')->first()->id;
         $order = Order::find($orderId);
         $deliveryAgentEscrowDelivery = EscrowDelivery::where('order_uid',$order->uid)->first();
-        // return $order->uid;
         $deliveryAgentPersonUid = $deliveryAgentEscrowDelivery->person_uid;
         $deliveryAgentPersonid = Person::whereUid($deliveryAgentPersonUid)->first()->id;
-        $wallet = CommissionWallet::where('person_id',$deliveryAgentPersonid)->first();
+        $wallet = CommissionWallet::where('person_id',$deliveryAgentPersonid)->where('commission_id',$typeId)->first();
         $credit = $deliveryAgentEscrowDelivery->delivery_agent_amount + $wallet->balance;
 
-        $orderController = new OrderController();
-        $errorUpdateDeliveryAgentWallet = $orderController->updateUserWallet($deliveryAgentPersonid, $credit);
+        $errorUpdateDeliveryAgentWallet = $walletService->updateUserWallet($deliveryAgentPersonid, $credit);
         if ($errorUpdateDeliveryAgentWallet) {
             return $errorUpdateDeliveryAgentWallet;
         }
@@ -413,17 +418,26 @@ class OngingTradeStageService
         $deliveryAgentEscrowDelivery = EscrowDelivery::where('order_uid',$order->uid)->first();
         $deliveryAgentPersonUid = $deliveryAgentEscrowDelivery->person_uid;
         $deliveryAgentPersonid = Person::whereUid($deliveryAgentPersonUid)->first()->id;
+        $typeId = Commission::whereShort('DLV')->first()->id;
 
-        $wallet = CommissionWallet::where('person_id',$deliveryAgentPersonid)->first();
+        $wallet = CommissionWallet::where('person_id',$deliveryAgentPersonid)->where('commission_id',$typeId)->first();
+
+        if(!$wallet){
+            $walletC = new CommissionWalletController();
+            $walletC->generateStandardUnAuthWallet($deliveryAgentPersonid,'DLV');
+        }
+
+
 
         $credit = floatval($escrowOrder->amount)*(DeliveryAgency::where('person_id',$deliveryAgentPersonid)->first()->commission / 100  ) + $wallet->balance;
 
-        $orderController = new OrderController();
-        $errorUpdateDeliveryAgentWallet = $orderController->updateUserWallet($deliveryAgentPersonid, $credit);
+        $errorUpdateDeliveryAgentWallet = (new WalletService())->updateUserWallet($deliveryAgentPersonid, $credit,'DLV');
         if ($errorUpdateDeliveryAgentWallet) {
             return $errorUpdateDeliveryAgentWallet;
         }
     }
+
+
 
 
     public function notifySellerCredit($sellerUserId,$sellerPersonId,$productName){
@@ -437,11 +451,11 @@ class OngingTradeStageService
 
             Thank you for your continued partnership.
 
-            Best regards,";
+            Best regards.";
 
-           $message = new ChatMessageController();
+            $mail = new MailController();
 
-            $message->sendNotification($sellerUserId,$title,$body, 'a');
+            $mail->sendNotification($sellerUserId,$title,$body, '');
 
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -454,15 +468,15 @@ class OngingTradeStageService
             $escrowDelivery = EscrowDelivery::where('order_uid', $order->uid)->first();
             $deliveryPersonUid = $escrowDelivery->person_uid;
             $deliveryPersonId = Person::whereUid($deliveryPersonUid)->first()->id;
-    
-            $wallet = CommissionWallet::where('person_id', $deliveryPersonId)->first();
-            $balance = $wallet->balance;
+
+           $service = new Service();
+           $balance = $service->returnSTDPersonWalletBalance($deliveryPersonId,'DLV');
     
             $title = "Delivery Completed Successfully!";
-            $body = "The delivery for order #{$order->uid} has been completed successfully. Your wallet has been credited. Your new balance is {$balance} XOF.";
+            $body = "The delivery for order #{$order->uid} has been completed successfully. Your Bonus Delivery Commission wallet has been credited. Your new balance is {$balance} XOF.";
     
-            $message = new ChatMessageController();
-            $message->sendNotification(Person::whereId($deliveryPersonId)->first()->user_id, $title, $body,'');
+            $mail = new MailController();
+            $mail->sendNotification(Person::whereId($deliveryPersonId)->first()->user_id, $title, $body,'');
     
             return response()->json([
                 'message' => 'Notification sent successfully'

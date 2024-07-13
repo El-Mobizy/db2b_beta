@@ -498,41 +498,7 @@ class OngingTradeStageController extends Controller
     }
 
 
-                // $service = new Service();
-              
-                // $up = $service-> returnPersonAndUserId($trade->seller_id);
-                // $personId =$up['person_id'];
-                // // return $personId;
-                // $walletSeller = CommissionWallet::where('person_id',$personId)->first();
-                // $com = new CommissionWalletController();
-                // if(!$walletSeller){
-                //     $com->generateStandardUnAuthWallet($personId);
-                // }
-                // // return  $trade->order_detail->price * $trade->order_detail->quantity;
-                // // return $trade->order_detail;
-                // if($a == 1){
-                //     $credit = $trade->order_detail->price * $trade->order_detail->quantity;
-                //     // return $trade->order_detail->order_id;
-                //     $order = new OrderController();
-                //     $order->updateUserWallet($personId,$credit);
-                //     $escrow = Escrow::where('order_id',$trade->order_detail->order_id)->first();
-                //     // return $escrow;
-                //     if(!$escrow){
-                //         return response()->json([
-                //             'message' => 'Escrow not found'
-                //         ]);
-                //     }
-                //     $escrow->update(['status'=>' partially_released ']);
-                //     $ec = new EscrowController();
-                //     $ec->debitEscrow($escrow->id,$credit);
-                //     return response()->json([
-                //         'message' => 'END_TRADE'
-                //     ]);
-                // }else{
-                //     return response()->json([
-                //         'message' => 'Check if all stage are completed'
-                //     ]);
-                // }
+           
 
                 public function getEndTrade($perPage){
                     try {
