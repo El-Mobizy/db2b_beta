@@ -396,6 +396,22 @@ class Service extends Controller
     }
    }
 
+   public function returnClientIdUser($userId){
+    try {
+        
+        $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+        $person = DB::selectOne($personQuery, ['userId' => $userId]);
+
+        $client = Client::where('person_id',$person->id)->first();
+
+        return $client->id;
+    } catch(Exception $e){
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
+   }
+
    public function returnPersonIdAuth(){
     try {
         if (!Auth::user()) {

@@ -865,6 +865,30 @@ class ShopController extends Controller
         }
     }
 
+    public function anUserShop($userId){
+        try {
+            $service = new Service();
+            $clientId = $service->returnClientIdUser($userId);
+            $userShop = Shop::where('client_id',$clientId)
+            ->whereDeleted(0)
+            ->with('files')
+            ->get();
+
+            if(count(  $userShop) === 0){
+                return response()->json([
+                    'message'  => "No shop found",
+                ]);
+            }
+
+            return $userShop;
+
+        } catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ],500);
+        }
+    }
+
 
       /**
  * @OA\Get(

@@ -90,6 +90,12 @@ class TradeController extends Controller
             $trade->amount = $amount;
             $trade->enddate = $enddate;
             if($trade->save()){
+                $titleAdmin = "Urgent: New Trade Requires Immediate Validation ";
+                $bodyAdmin = "A new trade has just been initiated and requires your immediate attention. Please log in to the admin panel to review and validate the trade. Prompt validation is crucial to enable members to begin their transactions. Your swift action is required. Thank you!";
+
+                 //notify admin
+                $service->notifyAdmin($titleAdmin,$bodyAdmin);
+                
                 $OngingTradeStage = new OngingTradeStageController();
                 $OngingTradeStage->ongingCreateTradeStage($trade->id);
                 return response()->json([

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\Person;
+use App\Models\Preorder;
+use App\Models\ShopHasCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +38,7 @@ use Illuminate\Support\Facades\DB;
 
 class ClientController extends Controller
 {
-    public function getMerchant($liste=0){
+    public function getMerchant($liste=1){
         try{
             $users = User::whereDeleted(0)->get();
             $merchants = [];
@@ -55,6 +58,62 @@ class ClientController extends Controller
                 'data' => $merchants
             ],200);
 
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function getMerchantCOncernedByPreorder($preorderUid){
+        try{
+            $data= [];
+        
+            $merchants = $this->getMerchant(1);
+            $clientLocation = Preorder::whereUid($preorderUid)->first()->location_id;
+            $clientCategory = Preorder::whereUid($preorderUid)->first()->category_id;
+            $shopObject = new ShopController();
+            $firstStep = 0;
+            $secondStep = 0;
+
+            foreach($merchants as $merchant){
+                $shops = $shopObject->anUserShop($merchant->id);
+                foreach($shops as $shop){
+                    $merchantHasPreorderCategory = ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$clientCategory)->exists();
+                    if($merchantHasPreorderCategory){
+                        $firstStep = 1;
+                    }
+                }
+                if(Person::whereUserId($merchant->id)->first()->country_id == $clientLocation){
+                    $secondStep = 1;
+                }
+
+                if($firstStep == 1 && $secondStep == 1){
+                    $data[] = $merchant ;
+                }
+            }
+
+            return $data;
+           
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+     }
+
+
+     public function notifyMerchantConcernedByPreorder($title,$body,$preorderUid){
+        try{
+           $merchants = $this->getMerchantCOncernedByPreorder($preorderUid);
+           $message = new ChatMessageController();
+    
+           foreach($merchants as $user){
+                $message->sendNotification($user->id,$title,$body, '');
+           }
+    
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()

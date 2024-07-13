@@ -137,14 +137,14 @@ class PreorderController extends Controller
 
 
 
+
+
               if($mes){
                 return response()->json([
                       'message' =>$mes->original['message']
                 ]);
               }
 
-               //todo: Envoyer un mail aux administrateurs pour leur signaler qu'un client vient de faire une précommande
-               //todo: Envoyer un mail aux vendeurs qui commercialisent des produit de même catégorie
         } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
@@ -263,15 +263,24 @@ class PreorderController extends Controller
         $title = "Confirmation that your pre-order reply has been sent";
         $body = "Your answer has been saved, please wait while an administrator analyzes it. We'll let you know what happens next. Thank you!";
 
-        $message = new ChatMessageController();
-        $mes = $message->sendNotification(Auth::user()->id,$title,$body, 'preorder answers created successfully !');
+
+        $titleAdmin = " New Preorder answer Awaiting Validation ";
+        $bodyAdmin = "A new preorder answer has just been added to the system. Please log in to your account to review and validate the preorder answer. Your prompt attention is required. Thank you!";
+
+
+      $message = new ChatMessageController();
+
+      //notify buyer
+      $mes = $message->sendNotification(Auth::user()->id,$title,$body, 'preorder answers created successfully !');
+
+       //notify admin
+       $service->notifyAdmin($titleAdmin,$bodyAdmin);
+
         if($mes){
             return response()->json([
                   'message' =>$mes->original['message']
             ]);
           }
-
-           //todo: Envoyer un mail aux administrateurs pour leur signaler qu'un marchand  vient de répondre à une précommande et qu'il doit valider
 
         } catch (Exception $e) {
             return response()->json([
@@ -1848,16 +1857,5 @@ public function answerReviewsPaginate($preorderAnswerUid,$perpage){
 }
 
 
- public function getMerchantCOncernedByPreorder(){
-    try{
-        $data= [];
-       
-
-    } catch (Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
-    }
- }
 
 }

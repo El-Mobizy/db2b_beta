@@ -352,7 +352,9 @@ Route::prefix('users')->group(function () {
 
     Route::get('/order/ordersIndex', [OrderController::class, 'ordersIndex'])->name('order.ordersIndex');
 
-    Route::post('/notifyParty/{orderUid}', [OrderController::class, 'notifyParty'])->name('order.notifyParty');
+    Route::get('/getMerchantCOncernedByPreorder/{preorderUid}', [ClientController::class, 'getMerchantCOncernedByPreorder'])->name('order.getMerchantCOncernedByPreorder');
+
+
 
     Route::prefix('admin')->group(function () {
         Route::post('/create/{id}', [AdminController::class, 'create'])->name('admin.create');
