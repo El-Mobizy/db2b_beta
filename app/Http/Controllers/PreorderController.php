@@ -127,7 +127,7 @@ class PreorderController extends Controller
                 $bodyAdmin = "A new preorder has just been added to the system. Please log in to your account to review and validate the preorder. Your prompt attention is required. Thank you!";
 
 
-              $message = new ChatMessageController();
+              $message = new MailController();
 
               //notify buyer
               $mes =  $message->sendNotification(Auth::user()->id,$title,$body, 'preorder created successfully !');
@@ -268,7 +268,7 @@ class PreorderController extends Controller
         $bodyAdmin = "A new preorder answer has just been added to the system. Please log in to your account to review and validate the preorder answer. Your prompt attention is required. Thank you!";
 
 
-      $message = new ChatMessageController();
+      $message = new MailController();
 
       //notify buyer
       $mes = $message->sendNotification(Auth::user()->id,$title,$body, 'preorder answers created successfully !');
@@ -452,7 +452,7 @@ public function getPreorderPending(){
         $title = "Confirmation of your pre-order";
         $body = "Your pre-order has just been validated by the admin, and you will shortly be receiving proposals from merchants. We'll keep you informed if there's a proposal.";
 
-        $message = new ChatMessageController();
+        $message = new MailController();
         $mes = $message->sendNotification($preorder->user_id,$title,$body, 'preorder answers validated successfully !');
         if($mes){
             return response()->json([
@@ -548,7 +548,7 @@ public function getPreorderPending(){
         $title = "Confirmation that your pre-order has been rejected";
         $body = "Your pre-order has been rejected by an admininstrator. Here is the reason <<$request->reject_reason>>";
 
-        $message = new ChatMessageController();
+        $message = new MailController();
         $mes = $message->sendNotification($preorder->user_id,$title,$body,  'Preorder rejected successfully!');
         if($mes){
             return response()->json([
@@ -1440,7 +1440,7 @@ public function write(Request $request, $PreordersAnswerUid){
 
         $receiver_id= $r->user->id;
 
-       $message = new ChatMessageController();
+       $message = new MailController();
     //   $mes =  $message->sendNotification($receiver_id,$title,$body, 'comment submited successfully !');
 
     //   if($mes){

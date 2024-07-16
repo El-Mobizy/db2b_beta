@@ -391,9 +391,16 @@ class OrderController extends Controller
 
     /**
  * @OA\Get(
- *     path="/api/order/listOrders",
+ *     path="/api/order/listOrders/{perpage}",
  *     tags={"Orders"},
  *     security={{"bearerAuth": {}}},
+ * @OA\Parameter(
+     *         name="perpage",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
  *     summary="Get a list of orders",
  *     description="Get a list of orders for the authenticated user",
  *     @OA\Response(
@@ -420,7 +427,7 @@ class OrderController extends Controller
  * )
  */
 
-    public function listOrders(){
+    public function listOrders($perpage){
         try {
             $service = new Service();
 
@@ -430,10 +437,9 @@ class OrderController extends Controller
                return $checkAuth;
             }
 
-            $orders = Order::where('user_id', Auth::user()->id)
-            ->with('order_details_not_deleted')
+            $orders = Order::with('order_details_not_deleted')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate($perpage);
 
             return response()->json(
                 ['data' =>$orders 
@@ -446,65 +452,65 @@ class OrderController extends Controller
     }
 
 
-    /**
- * @OA\Delete(
- *     path="/api/order/cancelOrder/{orderId}",
- *     tags={"Orders"},
- *     security={{"bearerAuth": {}}},
- *     summary="Cancel an order",
- *     description="Cancel an order by its ID",
- *     @OA\Parameter(
- *         name="orderId",
- *         in="path",
- *         required=true,
- *         description="ID of the order to cancel",
- *         @OA\Schema(type="integer")
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Order canceled successfully",
- *         @OA\JsonContent(
- *             @OA\Property(property="message", type="string", description="Success message", example="Order canceled successfully")
- *         )
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthorized",
- *         @OA\JsonContent(
- *             @OA\Property(property="error", type="string", description="Error message", example="Unauthorized")
- *         )
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Internal Server Error",
- *         @OA\JsonContent(
- *             @OA\Property(property="error", type="string", description="Error message", example="Internal Server Error")
- *         )
- *     )
- * )
- */
-    public function cancelOrder($orderId){
-        try {
-            $service = new Service();
+//     /**
+//  * @OA\Delete(
+//  *     path="/api/order/cancelOrder/{orderId}",
+//  *     tags={"Orders"},
+//  *     security={{"bearerAuth": {}}},
+//  *     summary="Cancel an order",
+//  *     description="Cancel an order by its ID",
+//  *     @OA\Parameter(
+//  *         name="orderId",
+//  *         in="path",
+//  *         required=true,
+//  *         description="ID of the order to cancel",
+//  *         @OA\Schema(type="integer")
+//  *     ),
+//  *     @OA\Response(
+//  *         response=200,
+//  *         description="Order canceled successfully",
+//  *         @OA\JsonContent(
+//  *             @OA\Property(property="message", type="string", description="Success message", example="Order canceled successfully")
+//  *         )
+//  *     ),
+//  *     @OA\Response(
+//  *         response=401,
+//  *         description="Unauthorized",
+//  *         @OA\JsonContent(
+//  *             @OA\Property(property="error", type="string", description="Error message", example="Unauthorized")
+//  *         )
+//  *     ),
+//  *     @OA\Response(
+//  *         response=500,
+//  *         description="Internal Server Error",
+//  *         @OA\JsonContent(
+//  *             @OA\Property(property="error", type="string", description="Error message", example="Internal Server Error")
+//  *         )
+//  *     )
+//  * )
+//  */
+//     public function cancelOrder($orderId){
+//         try {
+//             $service = new Service();
 
-            $checkAuth=$service->checkAuth();
+//             $checkAuth=$service->checkAuth();
     
-            if($checkAuth){
-               return $checkAuth;
-            }
+//             if($checkAuth){
+//                return $checkAuth;
+//             }
 
-            Order::whereId($orderId)->update(['status' =>TypeOfType::whereLibelle('rejected')->first()->id ]);
+//             Order::whereId($orderId)->update(['status' =>TypeOfType::whereLibelle('rejected')->first()->id ]);
 
-            return response()->json(
-                ['message' =>'Order canceled successfuly'
-            ],200);
+//             return response()->json(
+//                 ['message' =>'Order canceled successfuly'
+//             ],200);
 
-        }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
+//         }catch(Exception $e){
+//             return response()->json([
+//                 'error' => $e->getMessage()
+//             ]);
+//         }
+//     }
 
 
     /**
@@ -565,18 +571,28 @@ class OrderController extends Controller
         try {
            $order_detail = OrderDetail::whereId($orderDetailId)->first();
 
+           $paidStatusId = TypeOfType::whereLibelle('paid')->first()->id;
+           $validatedStatusId = TypeOfType::whereLibelle('validated')->first()->id;
+           $startedStatusId = TypeOfType::whereLibelle('started')->first()->id;
+
+           
            if(!$order_detail){
-            return response()->json(
-                ['message' =>'This order detail not found'
-            ],200);
-           }
-
-           if($order_detail->deleted == true){
-            return response()->json(
-                ['message' =>'This order detail is already deleted'
-            ],200);
-           }
-
+               return response()->json(
+                   ['message' =>'This order detail not found'
+                ],200);
+            }
+            
+            if($order_detail->deleted == true){
+                return response()->json(
+                    ['message' =>'This order detail is already deleted'
+                ],200);
+            }
+            
+            if(Order::find($order_detail->order_id)->status == $paidStatusId || Order::find($order_detail->order_id)->status == $validatedStatusId || Order::find($order_detail->order_id)->status == $startedStatusId){
+                 return response()->json(
+                     ['message' =>'You cannot delete this order detail when the status of order it belong to is already change'
+                 ],200);
+            }
            OrderDetail::whereId($orderDetailId)->update(['deleted'=>true]);
 
            return response()->json(
@@ -661,12 +677,21 @@ class OrderController extends Controller
         try {
 
            $order_detail = OrderDetail::whereId($orderDetailId)->first();
+           $paidStatusId = TypeOfType::whereLibelle('paid')->first()->id;
+           $validatedStatusId = TypeOfType::whereLibelle('validated')->first()->id;
+           $startedStatusId = TypeOfType::whereLibelle('started')->first()->id;
 
            if(!$order_detail){
             return response()->json(
                 ['message' =>'This order detail not found'
             ],200);
            }
+
+           if(Order::find($order_detail->order_id)->status == $paidStatusId || Order::find($order_detail->order_id)->status == $validatedStatusId || Order::find($order_detail->order_id)->status == $startedStatusId){
+            return response()->json(
+                ['message' =>'You cannot edit this order detail when the status of order it belong to is already change'
+            ],200);
+       }
 
            $order_detail->quantity =  $request->quantity ?? $order_detail->quantity;
            $order_detail->save();
@@ -1071,27 +1096,7 @@ private function getCartAds($cartItem){
         }
     }
 
-    public function createTransaction($orderId,$wallet,$sender_id,$receiver_id,$amount){
-        try {
-            $service = new Service();
-            $order = Order::find($orderId);
-            $transaction = new Transaction();
-
-            $transaction->order_id = $orderId;
-            $transaction->sender_id = $sender_id;
-            $transaction->receiver_id = $receiver_id;
-            $transaction->commission_wallet_id = $wallet->id;
-            $transaction->amount =  $amount;
-            $transaction->transaction_type = 'transfer';
-            $transaction->uid= $service->generateUid($transaction);
-            $transaction->save();
-            return $transaction->id;
-        } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
+   
 
     public function createAllowTransaction($transactionId){
         try {

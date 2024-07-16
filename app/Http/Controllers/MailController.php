@@ -18,8 +18,15 @@ class MailController extends Controller
                 'body' =>$body
                ];
 
+           
+
             $receiver = User::find($reciever_id);
-               Mail::to($receiver->email)->send(new NotificationEmailWithoutfile($mail));
+            Mail::to($receiver->email)->send(new NotificationEmailWithoutfile($mail));
+
+            $notification = new NotificationController();
+            $service = new Service();
+            $notification->addNotification($service->returnUserPersonId($reciever_id),$title,$body);
+
                return response()->json([
                 'message' =>$return
             ],200);
@@ -39,6 +46,11 @@ class MailController extends Controller
 
             $receiver = User::find($reciever_id);
                Mail::to($receiver->email)->send(new login($mail));
+
+            $notification = new NotificationController();
+            $service = new Service();
+            $notification->addNotification($service->returnUserPersonId($reciever_id),$title,$body);
+
                return response()->json([
                 'message' =>$return
             ],200);

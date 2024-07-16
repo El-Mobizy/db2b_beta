@@ -39,6 +39,14 @@ return [
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
 
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'dsn' => env('DB_URI', 'mongodb+srv://ayenaaurel15:G9JHECt2ncdQXnXc@cluster0.3x5v0sa.mongodb.net'),
+            'database' => 'logdb2b',
+        ],
+
+        // mongodb+srv://ayenaaurel15:G9JHECt2ncdQXnXc@cluster0.3x5v0sa.mongodb.net/
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),

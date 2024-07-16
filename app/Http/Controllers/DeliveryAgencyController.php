@@ -13,185 +13,179 @@ use App\Models\User;
 use App\Services\OngingTradeStageService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Uuid;
 
 class DeliveryAgencyController extends Controller
 {
 
- /**
- * @OA\Post(
- *     path="/api/deliveryAgency/add/{id}",
- *     summary="Ajouter une agence de livraison pour une personne",
- *     tags={"Delivery Agencies"},
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="ID de la personne à laquelle ajouter l'agence de livraison",
- *   
- *     ),
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\MediaType(
- *             mediaType="application/json",
- *             @OA\Schema(
- *                 @OA\Property(
- *                     property="agent_type",
- *                     type="string",
- *                     description="Type de l'agent de livraison"
- *                 ),
- *                 example={"agent_type": "votre_type"}
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response="200",
- *         description="Succès de l'opération"
- *     ),
- *     @OA\Response(
- *         response="400",
- *         description="Requête invalide"
- *     ),
- *     @OA\Response(
- *         response="500",
- *         description="Erreur interne du serveur"
- *     )
- * )
- */
 
-
-
-    public function add(Request $request,$id)
-    {
-        
-        try {
-            $db = DB::connection()->getPdo();
-            $request->validate([
-                'agent_type' =>  ['required','string']
-            ]);
-
-            $exist = DeliveryAgency::where('person_id',$id)->exists();
-
-            if($exist){
-                return response()->json([
-                    'message' => 'Already exist'
-                ], 200);
-            }
-            $ulid = Uuid::uuid1();
-            $ulidDeliveryAgency = $ulid->toString();
-            $agent_type = htmlspecialchars($request->agent_type);
-            $person_id = $id;
-            $uid = $ulidDeliveryAgency;
-            $created_at = date('Y-m-d H:i:s');
-            $updated_at = date('Y-m-d H:i:s');
-
-            $query = "INSERT INTO delivery_agencies (agent_type, person_id,uid,created_at,updated_at) VALUES (?, ?, ?,?,?)";
-
-            $statement = $db->prepare($query);
-
-            $statement->bindParam(1, $agent_type);
-            $statement->bindParam(2, $person_id);
-            $statement->bindParam(3,  $uid);
-            $statement->bindParam(4,  $created_at);
-            $statement->bindParam(5,  $updated_at);
-            $statement->execute();
-            return response()->json([
-                'message' => 'delivery agent created successfuly !'
-            ],200);
-          
-        } catch (Exception $e) {
-           return response()->json([
-            'error' => $e->getMessage()
-           ]);
-        }
-
-    }
-
-    /**
+/**
      * @OA\Post(
-     *     path="/api/deliveryAgency/becomeDeliveryAgent",
-     *     summary="Become a delivery agent",
-     *     description="Allows a user to become a delivery agent by specifying the agent type.",
+     *     path="/api/deliveryAgency/add",
+     *     summary="Add a new delivery agency",
      *     tags={"Delivery Agencies"},
+     *  security={{"bearerAuth": {}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="agent_type", type="string", example="type1")
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="agent_type",
+     *                     type="string",
+     *                     description="Type of the agent"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="parent_id",
+     *                     type="integer",
+     *                     description="Parent ID of the delivery agency",
+     *                     nullable=true
+     *                 ),
+     *                 @OA\Property(
+     *                     property="address",
+     *                     type="string",
+     *                     description="Address of the delivery agency",
+     *                     nullable=true
+     *                 ),
+     *                 @OA\Property(
+     *                     property="files",
+     *                     type="array",
+     *                     @OA\Items(type="string", format="binary"),
+     *                     description="Files to upload, required if agent_type is 'company'"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="company_name",
+     *                     type="string",
+     *                     description="Name of the company, required if agent_type is 'company'",
+     *                     nullable=true
+     *                 )
+     *             )
      *         )
      *     ),
      *     @OA\Response(
-     *         response=200,
-     *         description="Delivery agent created successfully",
+     *         response=201,
+     *         description="Delivery agency created successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Delivery agent created successfully!")
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Delivery agency created successfully")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=400,
+     *         response=422,
      *         description="Validation error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="The agent_type field is required.")
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Validation error"),
+     *             @OA\Property(property="errors", type="object", additionalProperties={"type"="string"})
      *         )
-     *     ),
-     *     @OA\Response(
-     *         response=409,
-     *         description="Already exists",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Already exists")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="An error occurred")
-     *         )
-     *     ),
-     *     security={
-     *         {"bearerAuth": {}}
-     *     }
+     *     )
      * )
      */
 
-    public function becomeDeliveryAgent(Request $request){
-        try{
-            $request->validate([
-                'agent_type' => 'required'
-            ]);
+ public function add(Request $request)
+ {
 
-            $service = new Service();
-            $checkAuth=$service->checkAuth();
-            if($checkAuth){
-               return $checkAuth;
-            }
-            $personId =$service->returnPersonIdAuth();
-            // return $personId;
+     $service = new Service();
+     $id = $service->returnPersonIdAuth();
+     $validator = Validator::make($request->all(), [
+         'agent_type' => 'required|string',
+     ]);
 
-            $exist = DeliveryAgency::where('person_id',$personId)->exists();
-
-            if($exist){
-                return response()->json([
-                    'message' => 'Already exist'
-                ], 200);
-            }
-
-            $delivery_agency = new DeliveryAgency();
-            $delivery_agency->agent_type = $request->agent_type;
-            $delivery_agency->person_id = $personId;
-            $delivery_agency->uid = $service->generateUid($delivery_agency);
-            $delivery_agency->save();
-
-            return response()->json([
-                'message' => 'delivery agent created successfuly !'
-            ],200);
-
-        } catch (Exception $e) {
-           return response()->json([
-            'error' => $e->getMessage()
-           ]);
+     if ($validator->fails()) {
+         return response()->json([
+             'message' => 'Validation error',
+             'errors' => $validator->errors()
+            ], 422);
         }
+
+        $errorcheckifAlreadyDeliveryAgent= $this->checkifAlreadyDeliveryAgent($id);
+   
+        if($errorcheckifAlreadyDeliveryAgent){
+           return $errorcheckifAlreadyDeliveryAgent;
+        }
+
+        $parent_id = $request->parent_id ?? null;
+        $address = $request->address ?? null;
+
+
+     if ($request->agent_type == 'company') {
+
+        $request->validate([
+            'files' => 'required',
+            'company_name' => 'required'
+        ]);
+        $file_reference_code = $this->create($request->agent_type,$id,$parent_id,$request->company_name,$address);
+
+        $errorUploadFile = $service->uploadFiles($request,$file_reference_code,"delivery_agent_pieces");
+
+        if($errorUploadFile){
+            return $errorUploadFile;
+        }
+
+        return response()->json([
+            'status' =>200,
+            'data' => [],
+             'message' => 'Delivery agency created successfully',
+         ], 201);
     }
+
+    $this->create($request->agent_type,$id,$parent_id,null,$address);
+
+     return response()->json([
+        'status' =>200,
+        'data' => [],
+         'message' => 'Delivery agency created successfully',
+     ], 201);
+ }
+
+ public function create($agent_type,$person_id,$parent_id =null,$company_name = null,$address=null){
+    $service = new Service();
+    $deliveryAgency = new DeliveryAgency();
+     $deliveryAgency->agent_type =$agent_type;
+     $deliveryAgency->person_id = $person_id;
+     $deliveryAgency->parent_id = $parent_id;
+     $deliveryAgency->company_name =$company_name;
+     $deliveryAgency->address =$address;
+     $deliveryAgency->uid = $service->generateUid($deliveryAgency);
+     $deliveryAgency->created_at = now();
+     $deliveryAgency->updated_at = now();
+     $deliveryAgency->file_reference_code = $service->generateRandomAlphaNumeric(7,$deliveryAgency,'file_reference_code');
+     $deliveryAgency->statut = TypeOfType::whereLibelle('pending')->first()->id;
+     $deliveryAgency->save();
+
+     $title = "Confirmation of your delivery agent registration";
+     $body = "Your registration as a delivery agent has been received. Please wait while an administrator reviews and validates your request. We'll notify you of the next steps. Thank you!";
+
+     $titleAdmin = "New Delivery Agent Registration Request";
+     $bodyAdmin = "A new registration request as a delivery agent has been submitted. Please log in to your account to review and validate the request promptly. Your attention is required. Thank you!";
+
+     $message = new MailController();
+
+     //notify delivery agent
+     $message->sendNotification(Auth::user()->id,$title,$body, 'preorder created successfully !');
+
+      //notify admin
+      $service->notifyAdmin($titleAdmin,$bodyAdmin);
+
+     return  $deliveryAgency->file_reference_code;
+ }
+ 
+
+ public function checkifAlreadyDeliveryAgent($personId){
+   
+     $exist = DeliveryAgency::where('person_id', $personId)->exists();
+ 
+     if ($exist) {
+         return response()->json([
+             'message' => 'Already exist'
+         ], 200);
+     }
+ }
+
 
     public function checkWalletBalance($deliveryPersonId, $orderAmount) {
        $service = new Service();
@@ -236,8 +230,6 @@ class DeliveryAgencyController extends Controller
             if (!$wallet) {
                 return response()->json(['error' => 'Wallet not found'], 404);
             }
-            
-            // return $order->amount;
             
             $updateWallet = new OngingTradeStageService();
             $deliveryAgentAmount = $wallet->balance - $order->amount;

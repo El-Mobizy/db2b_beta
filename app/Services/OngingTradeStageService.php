@@ -10,6 +10,7 @@ use App\Http\Controllers\EscrowController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Service;
+use App\Http\Controllers\TransactionController;
 use App\Models\Favorite;
 use App\Models\Ad;
 use App\Models\Category;
@@ -196,7 +197,7 @@ class OngingTradeStageService
     
     public function finalizeTrade($trade, $walletSeller, $sellerUserId, $credit) {
         $orderController = new OrderController();
-        $transactionId = $orderController->createTransaction($trade->order_detail->order_id, $walletSeller, Order::find($trade->order_detail->order_id)->user_id, $sellerUserId, $credit);
+        $transactionId = (new TransactionController())->createTransaction($trade->order_detail->order_id, $walletSeller, Order::find($trade->order_detail->order_id)->user_id, $sellerUserId, $credit);
     
         $errorCreateAllowTransaction = $orderController->createAllowTransaction($transactionId);
         if ($errorCreateAllowTransaction) {
@@ -379,7 +380,7 @@ class OngingTradeStageService
             return $errorDebitEscrow;
         }
 
-        $transactionId = $orderController->createTransaction($trade->order_detail->order_id, $walletBuyer, $buyerUserId, $buyerUserId, $credit);
+        $transactionId =  (new TransactionController())->createTransaction($trade->order_detail->order_id, $walletBuyer, $buyerUserId, $buyerUserId, $credit);
         $errorCreateAllowTransaction = $orderController->createAllowTransaction($transactionId);
         if ($errorCreateAllowTransaction) {
             return $errorCreateAllowTransaction;

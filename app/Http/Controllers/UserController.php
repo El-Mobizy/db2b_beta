@@ -560,7 +560,10 @@ class UserController extends Controller
           $uid = $ulidUser;
           $last_ip_login = $request->ip();
           $created_at = date('Y-m-d H:i:s');
+          $service = new Service();
           $updated_at = date('Y-m-d H:i:s');
+          $userObject = new User();
+          $code_user = $service->generateRandomAlphaNumeric(7,(new User()),'code_user');
 
           $testEmail = new TestEmailController();
 
@@ -572,7 +575,7 @@ class UserController extends Controller
              ], 200);
           }
 
-          $query = "INSERT INTO users (email, phone, password,uid,last_ip_login,created_at,updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+          $query = "INSERT INTO users (email, phone, password,uid,last_ip_login,created_at,updated_at,code_user) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
 
           $statement = $db->prepare($query);
 
@@ -583,6 +586,7 @@ class UserController extends Controller
           $statement->bindParam(5,  $last_ip_login);
           $statement->bindParam(6,  $created_at);
           $statement->bindParam(7,  $updated_at);
+          $statement->bindParam(8,  $code_user);
 
           $statement->execute();
 
@@ -618,6 +622,7 @@ class UserController extends Controller
 
     public function createPerson($country_id, $email, $phone, Request $request){
         try{
+            $service = new Service();
             $db = DB::connection()->getPdo();
             $user = User::where('email', $email)->first();
             $ulid = Uuid::uuid1();
@@ -628,7 +633,7 @@ class UserController extends Controller
             $connected = 0;
             $sex = 1;
             $dateofbirth =  date('Y-m-d');
-            $profile_img_code=  'XXX';
+            $profile_img_code= $service->generateRandomAlphaNumeric(7,(new Person()),'profile_img_code');
             $first_login =  1;
             $phonenumber =  $phone;
             $deleted = 0;

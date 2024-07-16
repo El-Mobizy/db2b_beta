@@ -2830,70 +2830,45 @@
                 }
             }
         },
-        "/api/deliveryAgency/add/{id}": {
+        "/api/deliveryAgency/add": {
             "post": {
                 "tags": [
                     "Delivery Agencies"
                 ],
-                "summary": "Ajouter une agence de livraison pour une personne",
-                "operationId": "3adb86b4cc3dc51d2133a2e0e1170599",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la personne à laquelle ajouter l'agence de livraison",
-                        "required": true
-                    }
-                ],
+                "summary": "Add a new delivery agency",
+                "operationId": "075ae23bb757ca49c0fd211aaa9a41d9",
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "properties": {
                                     "agent_type": {
-                                        "description": "Type de l'agent de livraison",
+                                        "description": "Type of the agent",
                                         "type": "string"
-                                    }
-                                },
-                                "type": "object",
-                                "example": {
-                                    "agent_type": "votre_type"
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Succès de l'opération"
-                    },
-                    "400": {
-                        "description": "Requête invalide"
-                    },
-                    "500": {
-                        "description": "Erreur interne du serveur"
-                    }
-                }
-            }
-        },
-        "/api/deliveryAgency/becomeDeliveryAgent": {
-            "post": {
-                "tags": [
-                    "Delivery Agencies"
-                ],
-                "summary": "Become a delivery agent",
-                "description": "Allows a user to become a delivery agent by specifying the agent type.",
-                "operationId": "92137b367d3fc032f5cd62bc9ce98bd3",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "agent_type": {
+                                    },
+                                    "parent_id": {
+                                        "description": "Parent ID of the delivery agency",
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "address": {
+                                        "description": "Address of the delivery agency",
                                         "type": "string",
-                                        "example": "type1"
+                                        "nullable": true
+                                    },
+                                    "files": {
+                                        "description": "Files to upload, required if agent_type is 'company'",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    },
+                                    "company_name": {
+                                        "description": "Name of the company, required if agent_type is 'company'",
+                                        "type": "string",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -2902,15 +2877,15 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "Delivery agent created successfully",
+                    "201": {
+                        "description": "Delivery agency created successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Delivery agent created successfully!"
+                                            "example": "Delivery agency created successfully"
                                         }
                                     },
                                     "type": "object"
@@ -2918,7 +2893,7 @@
                             }
                         }
                     },
-                    "400": {
+                    "422": {
                         "description": "Validation error",
                         "content": {
                             "application/json": {
@@ -2926,39 +2901,13 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "The agent_type field is required."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "409": {
-                        "description": "Already exists",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Already exists"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "An error occurred"
+                                            "example": "Validation error"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
                                         }
                                     },
                                     "type": "object"
@@ -3552,6 +3501,417 @@
                                         "error": {
                                             "type": "string",
                                             "example": "Internal server error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/notification/create": {
+            "post": {
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Create a notification",
+                "description": "Creates a notification for multiple persons",
+                "operationId": "e04449501d370d7e1f0e98ae929a768f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "object": {
+                                        "type": "string",
+                                        "example": "notification object"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "notification description"
+                                    },
+                                    "personIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Notification sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "notification sent successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data provided",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The data provided is not valid."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/api/notifications/{notificationUid}": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Mark notification as read or unread",
+                "operationId": "855d10d3d57d00a8106148ccd51a84c6",
+                "parameters": [
+                    {
+                        "name": "notificationUid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/notification/createGeneralNotification": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Create general notification",
+                "operationId": "e0523f675e70634ac0dd573bdcc4b6be",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "properties": {
+                                    "object": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "General notification created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/notification/getNotifications/{perpage}": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Get notifications for a user",
+                "operationId": "22ceef8c76cb983f2cf9c73be1f91f3c",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of notifications",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "object": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
+                                                    "isRead": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/notification/deleteNotification/{notificationUid}": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Delete a notification",
+                "operationId": "307db8f3f16e5d9800ad2a0d7fa9413c",
+                "parameters": [
+                    {
+                        "name": "notificationUid",
+                        "in": "path",
+                        "description": "Unique identifier of the notification",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Notification not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -4270,14 +4630,25 @@
                 ]
             }
         },
-        "/api/order/listOrders": {
+        "/api/order/listOrders/{perpage}": {
             "get": {
                 "tags": [
                     "Orders"
                 ],
                 "summary": "Get a list of orders",
                 "description": "Get a list of orders for the authenticated user",
-                "operationId": "56e1de6cd64d83693fd442b18758fbd6",
+                "operationId": "3c2ec3da495ab3c499801c90e6c2296f",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "List of orders",
@@ -4290,85 +4661,6 @@
                                             "items": {
                                                 "$ref": ""
                                             }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "description": "Error message",
-                                            "type": "string",
-                                            "example": "Unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "description": "Error message",
-                                            "type": "string",
-                                            "example": "Internal Server Error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/order/cancelOrder/{orderId}": {
-            "delete": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Cancel an order",
-                "description": "Cancel an order by its ID",
-                "operationId": "b013927ccd33a60b95b640a2ae6c82ff",
-                "parameters": [
-                    {
-                        "name": "orderId",
-                        "in": "path",
-                        "description": "ID of the order to cancel",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Order canceled successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "description": "Success message",
-                                            "type": "string",
-                                            "example": "Order canceled successfully"
                                         }
                                     },
                                     "type": "object"
@@ -10017,6 +10309,60 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/transaction/getUserTransactions": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Get all transactions for the authenticated user",
+                "operationId": "cc1a22254f7b5dd30acab919b24e6da8",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "sent_transactions": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        },
+                                        "received_transactions": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
                     }
                 },
                 "security": [

@@ -127,6 +127,7 @@ return [
 
     // 'providers' => [
     //     Spatie\Permission\PermissionServiceProvider::class,
+    //     MongoDB\Laravel\MongoDBServiceProvider::class,
     // ]
 
 ];
