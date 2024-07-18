@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class EscrowDelivery extends Model
+class DeliveryAgentZone extends Model
 {
     use HasFactory;
-    public function order()
-    {
-        return $this->belongsTo(Order::class, 'order_uid', 'uid');
-    }
+
+    protected $fillable = [
+        'delivery_agent_id', 'zone_id','deleted'
+    ];
 }

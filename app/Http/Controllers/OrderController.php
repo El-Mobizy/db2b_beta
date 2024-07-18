@@ -734,7 +734,7 @@ private function getCartAds($cartItem){
     }
 }
 
-    private function storeOrder($total){
+    private function storeOrder($total,Request $request){
         try {
 
                 $service = new Service();
@@ -747,6 +747,7 @@ private function getCartAds($cartItem){
                 $order->uid= $service->generateUid($order);
 
                 if( $order->save()){
+                    (new UserDetail()->generateUserDetail($request->longitude,$request->latitude,$user->id))
                     return $order->id;
                 }else{
                     $e = new Exception();

@@ -560,6 +560,12 @@ public function notifyAdmin($title,$body){
     }
 }
 
+public function returnDeliveryAgentIdOfAuth(){
+    $personId = $this->returnPersonIdAuth();
+    $deliveryAgentId = DeliveryAgency::where('person_id',$personId)->first()->id;
+    return $deliveryAgentId;
+}
+
 // EscrowDelivery(id, person_id, order_id, delivery_agent_amount, order_amount, status, pickup_date, delivery_date, created_at, updated_at)
 
 }

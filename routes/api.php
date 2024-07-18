@@ -12,6 +12,7 @@ use App\Http\Controllers\CommissionController;
 use App\Http\Controllers\CommissionWalletController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\DeliveryAgencyController;
+use App\Http\Controllers\DeliveryAgentZoneController;
 use App\Http\Controllers\EscrowController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FileController;
@@ -32,6 +33,8 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TypeOfTypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebNotificationController;
+use App\Http\Controllers\ZoneController;
+use App\Models\DeliveryAgentZone;
 use App\Models\File;
 use App\Services\OngingTradeStageService;
 use Illuminate\Http\Request;
@@ -72,10 +75,12 @@ Route::prefix('users')->group(function () {
         Route::prefix('deliveryAgency')->group(function () {
             Route::post('/add', [DeliveryAgencyController::class, 'add'])->name('deliveryAgency.add');
             Route::post('/acceptOrder/{orderUid}', [DeliveryAgencyController::class, 'acceptOrder'])->name('deliveryAgency.acceptOrder');
-            Route::get('/getAvailableOrders', [DeliveryAgencyController::class, 'getAvailableOrders'])->name('deliveryAgency.getAvailableOrders');
+            Route::get('/getAvailableOrders/{perpage}', [DeliveryAgencyController::class, 'getAvailableOrders'])->name('deliveryAgency.getAvailableOrders');
             Route::post('/becomeDeliveryAgent', [DeliveryAgencyController::class, 'becomeDeliveryAgent'])->name('deliveryAgency.becomeDeliveryAgent');
             Route::get('/getDeliveryAgent', [DeliveryAgencyController::class, 'getDeliveryAgent'])->name('deliveryAgency.getDeliveryAgent');
             Route::get('/getDeliveryAgentConcernedByOrder/{orderUid}', [DeliveryAgencyController::class, 'getDeliveryAgentConcernedByOrder'])->name('deliveryAgency.getDeliveryAgentConcernedByOrder');
+            Route::post('/rejectOrder/{orderUid}', [DeliveryAgencyController::class, 'rejectOrder'])->name('deliveryAgency.rejectOrder');
+            Route::get('/getAcceptedOrder/{perpage}', [DeliveryAgencyController::class, 'getAcceptedOrder'])->name('deliveryAgency.getAcceptedOrder');
         });
 
         // Route::post('wallet/generateStandardWallet', [CommissionWalletController::class, 'generateStandardWallet'])->name('wallet.generateStandardWallet');
@@ -259,87 +264,103 @@ Route::prefix('users')->group(function () {
             });
 
               //type of type
-    Route::prefix('typeoftype')->group(function () {
-        Route::post('/store', [TypeOfTypeController::class, 'store']);
-        Route::get('/show/{id}', [TypeOfTypeController::class, 'show']);
-        Route::post('/update/{id}', [TypeOfTypeController::class, 'update']);
-        Route::post('/delete/{id}', [TypeOfTypeController::class, 'delete']);
-    });
+            Route::prefix('typeoftype')->group(function () {
+                Route::post('/store', [TypeOfTypeController::class, 'store']);
+                Route::get('/show/{id}', [TypeOfTypeController::class, 'show']);
+                Route::post('/update/{id}', [TypeOfTypeController::class, 'update']);
+                Route::post('/delete/{id}', [TypeOfTypeController::class, 'delete']);
+            });
 
-    //attribute group
-    Route::prefix('attributeGroup')->group(function () {
-        Route::post('/store', [AttributeGroupController::class, 'store']);
-    });
- 
-    //escrow
-    Route::prefix('escrow')->group(function () {
-        Route::get('/getEscrow/{perpage}', [EscrowController::class, 'getEscrow']);
-        Route::get('/showEscrow/{id}', [EscrowController::class, 'showEscrow']);
-    });
+            //attribute group
+            Route::prefix('attributeGroup')->group(function () {
+                Route::post('/store', [AttributeGroupController::class, 'store']);
+            });
+        
+            //escrow
+            Route::prefix('escrow')->group(function () {
+                Route::get('/getEscrow/{perpage}', [EscrowController::class, 'getEscrow']);
+                Route::get('/showEscrow/{id}', [EscrowController::class, 'showEscrow']);
+            });
 
-    //Category Attribute
-    Route::prefix('categoryAttribute')->group(function () {
-        Route::post('/store', [CategoryAttributesController::class, 'store']);
-    });
+            //Category Attribute
+            Route::prefix('categoryAttribute')->group(function () {
+                Route::post('/store', [CategoryAttributesController::class, 'store']);
+            });
 
-    //File
-    Route::prefix('file')->group(function () {
-        Route::get('/getFilesByFileCode/{file}/{returnSingleFile}', [FileController::class, 'getFilesByFileCode']);
-        Route::delete('/removeFile/{uid}', [Service::class, 'removeFile'])->name("file.removeFile");
-    });
+            //File
+            Route::prefix('file')->group(function () {
+                Route::get('/getFilesByFileCode/{file}/{returnSingleFile}', [FileController::class, 'getFilesByFileCode']);
+                Route::delete('/removeFile/{uid}', [Service::class, 'removeFile'])->name("file.removeFile");
+            });
 
 
-    //Preorder
-    Route::prefix('preorder')->group(function () {
-        Route::get('/getPreorderValidated/{perpage}', [PreorderController::class, 'getPreorderValidated'])->name('preorder.getPreorderValidated');
-        Route::get('/getPreorderPending', [PreorderController::class, 'getPreorderPending'])->name('preorder.getPreorderPending');
-        Route::get('/getPreorderWitnAnswer', [PreorderController::class, 'getPreorderWitnAnswer'])->name('preorder.getPreorderWitnAnswer');
-        Route::get('/getPreorderRejected', [PreorderController::class, 'getPreorderRejected'])->name('preorder.getPreorderRejected');
-        Route::get('/getPreorderWithValidatedAnswers/{uid}/{perpage}', [PreorderController::class, 'getPreorderWithValidatedAnswers'])->name('preorder.getPreorderWithValidatedAnswers');
-        Route::get('/getAuthPreorderValidated/{perpage}', [PreorderController::class, 'getAuthPreorderValidated'])->name('preorder.getAuthPreorderValidated');
-    });
+            //Preorder
+            Route::prefix('preorder')->group(function () {
+                Route::get('/getPreorderValidated/{perpage}', [PreorderController::class, 'getPreorderValidated'])->name('preorder.getPreorderValidated');
+                Route::get('/getPreorderPending', [PreorderController::class, 'getPreorderPending'])->name('preorder.getPreorderPending');
+                Route::get('/getPreorderWitnAnswer', [PreorderController::class, 'getPreorderWitnAnswer'])->name('preorder.getPreorderWitnAnswer');
+                Route::get('/getPreorderRejected', [PreorderController::class, 'getPreorderRejected'])->name('preorder.getPreorderRejected');
+                Route::get('/getPreorderWithValidatedAnswers/{uid}/{perpage}', [PreorderController::class, 'getPreorderWithValidatedAnswers'])->name('preorder.getPreorderWithValidatedAnswers');
+                Route::get('/getAuthPreorderValidated/{perpage}', [PreorderController::class, 'getAuthPreorderValidated'])->name('preorder.getAuthPreorderValidated');
+            });
 
-    //Preorder Answer
-    Route::prefix('preorder_answer')->group(function () {
-        Route::get('/getPreorderAnswerValidated/{perpage}', [PreorderController::class, 'getPreorderAnswerValidated'])->name('preorder.getPreorderAnswerValidated');
-        Route::get('/getPreorderAnswerPending', [PreorderController::class, 'getPreorderAnswerPending'])->name('preorder.getPreorderAnswerPending');
-        Route::get('/getPreorderAnswerRejected', [PreorderController::class, 'getPreorderAnswerRejected'])->name('preorder.getPreorderAnswerRejected');
-        Route::get('/getSpecificPreorderAnswer/{uid}', [PreorderController::class, 'getSpecificPreorderAnswer'])->name('preorder.getSpecificPreorderAnswer');
-    });
+            //Preorder Answer
+            Route::prefix('preorder_answer')->group(function () {
+                Route::get('/getPreorderAnswerValidated/{perpage}', [PreorderController::class, 'getPreorderAnswerValidated'])->name('preorder.getPreorderAnswerValidated');
+                Route::get('/getPreorderAnswerPending', [PreorderController::class, 'getPreorderAnswerPending'])->name('preorder.getPreorderAnswerPending');
+                Route::get('/getPreorderAnswerRejected', [PreorderController::class, 'getPreorderAnswerRejected'])->name('preorder.getPreorderAnswerRejected');
+                Route::get('/getSpecificPreorderAnswer/{uid}', [PreorderController::class, 'getSpecificPreorderAnswer'])->name('preorder.getSpecificPreorderAnswer');
+            });
 
-    //Shop
-    Route::prefix('shop')->group(function () {
-        Route::post('/updateShop/{uid}', [ShopController::class, 'updateShop'])->name('shop.updateShop');
-        Route::get('/showShop/{uid}', [ShopController::class, 'showShop'])->name('shop.showShop');
-        Route::post('/addShopFile/{filecodeShop}', [ShopController::class, 'addShopFile'])->name('preorder.addShopFile');
-        Route::post('/updateShopFile/{uid}', [ShopController::class, 'updateShopFile'])->name('shop.updateShopFile');
-        Route::post('/addOrRetrieveCategoryToSHop/{shopId}', [ShopController::class, 'addOrRetrieveCategoryToSHop'])->name('shop.addOrRetrieveCategoryToSHop');
-        Route::post('/becomeMerchant', [ShopController::class, 'becomeMerchant'])->name('shop.becomeMerchant');
-        Route::get('/AdMerchant/{shopId}/{perPage}', [ShopController::class, 'AdMerchant'])->name('shop.AdMerchant');
+            //Shop
+            Route::prefix('shop')->group(function () {
+                Route::post('/updateShop/{uid}', [ShopController::class, 'updateShop'])->name('shop.updateShop');
+                Route::get('/showShop/{uid}', [ShopController::class, 'showShop'])->name('shop.showShop');
+                Route::post('/addShopFile/{filecodeShop}', [ShopController::class, 'addShopFile'])->name('preorder.addShopFile');
+                Route::post('/updateShopFile/{uid}', [ShopController::class, 'updateShopFile'])->name('shop.updateShopFile');
+                Route::post('/addOrRetrieveCategoryToSHop/{shopId}', [ShopController::class, 'addOrRetrieveCategoryToSHop'])->name('shop.addOrRetrieveCategoryToSHop');
+                Route::post('/becomeMerchant', [ShopController::class, 'becomeMerchant'])->name('shop.becomeMerchant');
+                Route::get('/AdMerchant/{shopId}/{perPage}', [ShopController::class, 'AdMerchant'])->name('shop.AdMerchant');
 
-        Route::get('/userShop', [ShopController::class, 'userShop'])->name('shop.userShop');
-        Route::get('/userPaginateShop/{perpage}', [ShopController::class, 'userPaginateShop'])->name('shop.userPaginateShop');
-        Route::get('categories/{shopId}', [ShopController::class, 'getShopCategorie'])->name('shop.getShopCategorie');
-        });
+                Route::get('/userShop', [ShopController::class, 'userShop'])->name('shop.userShop');
+                Route::get('/userPaginateShop/{perpage}', [ShopController::class, 'userPaginateShop'])->name('shop.userPaginateShop');
+                Route::get('categories/{shopId}', [ShopController::class, 'getShopCategorie'])->name('shop.getShopCategorie');
+                });
 
-        //TradeStage
-        Route::prefix('tradeStage')->group(function () {
-            Route::post('/createTradeStage', [TradeStageController::class, 'createTradeStage'])->name('tradeStage.createTradeStage');
-            Route::post('/updateTradeStage/{tradeStageId}', [TradeStageController::class, 'updateTradeStage'])->name('tradeStage.updateTradeStage');
-            Route::get('/displayTradeStages/{tradeId}', [TradeStageController::class, 'displayTradeStages'])->name('tradeStageId.displayTradeStages');
-            Route::get('/index', [TradeStageController::class, 'index'])->name('tradeStageId.index');
-            Route::post('/delete/{tradeStageId}', [TradeStageController::class, 'delete'])->name('tradeStage.delete');
-        });
-    
-        //Merchant
-        Route::prefix('merchant')->group(function () {
-            Route::get('/getMerchant', [ClientController::class, 'getMerchant'])->name('merchant.getMerchant');
-        });
+                //TradeStage
+                Route::prefix('tradeStage')->group(function () {
+                    Route::post('/createTradeStage', [TradeStageController::class, 'createTradeStage'])->name('tradeStage.createTradeStage');
+                    Route::post('/updateTradeStage/{tradeStageId}', [TradeStageController::class, 'updateTradeStage'])->name('tradeStage.updateTradeStage');
+                    Route::get('/displayTradeStages/{tradeId}', [TradeStageController::class, 'displayTradeStages'])->name('tradeStageId.displayTradeStages');
+                    Route::get('/index', [TradeStageController::class, 'index'])->name('tradeStageId.index');
+                    Route::post('/delete/{tradeStageId}', [TradeStageController::class, 'delete'])->name('tradeStage.delete');
+                });
+            
+                //Merchant
+                Route::prefix('merchant')->group(function () {
+                    Route::get('/getMerchant', [ClientController::class, 'getMerchant'])->name('merchant.getMerchant');
+                });
 
-           //Transaction
-           Route::prefix('transaction')->group(function () {
-            Route::get('/getUserTransactions', [TransactionController::class, 'getUserTransactions'])->name('transaction.getUserTransactions');
-        });
+                //Transaction
+                Route::prefix('transaction')->group(function () {
+                    Route::get('/getUserTransactions', [TransactionController::class, 'getUserTransactions'])->name('transaction.getUserTransactions');
+                });
+
+                 //Zone
+                 Route::prefix('zone')->group(function () {
+                    Route::get('/index/{paginate}', [ZoneController::class, 'index'])->name('zone.index');
+                    Route::post('/store', [ZoneController::class, 'store'])->name('zone.store');
+                    Route::post('/destroy/{uid}', [ZoneController::class, 'destroy'])->name('zone.destroy');
+                    Route::post('/makeZoneActiveOrNot/{uid}', [ZoneController::class, 'makeZoneActiveOrNot'])->name('zone.makeZoneActiveOrNot');
+                    Route::post('/update/{uid}', [ZoneController::class, 'update'])->name('zone.update');
+                });
+
+                  //deliveryzone
+                  Route::prefix('deliveryzone')->group(function () {
+                    Route::post('/addZone/{zoneUid}', [DeliveryAgentZoneController::class, 'addZone'])->name('deliveryzone.addZone');
+                    Route::post('/removeZone/{zoneUid}', [DeliveryAgentZoneController::class, 'removeZone'])->name('deliveryzone.removeZone');
+                    Route::get('/DeliveryAgentZones', [DeliveryAgentZoneController::class, 'DeliveryAgentZones'])->name('deliveryzone.DeliveryAgentZones');
+                });
 
     });
 
@@ -422,3 +443,5 @@ Route::prefix('users')->group(function () {
     Route::post('/store', [PostController::class, 'store']);
     Route::put('/update/{id}', [PostController::class, 'update']);
     Route::delete('/destroy/{id}', [PostController::class, 'destroy']);
+
+    // Route::get('/getAcceptedOrder', [DeliveryAgencyController::class, 'getAcceptedOrder'])->name('deliveryAgency.getAcceptedOrder');

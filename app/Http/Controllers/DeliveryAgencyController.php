@@ -323,7 +323,7 @@ class DeliveryAgencyController extends Controller
             $deliveryPersonId= $service->checkIfDeliveryAgent();
 
             if($deliveryPersonId == 0){
-                return response()->json(['error' => 'Only delivery people can accept orders'], 404);
+                return response()->json(['error' => 'Only delivery agent can accept orders'], 404);
             }
             $personUid = Person::whereId($deliveryPersonId)->first()->uid;
 
@@ -334,7 +334,7 @@ class DeliveryAgencyController extends Controller
             if($checkIfIndividualHaveOrderInProgress >= 2 && DeliveryAgency::where('person_id',$deliveryPersonId)->first()->agent_type == 'individual' ){
                 return response()->json(['error' => 'You already have orders in progress'], 404);
             }
-            
+
             // return  $existAcceptingOrder;
 
             if($existAcceptingOrder){
@@ -342,16 +342,13 @@ class DeliveryAgencyController extends Controller
                     'message' => 'Order already accepted'
                 ], 200);
             }
-            
+
             $deliveryPersonUid = Person::find($deliveryPersonId)->uid;
-            
-            // return  $deliveryPersonUid;
-            
+
             $errorcheckWalletBalance = $this->checkWalletBalance($deliveryPersonId, $order->amount);
             if($errorcheckWalletBalance){
                 return $errorcheckWalletBalance;
             }
-            // return 1;
 
             $errorreserveAmount = $this->reserveAmount($deliveryPersonId, $orderUid);
             if($errorreserveAmount){
@@ -374,10 +371,17 @@ class DeliveryAgencyController extends Controller
 
     /**
     * @OA\Get(
-     *     path="/api/deliveryAgency/getAvailableOrders",
+     *     path="/api/deliveryAgency/getAvailableOrders/{perpage}",
      *     summary="Get available orders",
      *     description="Retrieve orders with 'paid' status, not present in EscrowDelivery, and matching the location_id of the authenticated delivery person.",
      *     tags={"Delivery Agencies"},
+     *  @OA\Parameter(
+     *         name="perpage",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
@@ -398,7 +402,7 @@ class DeliveryAgencyController extends Controller
      * )
      */
 
-    public function getAvailableOrders() {
+    public function getAvailableOrders($perpage = 10) {
         try {
             $service = new Service();
 
@@ -411,17 +415,13 @@ class DeliveryAgencyController extends Controller
             $personLocation = Person::where('user_id', $personId)->first()->country_id;
             $paidStatusId = TypeOfType::where('libelle', 'paid')->first()->id;
 
-            // return $personLocation;
-
-    
-
             $orders = Order::where('status', $paidStatusId)
                 ->whereNotIn('uid', EscrowDelivery::pluck('order_uid'))
                 ->whereHas('user.person', function ($query) use ($personLocation) {
                     $query->where('country_id',$personLocation);
                 })
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->paginate(intval($perpage));
     
             return response()->json(['data' => $orders]);
     
@@ -540,4 +540,208 @@ class DeliveryAgencyController extends Controller
     }
     
 
+    /**
+     * @OA\Post(
+     *     path="/api/deliveryAgency/rejectOrder/{orderUid}",
+     *     summary="Reject an order",
+     *     description="Rejects an order that has been previously accepted by a delivery agent.",
+     *     operationId="rejectOrder",
+     *     tags={"Delivery Agencies"},
+     * security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="orderUid",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         description="The UID of the order to be rejected"
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Order rejected successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status_code", type="integer", example=200),
+     *             @OA\Property(property="data", type="array", @OA\Items()),
+     *             @OA\Property(property="message", type="string", example="Order rejected successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Order not found or other errors",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Order must be paid before to be rejected")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="An error message")
+     *         )
+     *     )
+     * )
+     */
+    public function rejectOrder($orderUid){
+        try{
+
+            if(!Order::whereUid($orderUid)->first()){
+                return response()->json([
+                    'message' => 'Order not found'
+                ], 200);
+            }
+
+
+            $service = new Service();
+
+            $checkAuth=$service->checkAuth();
+            if($checkAuth){
+               return $checkAuth;
+            }
+
+            $order = Order::whereId(Order::whereUid($orderUid)->first()->id)->first();
+
+            $pendingStatusId = TypeOfType::where('libelle', 'pending')->first()->id;
+            $paidStatusId = TypeOfType::where('libelle', 'paid')->first()->id;
+            $validatedStatusId = TypeOfType::where('libelle', 'validated')->first()->id;
+
+            if($order->status != $paidStatusId){
+                return response()->json(['error' => 'Order must be paid before to be rejected'], 404);
+            }
+
+            $deliveryPersonId= $service->checkIfDeliveryAgent();
+
+            if($deliveryPersonId == 0){
+                return response()->json(['error' => 'Only delivery agent can reject orders'], 404);
+            }
+
+            $personUid = Person::whereId($deliveryPersonId)->first()->uid;
+
+            $existAcceptingOrder = EscrowDelivery::where('order_uid',$orderUid)->where('person_uid',$personUid)->where('status',$pendingStatusId)->exists();
+
+            if(!$existAcceptingOrder){
+                return response()->json([
+                    'message' => 'Are you sure you have agreed to deliver this order?'
+                ], 200);
+            }
+
+            $acceptingOrder = EscrowDelivery::where('order_uid',$orderUid)->where('person_uid',$personUid)->where('status',$pendingStatusId)->first();
+
+
+            if($acceptingOrder->status == $validatedStatusId){
+                return response()->json([
+                    'message' => 'fund already sent'
+                ], 200);
+            }
+
+            $deliveryPersonUid = Person::find($deliveryPersonId)->uid;
+
+            (new OngingTradeStageService ())->refundDeliveryAgent($order->id);
+
+            EscrowDelivery::where('order_uid',$orderUid)->where('person_uid',$deliveryPersonUid)->delete();
+
+            return response()->json([
+                'status_code' => 200,
+                'data' =>[],
+                'message' => 'Order rejected successfully'
+            ]);
+
+
+        }catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/deliveryAgency/getAcceptedOrder/{perpage}",
+     *     summary="Get accepted orders",
+     *     description="Retrieve a list of orders accepted by the authenticated delivery agent.",
+     *     operationId="getAcceptedOrder",
+     *     tags={"Delivery Agencies"},
+     * security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="perpage",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="integer",
+     *             default=10
+     *         ),
+     *         description="Number of orders to return per page"
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of orders accepted by delivery agent",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status_code", type="integer", example=200),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="data",
+     *                     type="array",
+     *                     @OA\Items(ref="")
+     *                 ),
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="last_page", type="integer"),
+     *                 @OA\Property(property="per_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             ),
+     *             @OA\Property(property="message", type="string", example="list of orders accepted by delivery agent")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status_code", type="integer", example=500),
+     *             @OA\Property(property="data", type="array", @OA\Items()),
+     *             @OA\Property(property="message", type="string", example="An error message")
+     *         )
+     *     )
+     * )
+     */
+    public function getAcceptedOrder($perpage = 10){
+        try {
+
+            $personUid = Person::whereId((new Service())->returnPersonIdAuth())->first()->uid;
+
+            $orders = Order::whereIn('uid', function($query) use ($personUid) {
+            $query->select('order_uid')
+                ->from('escrow_deliveries')
+                ->where('person_uid', $personUid)
+                ->orderBy('created_at', 'desc');
+            })->paginate(intval($perpage));
+
+        return response()->json([
+                        'status_code' => 200,
+                        'data' =>$orders,
+                        'message' => 'list of orders accepted by delivery agent'
+                    ],200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status_code' => 500,
+                'data' =>[],
+                'message' => $e->getMessage()
+            ],500);
+        }
+    }
+
+
+// try {
+   // return response()->json([
+        //         'status_code' => 200,
+        //         'data' =>[],
+        //         'message' => ''
+        //     ],200);
+// } catch (Exception $e) {
+//     return response()->json([
+//         'status_code' => 500,
+//         'data' =>[],
+//         'message' => $e->getMessage()
+//     ],500);
+// }
 }
