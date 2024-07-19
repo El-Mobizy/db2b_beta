@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Zone;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ZoneController extends Controller
 {
@@ -97,77 +98,116 @@ class ZoneController extends Controller
     }
 
 
-    /**
-     * @OA\Post(
-     *     path="/api/zone/store",
-     *     summary="Create a new zone",
-     *     tags={"Zones"},
-     *  security={{"bearerAuth": {}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"city_name", "latitude", "longitude", "country_id"},
-     *             @OA\Property(property="city_name", type="string"),
-     *             @OA\Property(property="latitude", type="number", format="float"),
-     *             @OA\Property(property="longitude", type="number", format="float"),
-     *             @OA\Property(property="country_id", type="integer", description="ID of the country where the zone is located")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Zone saved successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status_code", type="integer"),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
-     *             @OA\Property(property="message", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status_code", type="integer"),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
-     *             @OA\Property(property="message", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status_code", type="integer"),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
-     *             @OA\Property(property="message", type="string")
-     *         )
-     *     )
-     * )
-     */
-
+     /**
+ * @OA\Post(
+ *     path="/api/zone/store",
+ *     summary="Store a new delivery zone",
+ *     tags={"Zones"},
+ * security={{"bearerAuth": {}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="latitudes",
+ *                 type="array",
+ *                 description="Array of latitudes",
+ *                 @OA\Items(type="number", format="float")
+ *             ),
+ *             @OA\Property(
+ *                 property="longitudes",
+ *                 type="array",
+ *                 description="Array of longitudes",
+ *                 @OA\Items(type="number", format="float")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Zone saved successfully",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=200
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 example={}
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Zone saved successfully"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=500
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 example={}
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Error message"
+ *             )
+ *         )
+ *     )
+ * )
+ */
     public function store(Request $request){
         try {
+
             $request->validate([
-                'city_name' => 'required|string',
-                'latitude' => 'required|numeric',
-                'longitude' => 'required|numeric',
-                'country_id' => 'required|exists:countries,id',
+                'latitudes' => 'required|array',
+                'latitudes.*' => 'numeric',
+                'longitudes' => 'required|array',
+                'longitudes.*' => 'numeric',
             ]);
 
-        if(Zone::whereCityName($request->city_name)->exists()){
-            return response()->json([
-                'status_code' => 200,
-                'data' =>[],
-                'message' => 'Name Already taken'
-            ]);
-        }
-        $service = new Service();
-        $zone = new Zone();
-        $zone->city_name = $request->city_name;
-        $zone->latitude = $request->latitude;
-        $zone->longitude = $request->longitude;
-        $zone->country_id = $request->country_id;
-        $zone->uid = $service->generateUid($zone);
+            $service = new Service();
 
-        $zone->save();
+            $checkAuth=$service->checkAuth();
+            if($checkAuth){
+               return $checkAuth;
+            }
+
+            $deliveryPersonId= $service->checkIfDeliveryAgent();
+
+            if($deliveryPersonId == 0){
+
+                return response()->json([
+                    'status_code' => 400,
+                    'data' =>[],
+                    'message' => 'Only delivery agent can accept orders'
+                ],200);
+            }
+
+            $checkCoorLength = $this->checkArraySize($request->latitudes,$request->longitudes);
+
+            if($checkCoorLength){
+                return $checkCoorLength;
+            }
+
+            $zone = new Zone();
+            $zone->uid = (new Service())->generateUid($zone);
+            $zone->delivery_agency_id = (new Service())->returnDeliveryAgentIdOfAuth();
+            $zone->save();
+
+            (new DeliveryAgentZoneController)->addZone($zone->id, $request->latitudes, $request->longitudes);
 
         return response()->json([
             'status_code' => 200,
@@ -182,6 +222,16 @@ class ZoneController extends Controller
                     'message' => $e->getMessage()
                 ],500);
             }
+    }
+
+    public function checkArraySize($latitudes,$longitudes){
+        if (count($latitudes) !== count($longitudes)) {
+            return response()->json([
+                'status_code' => 400,
+                'data' =>[],
+                'message' => "Length of arrays don't match"
+            ],200);
+        }
     }
 
 
@@ -430,6 +480,53 @@ class ZoneController extends Controller
                 ],500);
             }
     }
+
+
+    public function isWithinDeliveryZone($longitude, $latitude)
+    {
+        $zones = DB::table('zones')
+        ->join('delivery_agent_zones', 'zones.id', '=', 'delivery_agent_zones.zone_id')
+        ->select('zones.id', 'zones.delivery_agency_id', 'delivery_agent_zones.latitude', 'delivery_agent_zones.longitude')
+        ->orderBy('delivery_agent_zones.point_order')
+        ->get()
+        ->groupBy('zones.id');
+        
+        foreach ($zones as $zoneId => $points) {
+            $polygon = $points->map(function ($point) {
+                return ['latitude' => $point->latitude, 'longitude' => $point->longitude];
+            })->toArray();
+            return $this->isPointInPolygon($longitude, $latitude, $polygon);
+
+            if ($this->isPointInPolygon($longitude, $latitude, $polygon)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    private function isPointInPolygon($longitude, $latitude, $polygon)
+    {
+        $numPoints = count($polygon);
+        $inPolygon = 0;
+        return $numPoints;
+        for ($i = 0, $j = $numPoints - 1; $i < $numPoints; $j = $i++) {
+            $xi = $polygon[$i]['longitude'];
+            $yi = $polygon[$i]['latitude'];
+            $xj = $polygon[$j]['longitude'];
+            $yj = $polygon[$j]['latitude'];
+
+            if ((($yi > $latitude) != ($yj > $latitude)) &&
+            ($longitude < ($xj - $xi) * ($latitude - $yi) / ($yj - $yi) + $xi)) {
+                $inPolygon = !$inPolygon;
+            }
+        }
+
+        return $inPolygon;
+    }
+
+
 }
 
 // try {

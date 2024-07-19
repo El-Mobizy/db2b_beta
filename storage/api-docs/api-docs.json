@@ -3296,105 +3296,6 @@
                 ]
             }
         },
-        "/api/deliveryzone/addZone/{zoneUid}": {
-            "post": {
-                "tags": [
-                    "DeliveryAgentZones"
-                ],
-                "summary": "Add a zone to the delivery agent's list",
-                "operationId": "6566a7f3f1bffea3a1f82258b2700df5",
-                "parameters": [
-                    {
-                        "name": "zoneUid",
-                        "in": "path",
-                        "description": "UID of the zone to be added",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Zone added successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status_code": {
-                                            "type": "integer"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status_code": {
-                                            "type": "integer"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status_code": {
-                                            "type": "integer"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/deliveryzone/removeZone/{zoneUid}": {
             "post": {
                 "tags": [
@@ -4895,98 +4796,6 @@
                 ]
             }
         },
-        "/api/order/orderSingleItem/{cartItemId}": {
-            "post": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Order a single item from the cart",
-                "description": "Create an order for a single item in the user's cart",
-                "operationId": "cf446867461ec719889ba2bdca49df40",
-                "parameters": [
-                    {
-                        "name": "cartItemId",
-                        "in": "path",
-                        "description": "ID of the cart item to be ordered",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "someParameter": {
-                                        "description": "Some parameter that might be required for the request",
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Order created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Order created successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Item not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Item not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "An error occurred"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/order/viewOrder/{orderId}": {
             "get": {
                 "tags": [
@@ -5478,29 +5287,64 @@
                     "Orders"
                 ],
                 "summary": "Pay for an order",
-                "description": "Pay for an order by its ID",
                 "operationId": "c8a9141cfec192096ab4ca1d97c75613",
                 "parameters": [
                     {
                         "name": "orderId",
                         "in": "path",
-                        "description": "ID of the order",
+                        "description": "ID of the order to be paid",
                         "required": true,
                         "schema": {
                             "type": "integer"
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "longitude": {
+                                        "description": "Longitude of the user's location",
+                                        "type": "number"
+                                    },
+                                    "latitude": {
+                                        "description": "Latitude of the user's location",
+                                        "type": "number"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
-                        "description": "Payment successful",
+                        "description": "Payment done successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Payment done successfully"
+                                            "example": "Payment done Successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error message"
                                         }
                                     },
                                     "type": "object"
@@ -5524,31 +5368,15 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Insufficient balance",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Insufficient balance"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Internal Server Error"
+                                            "example": "Error message"
                                         }
                                     },
                                     "type": "object"
@@ -5843,19 +5671,38 @@
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Create and Pay an Order",
-                "description": "This endpoint creates an order and then proceeds to pay for it.",
-                "operationId": "CreateAndPayOrder",
+                "summary": "Create and pay for an order",
+                "operationId": "fdadab5bc3637cf797f3a7e0be576c39",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "longitude": {
+                                        "description": "Longitude of the user's location",
+                                        "type": "number"
+                                    },
+                                    "latitude": {
+                                        "description": "Latitude of the user's location",
+                                        "type": "number"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
-                        "description": "Order created and paid successfully",
+                        "description": "Order created and payment done successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Order created and paid successfully"
+                                            "example": "Payment done Successfully"
                                         }
                                     },
                                     "type": "object"
@@ -5864,14 +5711,14 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Validation error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "error": {
+                                        "message": {
                                             "type": "string",
-                                            "example": "Bad request"
+                                            "example": "Validation error message"
                                         }
                                     },
                                     "type": "object"
@@ -5885,7 +5732,7 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "error": {
+                                        "message": {
                                             "type": "string",
                                             "example": "Order not found"
                                         }
@@ -5896,14 +5743,14 @@
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "An error occurred while processing your request"
+                                            "example": "Error message"
                                         }
                                     },
                                     "type": "object"
@@ -12471,34 +12318,29 @@
                 "tags": [
                     "Zones"
                 ],
-                "summary": "Create a new zone",
+                "summary": "Store a new delivery zone",
                 "operationId": "ba210df06d90aa21b9868b7c73d6bf48",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "city_name",
-                                    "latitude",
-                                    "longitude",
-                                    "country_id"
-                                ],
                                 "properties": {
-                                    "city_name": {
-                                        "type": "string"
+                                    "latitudes": {
+                                        "description": "Array of latitudes",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
                                     },
-                                    "latitude": {
-                                        "type": "number",
-                                        "format": "float"
-                                    },
-                                    "longitude": {
-                                        "type": "number",
-                                        "format": "float"
-                                    },
-                                    "country_id": {
-                                        "description": "ID of the country where the zone is located",
-                                        "type": "integer"
+                                    "longitudes": {
+                                        "description": "Array of longitudes",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -12514,40 +12356,16 @@
                                 "schema": {
                                     "properties": {
                                         "status_code": {
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "example": 200
                                         },
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
+                                            "type": "object",
+                                            "example": []
                                         },
                                         "message": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status_code": {
-                                            "type": "integer"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Zone saved successfully"
                                         }
                                     },
                                     "type": "object"
@@ -12562,16 +12380,16 @@
                                 "schema": {
                                     "properties": {
                                         "status_code": {
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "example": 500
                                         },
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
+                                            "type": "object",
+                                            "example": []
                                         },
                                         "message": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Error message"
                                         }
                                     },
                                     "type": "object"

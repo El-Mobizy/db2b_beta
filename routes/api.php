@@ -444,4 +444,4 @@ Route::prefix('users')->group(function () {
     Route::put('/update/{id}', [PostController::class, 'update']);
     Route::delete('/destroy/{id}', [PostController::class, 'destroy']);
 
-    // Route::get('/getAcceptedOrder', [DeliveryAgencyController::class, 'getAcceptedOrder'])->name('deliveryAgency.getAcceptedOrder');
+    Route::get('isWithinDeliveryZone/{longitude}/{latitude}', [ZoneController::class, 'isWithinDeliveryZone'])->name('deliveryAgency.isWithinDeliveryZone');

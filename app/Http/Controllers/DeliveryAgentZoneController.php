@@ -12,73 +12,65 @@ class DeliveryAgentZoneController extends Controller
 {
 
 
-    /**
-     * @OA\Post(
-     *     path="/api/deliveryzone/addZone/{zoneUid}",
-     *     summary="Add a zone to the delivery agent's list",
-     *     tags={"DeliveryAgentZones"},
-     *     @OA\Parameter(
-     *         name="zoneUid",
-     *         in="path",
-     *         description="UID of the zone to be added",
-     *         required=true,
-     *         @OA\Schema(
-     *             type="string"
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Zone added successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status_code", type="integer"),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
-     *             @OA\Property(property="message", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Bad request",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status_code", type="integer"),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
-     *             @OA\Property(property="message", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status_code", type="integer"),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
-     *             @OA\Property(property="message", type="string")
-     *         )
-     *     ),
-     *     security={{"bearerAuth": {}}}
-     * )
-     */
-    public function addZone($zoneUid){
+    // /**
+    //  * @OA\Post(
+    //  *     path="/api/deliveryzone/addZone/{zoneUid}",
+    //  *     summary="Add a zone to the delivery agent's list",
+    //  *     tags={"DeliveryAgentZones"},
+    //  *     @OA\Parameter(
+    //  *         name="zoneUid",
+    //  *         in="path",
+    //  *         description="UID of the zone to be added",
+    //  *         required=true,
+    //  *         @OA\Schema(
+    //  *             type="string"
+    //  *         )
+    //  *     ),
+    //  *     @OA\Response(
+    //  *         response=200,
+    //  *         description="Zone added successfully",
+    //  *         @OA\JsonContent(
+    //  *             @OA\Property(property="status_code", type="integer"),
+    //  *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
+    //  *             @OA\Property(property="message", type="string")
+    //  *         )
+    //  *     ),
+    //  *     @OA\Response(
+    //  *         response=400,
+    //  *         description="Bad request",
+    //  *         @OA\JsonContent(
+    //  *             @OA\Property(property="status_code", type="integer"),
+    //  *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
+    //  *             @OA\Property(property="message", type="string")
+    //  *         )
+    //  *     ),
+    //  *     @OA\Response(
+    //  *         response=500,
+    //  *         description="Internal server error",
+    //  *         @OA\JsonContent(
+    //  *             @OA\Property(property="status_code", type="integer"),
+    //  *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
+    //  *             @OA\Property(property="message", type="string")
+    //  *         )
+    //  *     ),
+    //  *     security={{"bearerAuth": {}}}
+    //  * )
+    //  */
+    public function addZone($zoneId, $longitudes, $latitudes){
         try {
 
-            $deliveryAgentId = (new Service())->returnDeliveryAgentIdOfAuth();
 
-            // $checkIfZoneAlreadyAdded = $this->checkIfZoneAlreadyAdded($deliveryAgentId,$zoneUid);
-            // if($checkIfZoneAlreadyAdded){
-            //     return $checkIfZoneAlreadyAdded;
-            // }
-
-            $checkIfZoneAlreadyAddedButWasDeleted = $this->checkIfZoneAlreadyAddedButWasDeleted($deliveryAgentId,$zoneUid);
-            if($checkIfZoneAlreadyAddedButWasDeleted){
-                return $checkIfZoneAlreadyAddedButWasDeleted;
+            for ($i = 0; $i < count($latitudes); $i++) {
+                    $deliveryAgentZone = new DeliveryAgentZone();
+                    $deliveryAgentZone->zone_id = $zoneId;
+                    $deliveryAgentZone->latitude = $latitudes[$i];
+                    $deliveryAgentZone->longitude = $longitudes[$i];
+                    $deliveryAgentZone->uid = (new Service())->generateUid($deliveryAgentZone);
+                    $deliveryAgentZone->point_order = $i + 1;
+                    $deliveryAgentZone->save();
             }
 
-            $errorcheckDeliveryAgentZoneNumber = $this->checkDeliveryAgentZoneNumber($deliveryAgentId);
-            if($errorcheckDeliveryAgentZoneNumber){
-                return $errorcheckDeliveryAgentZoneNumber;
-            }
-
-           $this->storeDeliveryAgent($deliveryAgentId,$zoneUid);
-
-             return response()->json([
+            return response()->json([
                 'status_code' => 200,
                 'data' =>[],
                 'message' => 'Zone added succesfully'

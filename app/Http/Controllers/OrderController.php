@@ -15,6 +15,7 @@ use App\Models\Trade;
 use App\Models\User;
 use App\Models\Transaction;
 use App\Models\TypeOfType;
+use App\Models\UserDetail;
 use App\Services\WalletService;
 use Exception;
 use Illuminate\Http\Request;
@@ -100,7 +101,7 @@ class OrderController extends Controller
                         if ($cartItems->isEmpty()) {
                             return response()->json(['error' => 'Cart is empty'], 400);
                          }
-
+                         $request = new Request();
                         $orderId = $this->storeOrder($total);
 
                         foreach ($ads as $tab) {
@@ -134,115 +135,115 @@ class OrderController extends Controller
     }
 
 
-    /**
- * @OA\Post(
- *     path="/api/order/orderSingleItem/{cartItemId}",
- *     tags={"Orders"},
- *  security={{"bearerAuth": {}}},
- *     summary="Order a single item from the cart",
- *     description="Create an order for a single item in the user's cart",
- *     @OA\Parameter(
- *         name="cartItemId",
- *         in="path",
- *         description="ID of the cart item to be ordered",
- *         required=true,
- *         @OA\Schema(type="integer")
- *     ),
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(
- *                 property="someParameter",
- *                 type="string",
- *                 description="Some parameter that might be required for the request"
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Order created successfully",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(
- *                 property="message",
- *                 type="string",
- *                 example="Order created successfully"
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=404,
- *         description="Item not found",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(
- *                 property="message",
- *                 type="string",
- *                 example="Item not found"
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Server error",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(
- *                 property="error",
- *                 type="string",
- *                 example="An error occurred"
- *             )
- *         )
- *     )
- * )
- */
+//     /**
+//  * @OA\Post(
+//  *     path="/api/order/orderSingleItem/{cartItemId}",
+//  *     tags={"Orders"},
+//  *  security={{"bearerAuth": {}}},
+//  *     summary="Order a single item from the cart",
+//  *     description="Create an order for a single item in the user's cart",
+//  *     @OA\Parameter(
+//  *         name="cartItemId",
+//  *         in="path",
+//  *         description="ID of the cart item to be ordered",
+//  *         required=true,
+//  *         @OA\Schema(type="integer")
+//  *     ),
+//  *     @OA\RequestBody(
+//  *         required=true,
+//  *         @OA\JsonContent(
+//  *             type="object",
+//  *             @OA\Property(
+//  *                 property="someParameter",
+//  *                 type="string",
+//  *                 description="Some parameter that might be required for the request"
+//  *             )
+//  *         )
+//  *     ),
+//  *     @OA\Response(
+//  *         response=200,
+//  *         description="Order created successfully",
+//  *         @OA\JsonContent(
+//  *             type="object",
+//  *             @OA\Property(
+//  *                 property="message",
+//  *                 type="string",
+//  *                 example="Order created successfully"
+//  *             )
+//  *         )
+//  *     ),
+//  *     @OA\Response(
+//  *         response=404,
+//  *         description="Item not found",
+//  *         @OA\JsonContent(
+//  *             type="object",
+//  *             @OA\Property(
+//  *                 property="message",
+//  *                 type="string",
+//  *                 example="Item not found"
+//  *             )
+//  *         )
+//  *     ),
+//  *     @OA\Response(
+//  *         response=500,
+//  *         description="Server error",
+//  *         @OA\JsonContent(
+//  *             type="object",
+//  *             @OA\Property(
+//  *                 property="error",
+//  *                 type="string",
+//  *                 example="An error occurred"
+//  *             )
+//  *         )
+//  *     )
+//  * )
+//  */
 
- public function orderSingleItem(Request $request, $cartItemId){
-    try {
-        $service = new Service();
+//  public function orderSingleItem(Request $request, $cartItemId){
+//     try {
+//         $service = new Service();
 
-        $checkAuth=$service->checkAuth();
+//         $checkAuth=$service->checkAuth();
 
-        if($checkAuth){
-           return $checkAuth;
-        }
+//         if($checkAuth){
+//            return $checkAuth;
+//         }
         
-            $user = auth()->user();
+//             $user = auth()->user();
 
-            $cartItem = Cart::where('user_id', $user->id)
-            ->whereId($cartItemId)
-            ->first();
+//             $cartItem = Cart::where('user_id', $user->id)
+//             ->whereId($cartItemId)
+//             ->first();
 
-            if(!$cartItem){
-                return response()->json(
-                    ['message' => 'Item not found'
-                ],200);
+//             if(!$cartItem){
+//                 return response()->json(
+//                     ['message' => 'Item not found'
+//                 ],200);
 
-            }
+//             }
 
-                $ads = $this->getCartAds($cartItem);
+//                 $ads = $this->getCartAds($cartItem);
 
-                $total =  $cartItem->quantity * Ad::whereId($cartItem->ad_id)->first()->final_price;
+//                 $total =  $cartItem->quantity * Ad::whereId($cartItem->ad_id)->first()->final_price;
 
-                $orderId = $this->storeOrder($cartItem,$total);
+//                 $orderId = $this->storeOrder($cartItem,$total);
 
-                $this->storeOrderDetail($ads,$orderId);
+//                 $this->storeOrderDetail($ads,$orderId);
 
-                Cart::where('user_id', $user->id)
-                ->whereId($cartItemId)->delete();
+//                 Cart::where('user_id', $user->id)
+//                 ->whereId($cartItemId)->delete();
 
-                return response()->json(
-                    ['message' => 'Order created successffuly'
-                ],200);    
+//                 return response()->json(
+//                     ['message' => 'Order created successffuly'
+//                 ],200);    
 
 
-    } catch(Exception $e){
-        return response()->json([
-            'error' => $e->getMessage()
-        ]);
-    }
-}
+//     } catch(Exception $e){
+//         return response()->json([
+//             'error' => $e->getMessage()
+//         ]);
+//     }
+// }
 
     /**
  * @OA\Get(
@@ -734,7 +735,7 @@ private function getCartAds($cartItem){
     }
 }
 
-    private function storeOrder($total,Request $request){
+    private function storeOrder($total){
         try {
 
                 $service = new Service();
@@ -747,7 +748,6 @@ private function getCartAds($cartItem){
                 $order->uid= $service->generateUid($order);
 
                 if( $order->save()){
-                    (new UserDetail()->generateUserDetail($request->longitude,$request->latitude,$user->id))
                     return $order->id;
                 }else{
                     $e = new Exception();
@@ -755,7 +755,6 @@ private function getCartAds($cartItem){
                      'error' => $e->getMessage()
                     ]);
                 }
-
 
         }  catch(Exception $e){
             return response()->json([
@@ -910,7 +909,9 @@ private function getCartAds($cartItem){
                             return response()->json(['error' => 'Cart is empty'], 400);
                          }
 
-                        $orderId = $this->storeOrder($total);
+                         $request = new Request();
+
+                        $orderId = $this->storeOrder($total,$request);
 
 
                         foreach ($ads as $tab) {
@@ -936,65 +937,109 @@ private function getCartAds($cartItem){
         }
     }
 
+
     /**
  * @OA\Post(
- *     path="/api/order/payOrder/{orderId}",
- *     tags={"Orders"},
- *   security={{"bearerAuth":{}}},
+ *      path="/api/order/payOrder/{orderId}",
  *     summary="Pay for an order",
- *     description="Pay for an order by its ID",
+ *     tags={"Orders"},
+ *  security={{"bearerAuth":{}}},
  *     @OA\Parameter(
  *         name="orderId",
  *         in="path",
+ *         description="ID of the order to be paid",
  *         required=true,
- *         description="ID of the order",
- *         @OA\Schema(type="integer")
+ *         @OA\Schema(
+ *             type="integer"
+ *         )
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="longitude",
+ *                 type="number",
+ *                 description="Longitude of the user's location"
+ *             ),
+ *             @OA\Property(
+ *                 property="latitude",
+ *                 type="number",
+ *                 description="Latitude of the user's location"
+ *             )
+ *         )
  *     ),
  *     @OA\Response(
  *         response=200,
- *         description="Payment successful",
+ *         description="Payment done successfully",
  *         @OA\JsonContent(
- *             @OA\Property(property="message", type="string", example="Payment done successfully")
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Payment done Successfully"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Validation error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Validation error message"
+ *             )
  *         )
  *     ),
  *     @OA\Response(
  *         response=404,
  *         description="Order not found",
  *         @OA\JsonContent(
- *             @OA\Property(property="message", type="string", example="Order not found")
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Insufficient balance",
- *         @OA\JsonContent(
- *             @OA\Property(property="message", type="string", example="Insufficient balance")
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Order not found"
+ *             )
  *         )
  *     ),
  *     @OA\Response(
  *         response=500,
- *         description="Internal Server Error",
+ *         description="Internal server error",
  *         @OA\JsonContent(
- *             @OA\Property(property="error", type="string", example="Internal Server Error")
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Error message"
+ *             )
  *         )
  *     )
  * )
  */
 
-    public function payOrder($orderId){
+    public function payOrder($orderId, Request $request){
         try {
+            // return 1;
+
+            $request->validate([
+                'longitude' => 'required',
+                'latitude' => 'required'
+            ]);
 
             $service = new Service();
             $personId = $service->returnPersonIdAuth();
 
             $order = Order::find($orderId);
-            
+
             if(!$order){
                 return response()->json(
                     ['message' => 'Order not found'
                 ],200);
             }
-            $checkIfOrderIsPaid = $this->checkIfOrderIsPaid($orderId);
+            $checkIfOrderIsPaid = $this->checkIfOrderIsPending($orderId);
 
             if($checkIfOrderIsPaid){
                 return $checkIfOrderIsPaid;
@@ -1033,6 +1078,9 @@ private function getCartAds($cartItem){
 
        $this->notifyParty($order->uid);
 
+        (new UserDetailController())->generateUserDetail($request->longitude,$request->latitude,$order->user_id);
+
+
 //Secured
             return response()->json(
                 ['message' => 'Payement done Successfully'
@@ -1062,7 +1110,6 @@ private function getCartAds($cartItem){
         $notification = new DeliveryAgencyController();
         $notification->notifyDeliveryAgents($orderUid);
 
-           
     }
 
     public function createEscrow($orderId){
@@ -1082,17 +1129,17 @@ private function getCartAds($cartItem){
         }
     }
 
-    public function checkIfOrderIsPaid($orderId){
-        $statusId = TypeOfType::whereLibelle('paid')->first()->id;
+    public function checkIfOrderIsPending($orderId){
+        $statusId = TypeOfType::whereLibelle('pending')->first()->id;
         if(!$statusId){
             return response()->json([
                 'message' => 'Status not found'
             ]);
         }
         $order = Order::find($orderId);
-        if($order->status == $statusId){
+        if($order->status != $statusId){
             return response()->json([
-                'message' => 'Order already paid'
+                'message' => 'Order status must be pending'
             ]);
         }
     }
@@ -1566,46 +1613,85 @@ private function getCartAds($cartItem){
 
 
 
-    /**
-     * @OA\Post(
-     *     path="/api/order/CreateAndPayOrder",
-     *     summary="Create and Pay an Order",
-     * security={{"bearerAuth":{}}},
-     *     description="This endpoint creates an order and then proceeds to pay for it.",
-     *     operationId="CreateAndPayOrder",
-     *     tags={"Orders"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Order created and paid successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Order created and paid successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Bad Request",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="Bad request")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Order not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="Order not found")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal Server Error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="An error occurred while processing your request")
-     *         )
-     *     )
-     * )
-     */
-    public function CreateAndPayOrder(){
+        /**
+ * @OA\Post(
+ *     path="/api/order/CreateAndPayOrder",
+ *     summary="Create and pay for an order",
+ *     tags={"Orders"},
+ *      security={{"bearerAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="longitude",
+ *                 type="number",
+ *                 description="Longitude of the user's location"
+ *             ),
+ *             @OA\Property(
+ *                 property="latitude",
+ *                 type="number",
+ *                 description="Latitude of the user's location"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Order created and payment done successfully",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Payment done Successfully"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Validation error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Validation error message"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Order not found",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Order not found"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Error message"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+    public function CreateAndPayOrder(Request $request){
         try{
+
+            $request->validate([
+                'longitude' => 'required',
+                'latitude' => 'required'
+            ]);
 
             $service = new Service();
 
@@ -1622,7 +1708,7 @@ private function getCartAds($cartItem){
               ],200);
             }
 
-            $PayOrder = $this->PayOrder($orderId);
+            $PayOrder = $this->PayOrder($orderId, $request);
             if ($PayOrder) {
                 $response = [];
 
