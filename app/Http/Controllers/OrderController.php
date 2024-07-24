@@ -1039,12 +1039,14 @@ private function getCartAds($cartItem){
                     ['message' => 'Order not found'
                 ],200);
             }
-            $checkIfOrderIsPaid = $this->checkIfOrderIsPending($orderId);
 
+            $checkIfOrderIsPaid = $this->checkIfOrderIsPending($orderId);
+            
             if($checkIfOrderIsPaid){
                 return $checkIfOrderIsPaid;
             }
-
+            
+            // return 1;
 
             $checkAuth=$service->checkAuth();
 
@@ -1068,7 +1070,7 @@ private function getCartAds($cartItem){
 
         (new WalletService())->updateUserWallet($personId,$diff);
 
-        $this->createEscrow($orderId);
+          (new EscrowController)->createEscrow($orderId);
 
         $order->status = TypeOfType::whereLibelle('paid')->first()->id;
 
@@ -1076,7 +1078,7 @@ private function getCartAds($cartItem){
 
     //    return 1;
 
-       $this->notifyParty($order->uid);
+       $this->notifyParty($orderId,$request->longitude,$request->latitude);
 
         (new UserDetailController())->generateUserDetail($request->longitude,$request->latitude,$order->user_id);
 
@@ -1093,10 +1095,11 @@ private function getCartAds($cartItem){
         }
     }
 
-    public function notifyParty($orderUid){
-        $order = Order::where('uid',$orderUid)->first();
+    public function notifyParty($orderId,$longitude,$latitude){
+        $order = Order::where('id',$orderId)->first();
 
-        $this->notifyBuyer($orderUid);
+        $this->notifyBuyer(Order::where('id',$orderId)->first()->uid);
+
 
         $orderDetails = OrderDetail::where('order_id',$order->id)->get();
 
@@ -1107,27 +1110,16 @@ private function getCartAds($cartItem){
              $this->notifySeller($seller->id);
         }
 
-        $notification = new DeliveryAgencyController();
-        $notification->notifyDeliveryAgents($orderUid);
+        // $notification = new DeliveryAgencyController();
+        // $notification->notifyDeliveryAgents($orderUid);
+
+        (new ZoneController())->isWithinDeliveryZone($longitude, $latitude);
+
+        return 'sent';
 
     }
 
-    public function createEscrow($orderId){
-        try {
-            $service = new Service();
-            $escrow = new Escrow();
-            $order = Order::find($orderId);
-            $escrow->order_id = $orderId;
-            $escrow->status = 'Secured';
-            $escrow->amount =  $order->amount;
-            $escrow->uid= $service->generateUid($escrow);
-            $escrow->save();
-        } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
+  
 
     public function checkIfOrderIsPending($orderId){
         $statusId = TypeOfType::whereLibelle('pending')->first()->id;
@@ -1144,23 +1136,7 @@ private function getCartAds($cartItem){
         }
     }
 
-   
 
-    public function createAllowTransaction($transactionId){
-        try {
-            $service = new Service();
-            $transactionAllow = new AllowTransaction();
-            $transactionAllow->validated_by_id = null;
-            $transactionAllow->transaction_id = $transactionId;
-            $transactionAllow->validated_on =  now();
-            $transactionAllow->uid= $service->generateUid($transactionAllow);
-            $transactionAllow->save();
-        } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
 
     public function payOrderVerification($orderId){
         try {
@@ -1700,7 +1676,9 @@ private function getCartAds($cartItem){
                return $checkAuth;
             }
 
+            
             $orderId= $this->CreateAnOrder(1);
+            
 
             if(!is_numeric($orderId)){
                 return response()->json([
@@ -1709,6 +1687,8 @@ private function getCartAds($cartItem){
             }
 
             $PayOrder = $this->PayOrder($orderId, $request);
+
+            $PayOrder;
             if ($PayOrder) {
                 $response = [];
 
@@ -1741,7 +1721,7 @@ private function getCartAds($cartItem){
             ->first();
 
            $service = new Service();
-           $personId = $service->returnPersonIdAuth();
+           $personId = $service->returnUserPersonId($user->id);
            $balance = $service->returnSTDPersonWalletBalance($personId);
 
             $title = "Payment Successful: Wallet Debited";

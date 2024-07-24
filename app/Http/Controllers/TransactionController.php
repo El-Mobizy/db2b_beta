@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AllowTransaction;
 use App\Models\Order;
 use App\Models\Transaction;
 use Exception;
@@ -10,21 +11,37 @@ use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
-    public function createTransaction($orderId,$wallet,$sender_id,$receiver_id,$amount){
+    public function createTransaction($orderId,$wallet,$sender_id,$receiver_id,$amount,$transactionType = 'transfer'){
         try {
             $service = new Service();
             $order = Order::find($orderId);
             $transaction = new Transaction();
-
             $transaction->order_id = $orderId;
             $transaction->sender_id = $sender_id;
             $transaction->receiver_id = $receiver_id;
             $transaction->commission_wallet_id = $wallet->id;
             $transaction->amount =  $amount;
-            $transaction->transaction_type = 'transfer';
+            $transaction->transaction_type = $transactionType;
             $transaction->uid= $service->generateUid($transaction);
             $transaction->save();
             return $transaction->id;
+        } catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+
+    public function createAllowTransaction($transactionId,$validaterId = null){
+        try {
+            $service = new Service();
+            $transactionAllow = new AllowTransaction();
+            $transactionAllow->validated_by_id = $validaterId;
+            $transactionAllow->transaction_id = $transactionId;
+            $transactionAllow->validated_on =  now();
+            $transactionAllow->uid= $service->generateUid($transactionAllow);
+            $transactionAllow->save();
         } catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()

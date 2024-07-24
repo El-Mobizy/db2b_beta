@@ -32,6 +32,10 @@ class Person extends Model
         return $this->hasOne(Client::class);
     }
 
+    public function delivery_agency(){
+        return $this->hasOne(DeliveryAgency::class);
+    }
+
     public function admin(){
         return $this->hasOne(Admin::class);
     }

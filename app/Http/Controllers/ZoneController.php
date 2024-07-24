@@ -483,48 +483,133 @@ class ZoneController extends Controller
 
 
     public function isWithinDeliveryZone($longitude, $latitude)
-    {
-        $zones = DB::table('zones')
+{
+    $zones = DB::table('zones')
+        ->join('delivery_agent_zones', 'zones.id', '=', 'delivery_agent_zones.zone_id')
+        ->select('zones.id as zone_id', 'zones.delivery_agency_id', 'delivery_agent_zones.latitude', 'delivery_agent_zones.longitude', 'delivery_agent_zones.id')
+        ->orderBy('delivery_agent_zones.point_order')
+        ->get()
+        ->groupBy('zone_id');
+
+    $polygons = [];
+    foreach ($zones as $zoneId => $points) {
+        foreach ($points as $point) {
+            $polygons[$zoneId][] = [
+                'latitude' => $point->latitude,
+                'longitude' => $point->longitude,
+                'zone_id' => $zoneId
+            ];
+        }
+    }
+
+
+    $inPolygon = [];
+    $inNotPolygon = [];
+
+    foreach ($polygons as $zoneId => $polygon) {
+        // return $polygon;
+        if ($this->isPointInPolygon($longitude, $latitude, $polygon)) {
+            $inPolygon[] = $zoneId;
+        } else {
+            $inNotPolygon[] = $zoneId;
+        }
+    }
+
+    foreach($inPolygon as $zoneId){
+        (new DeliveryAgencyController)->notifyDeliveryAgentsConcerned(Zone::find($zoneId)->delivery_agency->person->user_id);
+    }
+
+
+    // return [
+    //     'inPolygon' => $inPolygon,
+    //     'inNotPolygon' => $inNotPolygon
+    // ];
+}
+
+private function isPointInPolygon($longitude, $latitude, $polygon)
+{
+    $numPoints = count($polygon);
+    $inPolygon = false;
+    
+    for ($i = 0, $j = $numPoints - 1; $i < $numPoints; $j = $i++) {
+        $xi = $polygon[$i]['longitude'];
+        $yi = $polygon[$i]['latitude'];
+        $xj = $polygon[$j]['longitude'];
+        $yj = $polygon[$j]['latitude'];
+
+        if ((($yi > $latitude) != ($yj > $latitude)) &&
+            ($longitude < ($xj - $xi) * ($latitude - $yi) / ($yj - $yi) + $xi)) {
+            $inPolygon = !$inPolygon;
+        }
+    }
+
+    return $inPolygon;
+}
+
+
+public function isWithinDeliveryZoneO($longitude, $latitude, Request $request)
+{
+
+    // {
+//     "polygon" : [
+//         {
+//             "latitude": "1.000000000",
+//             "longitude": "1.000000000",
+//             "zone_id": 8
+//         },
+//         {
+//             "latitude": "4.000000000",
+//             "longitude": "8.000000000",
+//             "zone_id": 8
+//         },
+//         {
+//             "latitude": "5.000000000",
+//             "longitude": "1.000000000",
+//             "zone_id": 8
+//         }
+//     ]
+// }
+
+// {
+//     "polygon" : [
+//         {
+//             "latitude": "1.000000000",
+//             "longitude": "1.000000000",
+//             "zone_id": 9
+//         },
+//         {
+//             "latitude": "5.000000000",
+//             "longitude": "1.000000000",
+//             "zone_id": 9
+//         },
+//         {
+//             "latitude": "3.000000000",
+//             "longitude": "8.000000000",
+//             "zone_id": 9
+//         }
+//     ]
+// }
+    $zones = DB::table('zones')
         ->join('delivery_agent_zones', 'zones.id', '=', 'delivery_agent_zones.zone_id')
         ->select('zones.id', 'zones.delivery_agency_id', 'delivery_agent_zones.latitude', 'delivery_agent_zones.longitude')
         ->orderBy('delivery_agent_zones.point_order')
         ->get()
         ->groupBy('zones.id');
-        
-        foreach ($zones as $zoneId => $points) {
-            $polygon = $points->map(function ($point) {
-                return ['latitude' => $point->latitude, 'longitude' => $point->longitude];
-            })->toArray();
-            return $this->isPointInPolygon($longitude, $latitude, $polygon);
 
-            if ($this->isPointInPolygon($longitude, $latitude, $polygon)) {
-                return true;
-            }
+    foreach ($zones as $zoneId => $points) {
+        if ($this->isPointInPolygon($longitude, $latitude, $request->polygon)) {
+            return [
+                'inPolygon' => true,
+                'zone_id' => $zoneId
+            ];
         }
-
-        return false;
     }
 
-
-    private function isPointInPolygon($longitude, $latitude, $polygon)
-    {
-        $numPoints = count($polygon);
-        $inPolygon = 0;
-        return $numPoints;
-        for ($i = 0, $j = $numPoints - 1; $i < $numPoints; $j = $i++) {
-            $xi = $polygon[$i]['longitude'];
-            $yi = $polygon[$i]['latitude'];
-            $xj = $polygon[$j]['longitude'];
-            $yj = $polygon[$j]['latitude'];
-
-            if ((($yi > $latitude) != ($yj > $latitude)) &&
-            ($longitude < ($xj - $xi) * ($latitude - $yi) / ($yj - $yi) + $xi)) {
-                $inPolygon = !$inPolygon;
-            }
-        }
-
-        return $inPolygon;
-    }
+    return [
+        'inPolygon' => false,
+        'zone_id' => null
+    ];
+}
 
 
 }
@@ -542,3 +627,30 @@ class ZoneController extends Controller
 //         'message' => $e->getMessage()
 //     ],500);
 // }
+
+
+// foreach ($zones as $zoneId => $points) {
+    //     $polygon = $points->map(function ($point) {
+    //         return [
+    //             'latitude' => $point->latitude,
+    //             'longitude' => $point->longitude,
+    //             'zone_id' => $point->id
+    //         ];
+    //     })->toArray();
+
+    
+
+    //     return $polygon;
+
+    //     if ($this->isPointInPolygon($longitude, $latitude, $polygon)) {
+    //         return [
+    //             'inPolygon' => true,
+    //             'zone_id' => $zoneId
+    //         ];
+    //     }
+    // }
+
+    // return [
+    //     'inPolygon' => false,
+    //     'zone_id' => null
+    // ];

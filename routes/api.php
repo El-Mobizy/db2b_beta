@@ -236,17 +236,7 @@ Route::prefix('users')->group(function () {
         // Route::get('/ad/all', [AdController::class, 'getAllAd'])->name('ad.all');
 
            //Category
-            Route::prefix('category')->group(function () {
-                Route::post('/add', [CategoryController::class, 'add'])->name('category.add');
-                Route::post('/updateCategorie/{id}', [CategoryController::class, 'updateCategorie'])->name('category.updateCategorie');
-                Route::get('/detail/{uid}', [CategoryController::class, 'showCategoryDetail'])->name('category.detail');
-                Route::get('/all', [CategoryController::class, 'getAllCategories'])->name('category.all');
-                Route::get('/search', [CategoryController::class, 'searchCategory'])->name('category.search');
-                Route::get('/all/{paginate}', [CategoryController::class, 'getAllPaginateCategories'])->name('category.getAllPaginateCategories');
-                Route::get('/getAllPaginateSubSubcategory/{paginate}', [CategoryController::class, 'getAllPaginateSubSubcategory'])->name('category.getAllPaginateSubSubcategory');
-                Route::get('/getAllSubSubcategory', [CategoryController::class, 'getAllSubSubcategory'])->name('category.getAllSubSubcategory');
-            });
-
+          
             //Country
             Route::prefix('country')->group(function () {
                 Route::post('/load', [CountryController::class, 'load'])->name('country.load');
@@ -445,3 +435,16 @@ Route::prefix('users')->group(function () {
     Route::delete('/destroy/{id}', [PostController::class, 'destroy']);
 
     Route::get('isWithinDeliveryZone/{longitude}/{latitude}', [ZoneController::class, 'isWithinDeliveryZone'])->name('deliveryAgency.isWithinDeliveryZone');
+
+    Route::get('isWithinDeliveryZoneO/{longitude}/{latitude}', [ZoneController::class, 'isWithinDeliveryZoneO'])->name('deliveryAgency.isWithinDeliveryZoneO');
+
+    Route::post('/notifyParty/{orderId}/{longitue}/{latitude}', [OrderController::class, 'notifyParty'])->name('order.notifyParty');  Route::prefix('category')->group(function () {
+        Route::post('/add', [CategoryController::class, 'add'])->name('category.add');
+        Route::post('/updateCategorie/{id}', [CategoryController::class, 'updateCategorie'])->name('category.updateCategorie');
+        Route::get('/detail/{uid}', [CategoryController::class, 'showCategoryDetail'])->name('category.detail');
+        Route::get('/all', [CategoryController::class, 'getAllCategories'])->name('category.all');
+        Route::get('/search', [CategoryController::class, 'searchCategory'])->name('category.search');
+        Route::get('/all/{paginate}', [CategoryController::class, 'getAllPaginateCategories'])->name('category.getAllPaginateCategories');
+        Route::get('/getAllPaginateSubSubcategory/{paginate}', [CategoryController::class, 'getAllPaginateSubSubcategory'])->name('category.getAllPaginateSubSubcategory');
+        Route::get('/getAllSubSubcategory', [CategoryController::class, 'getAllSubSubcategory'])->name('category.getAllSubSubcategory');
+    });

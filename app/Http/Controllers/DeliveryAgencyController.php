@@ -438,7 +438,6 @@ class DeliveryAgencyController extends Controller
 
            $title =  "New Order in Your Area: Immediate Action Required";
            $body =  "A new order has just been placed in your area. Please log in to your account to view and accept the delivery. Your timely response is essential. Thank you!";
-           $message = new ChatMessageController();
 
            foreach($data as $item){
             $mail = new MailController();
@@ -456,6 +455,25 @@ class DeliveryAgencyController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function notifyDeliveryAgentsConcerned($userId) {
+        try {
+           $title =  "New Order in Your Area: Immediate Action Required";
+           $body =  "A new order has just been placed in your area. Please log in to your account to view and accept the delivery. Your timely response is essential. Thank you!";
+           $mail = new MailController();
+           $mes = $mail->sendNotification($userId,$title,$body, '');
+
+           if($mes){
+            return response()->json([
+                  'message' =>$mes->original['message']
+            ]);
+          }
+    
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 
     public function getDeliveryAgentConcernedByOrder($orderUid){
         try{

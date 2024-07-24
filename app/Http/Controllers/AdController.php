@@ -587,7 +587,7 @@ public function getRecentAdd(Request $request,$perpage)
         $service->notifyAdmin($titleAdmin,$bodyAdmin);
 
 
-      $message = new ChatMessageController();
+      $message = new MailController();
       $mes =  $message->sendNotification(Auth::user()->id,$title,$body, 'ad added successfully !');
 
       if($mes){
@@ -1283,6 +1283,7 @@ public function getAdDetail($adUid){
 
 
         $data[] = [
+            'ad_id' => $ad->id,
             'title' => $ad->title,
             'ad_code' => $ad->ad_code,
             'final_price' => $ad->final_price,
@@ -1294,7 +1295,8 @@ public function getAdDetail($adUid){
             'files' =>  File::whereReferencecode($ad->file_code)->whereDeleted(0)->get(),
             'category_uid' =>  Category::find($ad->category_id)->uid,
             'category_title' =>Category::find($ad->category_id)->title,
-            'attributes' =>  $attributes
+            'attributes' =>  $attributes,
+            'issynchronized' =>true
         ];
 
      

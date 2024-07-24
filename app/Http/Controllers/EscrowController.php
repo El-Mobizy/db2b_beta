@@ -2,11 +2,49 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CommissionWallet;
 use App\Models\Escrow;
+use App\Models\Order;
+use App\Models\Person;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class EscrowController extends Controller
 {
+
+
+    public function createEscrow($orderId){
+        try {
+            $service = new Service();
+            $escrow = new Escrow();
+            
+            $wallet = CommissionWallet::where('person_id',Person::whereId(
+                (new Service)->returnUserPersonId(
+                    User::whereId(
+                        Order::whereId($orderId)->first()->user_id
+                        )->first()->id
+                    )
+                )->first()->id
+            )->first();
+                        // return $wallet;
+            $order = Order::find($orderId);
+            $escrow->order_id = $orderId;
+            $escrow->status = 'Secured';
+            $escrow->amount =  $order->amount;
+            $escrow->uid= $service->generateUid($escrow);
+            
+            if($escrow->save()){
+                return (new TransactionController)->createTransaction($orderId,$wallet,
+                User::whereId(Order::whereId($orderId)->first()->user_id)->first()->id, null,$order->amount,'credit' );
+            }
+
+            // return 'good';
+        } catch(\Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
     public function debitEscrow($escrowId,$debitValue){
         try {
             $escrow = Escrow::find($escrowId);
@@ -14,7 +52,9 @@ class EscrowController extends Controller
                 return response()->json(['message' => 'Escrow not found'], 400);
             }
             $escrow->amount -= $debitValue;
-            $escrow->save();
+            if($escrow->save()){
+                
+            }
 
         } catch (\Exception $e) {
             return response()->json([

@@ -13,4 +13,12 @@ class DeliveryAgency extends Model
         'email',
         'uid',
     ];
+
+    public function person(){
+        return $this->belongsTo(Person::class);
+    }
+
+    public function zone(){
+        return $this->hasOne(Zone::class);
+    }
 }

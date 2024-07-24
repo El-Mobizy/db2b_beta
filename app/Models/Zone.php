@@ -12,14 +12,13 @@ class Zone extends Model
         'uid', 'city_name', 'latitude', 'longitude', 'country_id', 'active', 'deleted'
     ];
 
-    public function country()
+    public function delivery_agency()
     {
-        return $this->belongsTo(Country::class);
+        return $this->belongsTo(DeliveryAgency::class);
     }
 
-    public function deliveryAgents()
-    {
-        return $this->hasMany(DeliveryAgency::class, 'delivery_agent_zone');
+    public function deliver_agent_zone(){
+        return $this->hasOne(DeliveryAgentZone::class);
     }
 
 }

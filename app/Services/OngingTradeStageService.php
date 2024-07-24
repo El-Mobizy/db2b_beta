@@ -199,7 +199,7 @@ class OngingTradeStageService
         $orderController = new OrderController();
         $transactionId = (new TransactionController())->createTransaction($trade->order_detail->order_id, $walletSeller, Order::find($trade->order_detail->order_id)->user_id, $sellerUserId, $credit);
     
-        $errorCreateAllowTransaction = $orderController->createAllowTransaction($transactionId);
+        $errorCreateAllowTransaction = (new TransactionController())->createAllowTransaction($transactionId);
         if ($errorCreateAllowTransaction) {
             return $errorCreateAllowTransaction;
         }
@@ -380,8 +380,8 @@ class OngingTradeStageService
             return $errorDebitEscrow;
         }
 
-        $transactionId =  (new TransactionController())->createTransaction($trade->order_detail->order_id, $walletBuyer, $buyerUserId, $buyerUserId, $credit);
-        $errorCreateAllowTransaction = $orderController->createAllowTransaction($transactionId);
+        $transactionId =  (new TransactionController())->createTransaction($trade->order_detail->order_id, $walletBuyer, null, $buyerUserId, $credit);
+        $errorCreateAllowTransaction = (new TransactionController())->createAllowTransaction($transactionId);
         if ($errorCreateAllowTransaction) {
             return $errorCreateAllowTransaction;
         }
@@ -427,15 +427,29 @@ class OngingTradeStageService
             $walletC = new CommissionWalletController();
             $walletC->generateStandardUnAuthWallet($deliveryAgentPersonid,'DLV');
         }
-
-
+        $wallet = CommissionWallet::where('person_id',$deliveryAgentPersonid)->where('commission_id',$typeId)->first();
 
         $credit = floatval($escrowOrder->amount)*(DeliveryAgency::where('person_id',$deliveryAgentPersonid)->first()->commission / 100  ) + $wallet->balance;
+
 
         $errorUpdateDeliveryAgentWallet = (new WalletService())->updateUserWallet($deliveryAgentPersonid, $credit,'DLV');
         if ($errorUpdateDeliveryAgentWallet) {
             return $errorUpdateDeliveryAgentWallet;
         }
+
+        $errorDebitEscrow = (new EscrowController())->debitEscrow($escrowOrder->id, $credit);
+        if ($errorDebitEscrow) {
+            return $errorDebitEscrow;
+        }
+
+        $userId = Person::whereId($deliveryAgentPersonid)->first()->user_id;
+
+        $transactionId =  (new TransactionController())->createTransaction($orderId, $wallet, null, $userId, $credit);
+        $errorCreateAllowTransaction = (new TransactionController())->createAllowTransaction($transactionId);
+        if ($errorCreateAllowTransaction) {
+            return $errorCreateAllowTransaction;
+        }
+
     }
 
 

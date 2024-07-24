@@ -108,33 +108,36 @@ class FavoriteController extends Controller
         $db = DB::connection()->getPdo();
     
         $query = "
-            SELECT 
-                favorites.*, 
-                ads.id AS ad_id, 
-                ads.category_id AS ad_category_id, 
-                ads.owner_id AS ad_owner_id, 
-                ads.location_id AS ad_location_id, 
-                files.location AS image, 
-                ads.title AS title, 
-                ads.file_code AS ad_file_code, 
-                ads.final_price AS price, 
-                ads.uid AS ad_uid,
-                categories.title AS category_title
-            FROM 
-                favorites 
-            JOIN 
-                ads ON favorites.ad_id = ads.id 
-            LEFT JOIN 
-                files ON ads.file_code = files.referencecode
-            LEFT JOIN 
-                categories ON ads.category_id = categories.id
-            WHERE 
-                favorites.user_id = :user_id 
-                AND ads.deleted = false 
-            ORDER BY 
-                ads.id DESC 
-            LIMIT :limit OFFSET :offset
-        ";
+        SELECT 
+            favorites.*, 
+            ads.id AS ad_id, 
+            ads.category_id AS ad_category_id, 
+            ads.owner_id AS ad_owner_id, 
+            ads.location_id AS ad_location_id, 
+            (
+                SELECT location 
+                FROM files 
+                WHERE ads.file_code = files.referencecode 
+                LIMIT 1
+            ) AS image,
+            ads.title AS title, 
+            ads.file_code AS ad_file_code, 
+            ads.final_price AS price, 
+            ads.uid AS ad_uid,
+            categories.title AS category_title
+        FROM 
+            favorites 
+        JOIN 
+            ads ON favorites.ad_id = ads.id 
+        LEFT JOIN 
+            categories ON ads.category_id = categories.id
+        WHERE 
+            favorites.user_id = :user_id 
+            AND ads.deleted = false 
+        ORDER BY 
+            ads.id DESC 
+        LIMIT :limit OFFSET :offset
+    ";
     
         $offset = $perPage * ($page - 1);
     
@@ -157,6 +160,20 @@ class FavoriteController extends Controller
         ]);
     
         return response()->json(['message' => $message, 'data' => $paginator], 200);
+    }
+
+    public function returnFavoritesListUser(){
+        try {
+
+           $favs = Favorite::whereUserId();
+
+
+            
+        } catch (Exception $e) {
+           return response()->json([
+            'error' => $e->getMessage()
+           ]);
+        }
     }
     
 
@@ -269,35 +286,37 @@ class FavoriteController extends Controller
             $user_id = Auth::user()->id;
 
             $query = "
-            SELECT 
-                favorites.*, 
-                ads.id AS ad_id, 
-                ads.category_id AS ad_category_id, 
-                ads.owner_id AS ad_owner_id, 
-                ads.location_id AS ad_location_id, 
-                files.location AS image, 
-                ads.title AS title, 
-                ads.file_code AS ad_file_code, 
-                 ads.final_price AS price, 
-                ads.uid AS ad_uid,
-                categories.title AS category_title
-            FROM 
-                favorites 
-            JOIN 
-                ads ON favorites.ad_id = ads.id 
-            LEFT JOIN 
-                files ON ads.file_code = files.referencecode
-            LEFT JOIN 
-                categories ON ads.category_id = categories.id
-            WHERE 
-                favorites.user_id = :user_id 
-                AND ads.deleted = false 
-            ORDER BY 
-                ads.id DESC 
-            LIMIT :limit OFFSET :offset
-        ";
-        
-        
+    SELECT 
+        favorites.*, 
+        ads.id AS ad_id, 
+        ads.category_id AS ad_category_id, 
+        ads.owner_id AS ad_owner_id, 
+        ads.location_id AS ad_location_id, 
+        (
+            SELECT location 
+            FROM files 
+            WHERE ads.file_code = files.referencecode 
+            LIMIT 1
+        ) AS image,
+        ads.title AS title, 
+        ads.file_code AS ad_file_code, 
+        ads.final_price AS price, 
+        ads.uid AS ad_uid,
+        categories.title AS category_title
+    FROM 
+        favorites 
+    JOIN 
+        ads ON favorites.ad_id = ads.id 
+    LEFT JOIN 
+        categories ON ads.category_id = categories.id
+    WHERE 
+        favorites.user_id = :user_id 
+        AND ads.deleted = false 
+    ORDER BY 
+        ads.id DESC 
+    LIMIT :limit OFFSET :offset
+";
+
 
         $page = max(1, intval($page));
         $perPage = intval($perPage);
