@@ -566,6 +566,10 @@ public function returnDeliveryAgentIdOfAuth(){
     return $deliveryAgentId;
 }
 
+public function generateSixDigitNumber() {
+    return mt_rand(100000, 999999);
+}
+
 // EscrowDelivery(id, person_id, order_id, delivery_agent_amount, order_amount, status, pickup_date, delivery_date, created_at, updated_at)
 
 }

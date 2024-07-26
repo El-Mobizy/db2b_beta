@@ -212,7 +212,7 @@ class CategoryController extends Controller
     {
         try {
 
-            $categories =  Category::with('file')->whereDeleted(0)->get();
+            $categories =  Category::with('file')->whereDeleted(0)->with('subcategories')->get();
             foreach($categories as $categorie){
 
                 if(File::where('referencecode',$categorie->filecode)->exists()){
@@ -269,7 +269,7 @@ class CategoryController extends Controller
  {
      try {
 
-         $categories =  Category::with('file')->whereDeleted(0)->paginate($perpage);
+         $categories =  Category::with('file')->whereDeleted(0)->with('subcategories')->paginate($perpage);
          foreach($categories as $categorie){
 
             if(File::where('referencecode',$categorie->filecode)->exists()){

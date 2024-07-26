@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\OtpPasswordForgotten;
 use App\Models\Person;
 use App\Models\Restricted;
 use App\Models\Shop;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
 use Carbon\Carbon;
+use DateTime;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -295,32 +297,18 @@ class UserController extends Controller
             $username = htmlspecialchars($request->input('username'));
             $password = htmlspecialchars($request->input('password'));
 
-            $pdo = DB::connection()->getPdo();
-
-            $query = "
-                SELECT * FROM users
-                WHERE email = :email OR phone = :phone
-                LIMIT 1
-            ";
         
-            $statement = $pdo->prepare($query);
-        
-            $statement->execute([
-                'email' => $username,
-                'phone' => $username
-            ]);
-        
-            $user = $statement->fetch( $pdo::FETCH_ASSOC);
-            // dd($user);
-
+            $user = User::whereEmail($username)->whereDeleted(false)->whereEnabled(true)->first();
+            
             $exist = Restricted::where('email', $username)->exists();
-
+            
             if($exist){
-
-               $a = DB::table('restricteds')
-                   ->where('email', $username)
-                   ->orderBy('created_at', 'desc')
-                   ->first();
+                
+                $a = DB::table('restricteds')
+                ->where('email', $username)
+                ->orderBy('created_at', 'desc')
+                ->first();
+              
             $formattedDateTime = Carbon::parse($a->created_at)->format('H:i:s');
 
 
@@ -358,8 +346,10 @@ class UserController extends Controller
                 //     ]);
                 // }
             }
+            // return(1);
+            // $user = User::where('email',$username)->first();
 
-            $user = User::where('email',$username)->first();
+            // return $user;
             if(!$user){
                 return response()->json([
                     'message' => 'Email n est pas valide'
@@ -381,11 +371,9 @@ class UserController extends Controller
 
                     if (!empty($authenticatedUser)) {
                         $token = Auth::attempt(['email' => $username, 'password' => $password]);
-                        $codes = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+                        $codes =  (new Service())->generateSixDigitNumber();
                        
-                        if(User::where('code',$codes)->exists()){
-                            $codes = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-                        }
+
                         $user->code = $codes;
                         $user->save();
                         // dd('salut');
@@ -408,7 +396,7 @@ class UserController extends Controller
                         //     $n = $n+1;
                         // }
 
-                        if ($mes = $mail->sendLoginConfirmationNotification(Auth::user()->id, $title, $body, 'code sent successfully !')) {
+                        if ( $mail->sendLoginConfirmationNotification(Auth::user()->id, $title, $body, 'code sent successfully !')) {
                             Log::info('Login confirmation email sent to user ID: ' . Auth::user()->id);
                             $n = $n + 1;
                         }
@@ -590,7 +578,7 @@ class UserController extends Controller
 
           $statement->execute();
 
-          $createPerson = $this->createPerson($country_id, $email, $phone,$request);
+          $createPerson = (new PersonController())->createPerson($country_id, $email, $phone,$request);
           if($createPerson){
             return response()->json([
                 'message' =>$createPerson->original['message']
@@ -619,84 +607,6 @@ class UserController extends Controller
             return response()->json(['error' => $e->getMessage()]);
         }
     }
-
-    public function createPerson($country_id, $email, $phone, Request $request){
-        try{
-            $service = new Service();
-            $db = DB::connection()->getPdo();
-            $user = User::where('email', $email)->first();
-            $ulid = Uuid::uuid1();
-            $ulidPerson = $ulid->toString();
-            $first_name =  'XXXXX';
-            $last_name =  'XXXXX';
-            $user_id = $user->id;
-            $connected = 0;
-            $sex = 1;
-            $dateofbirth =  date('Y-m-d');
-            $profile_img_code= $service->generateRandomAlphaNumeric(7,(new Person()),'profile_img_code');
-            $first_login =  1;
-            $phonenumber =  $phone;
-            $deleted = 0;
-            $type =  'client';
-            $country_id = $country_id;
-            $uid = $ulidPerson;
-            $created_at = date('Y-m-d H:i:s');
-            $updated_at = date('Y-m-d H:i:s');
-      
-            DB::table('person')->insert([
-              'first_name' => $first_name,
-              'last_name' => $last_name,
-              'user_id' => $user_id,
-              'connected' => $connected,
-              'sex' => $sex,
-              'dateofbirth' => $dateofbirth,
-              'profile_img_code' => $profile_img_code,
-              'first_login' => $first_login,
-              'phonenumber' => $phonenumber,
-              'deleted' => $deleted,
-              'uid' => $uid,
-              'type' => $type,
-              'country_id' => $country_id,
-              'created_at' => $created_at,
-              'updated_at' => $updated_at
-          ]);
-
-          $query = "SELECT id FROM person WHERE user_id = :user_id LIMIT 1";
-
-          $stmt = $db->prepare($query);
-          $stmt->bindParam(':user_id', $user_id, $db::PARAM_INT);
-          $stmt->execute();
-
-      
-          $person = $stmt->fetch($db::FETCH_ASSOC);
-
-          $this->createClient( $person['id'], $request);
-      
-        }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-    
-    public function createClient($personId, Request $request){
-        try{
-            $service = new Service();
-            $client = new Client();
-            $client->uid = $service->generateUid($client);
-            $client->person_id = $personId;
-        
-            $client->save();
-           
-        }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-   
-    
 
     /**
  * @OA\Post(
@@ -1122,7 +1032,7 @@ class UserController extends Controller
  * @OA\Post(
  *     path="/api/users/password_recovery_start_step",
  *     summary="Start the password recovery process",
- *     tags={"Authentication"},
+ *     tags={"Password Recovery"},
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\JsonContent(
@@ -1171,38 +1081,39 @@ class UserController extends Controller
  * )
  */
         public function password_recovery_start_step(Request $request){
-            try{
-        
+            try{ 
+
                 $request->validate([
                     'email' => 'required',
                 ]);
+                // return 1;
                 $email =  htmlspecialchars($request->input('email'));
-                $db = DB::connection()->getPdo();
-                $query = "SELECT * FROM users WHERE email= :email LIMIT 1";
-                $statement = $db->prepare($query);
-                $statement->execute([
-                    'email' => $email,
-                ]);
-                $user =  $statement->fetch($db::FETCH_ASSOC);
-                // dd($user);
+
+                $user = User::whereEmail($email)->whereDeleted(false)->first();
+
                 if($user){
 
-                    $title= "Recovery your password";
-                    $body ="Go to quotidishop.com to update your password";
+                    $otp_code = (new Service())->generateSixDigitNumber();
 
-                   $mail = new MailController();
-                  $mes =  $mail->sendNotification(User::where('email',$email)->first()->id,$title,$body, 'Email sent successfully !');
+                    $errorcreateForgottenOtp = (new OtpPasswordForgottenController)->createForgottenOtp($otp_code,$user->id);
 
-                  if($mes){
+                    if( $errorcreateForgottenOtp){
+                        return  $errorcreateForgottenOtp;
+                    }
+
+                    $uid = User::whereEmail($email)->first()->uid;
+
                     return response()->json([
-                          'message' =>$mes->original['message']
-                    ]);
-                  }
+                        'status_code' => 200,
+                        'message' => "We would like to inform you that a message containing 6 digits has been sent to you by e-mail. Please enter the code to change your password.",
+                        'uid' =>$uid
+                     ],200);
+
                 }else{
                     return response()->json([
                         'status_code' => 404,
                         'message' => "Email not found"
-                     ]);
+                     ],404);
                 }
 
             } catch(Exception $e) {
@@ -1210,102 +1121,248 @@ class UserController extends Controller
             }
         }
 
-        /**
+   /**
  * @OA\Post(
- *     path="/api/users/password_recovery_end_step",
- *     summary="Complete the password recovery process by setting a new password",
- *     tags={"Authentication"},
+ *   path="/api/users/password_recovery_second_step",
+ *   summary="Complete the password recovery process",
+ *   description="Validate the OTP code and mark it as used if valid. Sends a notification email if the OTP code is expired.",
+ *   tags={"Password Recovery"},
+ *   @OA\RequestBody(
+ *     required=true,
+ *     @OA\JsonContent(
+ *       required={"otp_code"},
+ *       @OA\Property(property="otp_code", type="string", example="123456")
+ *     )
+ *   ),
+ *   @OA\Response(
+ *     response=200,
+ *     description="Successful response with OTP validation result",
+ *     @OA\JsonContent(
+ *       @OA\Property(property="status_code", type="integer", example=200),
+ *       @OA\Property(property="message", type="string", example="otp valide")
+ *     )
+ *   ),
+ *   @OA\Response(
+ *     response=404,
+ *     description="Code OTP not found or already used",
+ *     @OA\JsonContent(
+ *       @OA\Property(property="message", type="string", example="Code OTP non trouvé ou déjà utilisé")
+ *     )
+ *   ),
+ *   @OA\Response(
+ *     response=400,
+ *     description="Validation Error",
+ *     @OA\JsonContent(
+ *       @OA\Property(property="message", type="string", example="The given data was invalid."),
+ *       @OA\Property(
+ *         property="errors",
+ *         type="object",
+ *         @OA\Property(
+ *           property="otp_code",
+ *           type="array",
+ *           @OA\Items(type="string", example="The otp_code field is required.")
+ *         )
+ *       )
+ *     )
+ *   )
+ * )
+ */
+
+
+ public function password_recovery_second_step(Request $request){
+    try {
+
+            $request->validate([
+                'otp_code' =>'required'
+            ]);
+
+
+            $existOtp = OtpPasswordForgotten::where('code_otp', $request->otp_code)
+            ->where('deleted', false)
+            ->first();
+
+        if ($existOtp) {
+            $currentDateTime = Carbon::now();
+            $expiredAt = Carbon::parse($existOtp->expired_at);
+            $differenceInMinutes = $currentDateTime->diffInMinutes($expiredAt);
+
+            if (($differenceInMinutes * (-1)) > 30) {
+                return response()->json([
+                    'status_code' => 200,
+                    'message' => 'code already expired'
+                ]);
+            } else {
+                $existOtp->deleted = true;
+                $existOtp->save();
+
+                return response()->json([
+                    'status_code' => 200,
+                    'message' => 'otp valide'
+                ]);
+            }
+        } else {
+            return response()->json(['message' => 'Code not found or already used'], 200);
+        }
+
+          } catch(Exception $e) {
+            return response()->json($e->getMessage());
+    }
+}
+
+/**
+ * @OA\Post(
+ *     path="/api/users/password_recovery_end_step/{uid}",
+ *     summary="Complete the password recovery process",
+ *     description="Update the user's password after successful recovery.",
+ *     tags={"Password Recovery"},
+ *     @OA\Parameter(
+ *         name="uid",
+ *         in="path",
+ *         description="User's uid ",
+ *         required=true,
+ *         @OA\Schema(type="string", format="uid")
+ *     ),
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\JsonContent(
- *             required={"email", "new_password"},
- *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
- *             @OA\Property(property="new_password", type="string", format="password", example="newSecurePassword123")
+ *             required={"password", "password_confirmation"},
+ *             @OA\Property(property="password", type="string", format="password", example="newpassword123"),
+ *             @OA\Property(property="password_confirmation", type="string", format="password", example="newpassword123")
  *         )
  *     ),
  *     @OA\Response(
  *         response=200,
- *         description="Password changed successfully",
+ *         description="Password updated successfully",
  *         @OA\JsonContent(
  *             @OA\Property(property="status_code", type="integer", example=200),
- *             @OA\Property(property="message", type="string", example="Password changed successfully")
+ *             @OA\Property(property="message", type="string", example="Password updated successfully")
  *         )
  *     ),
  *     @OA\Response(
- *         response=404,
- *         description="Email not found",
- *         @OA\JsonContent(
- *             @OA\Property(property="status_code", type="integer", example=404),
- *             @OA\Property(property="message", type="string", example="Email not found")
- *         )
- *     ),
- *     @OA\Response(
- *         response=422,
+ *         response=400,
  *         description="Validation Error",
  *         @OA\JsonContent(
  *             @OA\Property(property="message", type="string", example="The given data was invalid."),
  *             @OA\Property(
  *                 property="errors",
  *                 type="object",
- *                 @OA\AdditionalProperties(
+ *                 @OA\Property(
+ *                     property="password",
  *                     type="array",
- *                     @OA\Items(type="string", example="The email field is required.")
+ *                     @OA\Items(type="string", example="The password field is required.")
+ *                 ),
+ *                 @OA\Property(
+ *                     property="password_confirmation",
+ *                     type="array",
+ *                     @OA\Items(type="string", example="The password confirmation field is required.")
  *                 )
  *             )
  *         )
  *     ),
  *     @OA\Response(
  *         response=500,
- *         description="Server Error",
+ *         description="Internal Server Error",
  *         @OA\JsonContent(
- *             @OA\Property(property="message", type="string", example="Internal server error")
+ *             @OA\Property(property="message", type="string", example="An unexpected error occurred.")
  *         )
  *     )
  * )
  */
 
-        public function password_recovery_end_step(Request $request){
-            try {
-        
-                $request->validate([
-                    'email' => 'required',
-                    'new_password' => 'required'
+
+public function password_recovery_end_step(Request $request,$uid){
+    try {
+
+            $request->validate([
+                'password' =>'required',
+                'password_confirmation' =>'required'
+            ]);
+
+            if($request->password !== $request->password_confirmation){
+                return response()->json([
+                    'status_code' => 200,
+                    'message' => 'password does not match'
                 ]);
-                $email =  htmlspecialchars($request->input('email'));
-        
-                $db = DB::connection()->getPdo();
-                $query = "SELECT * FROM users WHERE email= :email LIMIT 1";
-                $statement = $db->prepare($query);
-                $statement->execute([
-                    'email' => $email,
-                ]);
+            }
 
-                $user =  $statement->fetch($db::FETCH_ASSOC);
+            User::whereUid($uid)->update(['password' => bcrypt($request->password)]);
+            // User::whereEmail($uid)->update(['password' => bcrypt($request->password)]);
 
-                if($user){
-                    // $user->update(['password' => Hash::make($request->new_password)]);
-                    $q = " UPDATE users SET password= :password WHERE email= :email ";
-                    $stmt = $db->prepare($q);
-                    $stmt->execute([
-                        'password' => Hash::make($request->new_password),
-                        'email' => $email,
-                    ]);
+            return response()->json([
+                'status_code' => 200,
+                'message' => 'password updated successfully'
+            ]);
 
-                    return response()->json([
-                        'status_code' => 200,
-                        'message' => 'Password changed successfully'
-                    ]);
-                }else {
-                    return response()->json([
-                        'status_code' => 200,
-                        'message' => 'Email not found'
-                        ]);
-                }
-        
-                  } catch(Exception $e) {
-                    return response()->json($e->getMessage());
-                    }
-        }
+          } catch(Exception $e) {
+            return response()->json($e->getMessage());
+    }
+}
+
+
+/**
+ * @OA\Post(
+ *     path="/api/users/disabledUser/{uid}",
+ *     summary="Disable a user",
+ *     description="Disable a user account by setting the 'enabled' field to false.",
+ *     tags={"Password Recovery"},
+ *     @OA\Parameter(
+ *         name="uid",
+ *         in="query",
+ *         description="User's unique identifiant",
+ *         required=true,
+ *         @OA\Schema(type="string", format="uid")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="User disabled successfully or user not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=200),
+ *             @OA\Property(property="message", type="string", example="User disabled successfully !")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="User not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=404),
+ *             @OA\Property(property="message", type="string", example="User not found !")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="An unexpected error occurred.")
+ *         )
+ *     )
+ * )
+ */
+public function disabledUser($uid){
+    try {
+
+       $user = User::whereUid($uid)->whereEnabled(true)->first();
+
+       if(!$user){
+            return response()->json([
+                'status_code' => 200,
+                'message' => "User not found or already disabled !"
+            ],200);
+       }
+
+       $user->enabled = false;
+       $user->save();
+
+        return response()->json([
+            'status_code' => 200,
+            'message' => "User disabled successfully !"
+        ],200);
+
+    } catch(Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
 
         /**
@@ -1521,3 +1578,21 @@ public function new_code($id) {
 }
 
 }
+
+
+
+
+// $newPassword = $this->generateAndUpdateUserPassword($user);
+
+// $title= "Recovery your password";
+// $body = "Dear user, we would like to inform you that you have forgotten your password. This new password has been generated so that you can log in and change the password that was generated.\n\nPassword : $newPassword.\n\nDon't forget to change your password once you've logged in.";
+
+
+// $mail = new MailController();
+// $mes =  $mail->sendNotification(User::where('email',$email)->first()->id,$title,$body, 'Email sent successfully !');
+
+// if($mes){
+// return response()->json([
+//       'message' =>$mes->original['message']
+// ]);
+// }

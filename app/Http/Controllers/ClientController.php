@@ -7,6 +7,7 @@ use App\Models\Person;
 use App\Models\Preorder;
 use App\Models\ShopHasCategory;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -111,13 +112,29 @@ class ClientController extends Controller
            $message = new ChatMessageController();
     
            foreach($merchants as $user){
-                $message->sendNotification($user->id,$title,$body, '');
+                (new MailController)->sendNotification($user->id,$title,$body, '');
            }
     
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function createClient($personId, Request $request){
+        try{
+            $service = new Service();
+            $client = new Client();
+            $client->uid = $service->generateUid($client);
+            $client->person_id = $personId;
+        
+            $client->save();
+           
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ]);
         }
     }
 }

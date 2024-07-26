@@ -26,6 +26,10 @@ class Category extends Model
         return $this->hasMany(Preorder::class);
     }
 
+    public function subcategories(){
+        return $this->hasMany(Category::class,'parent_id','id');
+    }
+
     public function ad(){
         return $this->hasMany(Ad::class);
     }
