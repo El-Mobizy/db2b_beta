@@ -45,16 +45,16 @@ class OtpPasswordForgottenController extends Controller
 
     /**
  * @OA\Post(
- *     path="/api/users/resendForgottenOtp/{email}",
+ *     path="/api/users/resendForgottenOtp/{uid}",
  *     summary="Resend OTP for password recovery",
- *     description="Generate a new OTP and send it to the user's email for password recovery.",
+ *     description="Generate a new OTP and send it to the user's uid for password recovery.",
  *     tags={"Password Recovery"},
  *     @OA\Parameter(
- *         name="email",
+ *         name="uid",
  *         in="path",
- *         description="Email of the user",
+ *         description="Uid of the user",
  *         required=true,
- *         @OA\Schema(type="string", format="email", example="user@example.com")
+ *         @OA\Schema(type="string", example="dhshfjsg-sgsg-sgg-s")
  *     ),
  *     @OA\Response(
  *         response=200,
@@ -98,7 +98,7 @@ class OtpPasswordForgottenController extends Controller
 
                     return response()->json([
                         'status_code' => 200,
-                        'message' => "We would like to inform you that a message containing 6 digits has been sent to you by e-mail. Please enter the code to change your password."
+                        'message' => "Code sent successfully !"
                      ],200);
 
         } catch(Exception $e) {

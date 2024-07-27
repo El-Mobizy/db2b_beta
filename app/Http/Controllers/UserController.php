@@ -297,22 +297,97 @@ class UserController extends Controller
             $username = htmlspecialchars($request->input('username'));
             $password = htmlspecialchars($request->input('password'));
 
-        
+
             $user = User::whereEmail($username)->whereDeleted(false)->whereEnabled(true)->first();
-            
+
+           $errorcheckIfUserIsRestricted = $this->checkIfUserIsRestricted($username);
+           if($errorcheckIfUserIsRestricted){
+                    return $errorcheckIfUserIsRestricted;
+           }
+        
+            if(!$user){
+                return response()->json([
+                    'message' => 'Email n est pas valide'
+                ]);
+            }
+                $hashedPassword = $user->password;
+    
+                if (password_verify($password, $hashedPassword)) {
+                    $authenticatedUser = DB::select("
+                        SELECT * FROM users
+                        WHERE (email = :username OR phone = :username)
+                        AND password = :password
+                        LIMIT 1
+                    ", [
+                        'username' => $username,
+                        'password' => $hashedPassword
+                    ]);
+
+                    if (!empty($authenticatedUser)) {
+                        $token = Auth::attempt(['email' => $username, 'password' => $password]);
+                        $codes =  (new Service())->generateSixDigitNumber();
+                       
+
+                        $user->code = $codes;
+                        $user->save();
+                       
+
+                        if (!$token) {
+                            return response()->json(['message' => 'Unauthorized'], 200);
+                        }
+
+                        $user = Auth::user();
+                        DB::update('UPDATE users SET connected = ? WHERE id = ?', [1, $user->id]);
+
+                        $title=  'Help us protect your account';
+                        $body =$codes;
+                        $mail = new MailController();
+                        $n=0;
+
+                        if ( $mail->sendLoginConfirmationNotification(Auth::user()->id, $title, $body, 'code sent successfully !')) {
+                            Log::info('Login confirmation email sent to user ID: ' . Auth::user()->id);
+                            $n = $n + 1;
+                        }
+
+
+                        unset($user->code);
+                        return response()->json([
+                            'user' => $user,
+                            'access_token' => $token,
+                            // 'token_type' => 'Bearer',
+                            // 'expires_in' => Auth::factory()->getTTL() * 60,
+                            // 'n' => $n
+                        ]);
+                    } else {
+                        return response()->json(['error' => 'Mot de passe invalide.'], 200);
+                    }
+                    } else {
+                    return response()->json(['error' => 'Mot de passe invalide.'], 200);
+                }
+           
+        }
+        catch (Exception $e)
+        {
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
+
+
+    public function checkIfUserIsRestricted($username){
+        try{
             $exist = Restricted::where('email', $username)->exists();
-            
+
             if($exist){
-                
+
                 $a = DB::table('restricteds')
                 ->where('email', $username)
                 ->orderBy('created_at', 'desc')
                 ->first();
-              
+
             $formattedDateTime = Carbon::parse($a->created_at)->format('H:i:s');
 
 
-                $currentDateTime = Carbon::now('Africa/Porto-Novo');
+                $currentDateTime = Carbon::now();
                 $currentTime = $currentDateTime->toTimeString();
                 $timeDifference = Carbon::parse($currentTime)->diff(Carbon::parse($formattedDateTime));
                 $duration =  180;
@@ -346,86 +421,7 @@ class UserController extends Controller
                 //     ]);
                 // }
             }
-            // return(1);
-            // $user = User::where('email',$username)->first();
-
-            // return $user;
-            if(!$user){
-                return response()->json([
-                    'message' => 'Email n est pas valide'
-                ]);
-            }
-            // dd($user->password);
-                $hashedPassword = $user->password;
-    
-                if (password_verify($password, $hashedPassword)) {
-                    $authenticatedUser = DB::select("
-                        SELECT * FROM users
-                        WHERE (email = :username OR phone = :username)
-                        AND password = :password
-                        LIMIT 1
-                    ", [
-                        'username' => $username,
-                        'password' => $hashedPassword
-                    ]);
-
-                    if (!empty($authenticatedUser)) {
-                        $token = Auth::attempt(['email' => $username, 'password' => $password]);
-                        $codes =  (new Service())->generateSixDigitNumber();
-                       
-
-                        $user->code = $codes;
-                        $user->save();
-                        // dd('salut');
-                        // if (!$token) {
-                        //     $token = Auth::attempt(['phone' => $username, 'password' => $password]);
-                        // }
-
-                        if (!$token) {
-                            return response()->json(['message' => 'Unauthorized'], 200);
-                        }
-
-                        $user = Auth::user();
-                        DB::update('UPDATE users SET connected = ? WHERE id = ?', [1, $user->id]);
-
-                        $title=  'Help us protect your account';
-                        $body =$codes;
-                        $mail = new MailController();
-                        $n=0;
-                        // if( $mes =  $message->sendLoginConfirmationNotification(Auth::user()->id,$title,$body, 'code sent successfully !')){
-                        //     $n = $n+1;
-                        // }
-
-                        if ( $mail->sendLoginConfirmationNotification(Auth::user()->id, $title, $body, 'code sent successfully !')) {
-                            Log::info('Login confirmation email sent to user ID: ' . Auth::user()->id);
-                            $n = $n + 1;
-                        }
-
-                        // $mes = $message->sendNotification(Auth::user()->id,$title,$body, 'code sent successfully !');
-            
-                        // if($mes){
-                        //     return response()->json([
-                        //           'message' =>$mes->original['message']
-                        //     ]);
-                        //   }
-
-                        unset($user->code);
-                        return response()->json([
-                            'user' => $user,
-                            'access_token' => $token,
-                            // 'token_type' => 'Bearer',
-                            // 'expires_in' => Auth::factory()->getTTL() * 60,
-                            // 'n' => $n
-                        ]);
-                    } else {
-                        return response()->json(['error' => 'Mot de passe invalide.'], 200);
-                    }
-                    } else {
-                    return response()->json(['error' => 'Mot de passe invalide.'], 200);
-                }
-           
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             return response()->json(['error' => $e->getMessage()]);
         }
@@ -1354,7 +1350,7 @@ public function disabledUser($uid){
 
         return response()->json([
             'status_code' => 200,
-            'message' => "User disabled successfully !"
+            'message' => "Too many attempt, you are disabled !"
         ],200);
 
     } catch(Exception $e) {
