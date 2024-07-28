@@ -3080,7 +3080,7 @@
         "/api/deliveryAgency/getDeliveryAgent": {
             "get": {
                 "tags": [
-                    "Delivery Agences"
+                    "Delivery Agencies"
                 ],
                 "summary": "Get all delivery agents",
                 "operationId": "d4b4980e17329b23246e4532b1582784",
@@ -3904,7 +3904,7 @@
         "/api/notification/create": {
             "post": {
                 "tags": [
-                    "Notification"
+                    "Notifications"
                 ],
                 "summary": "Create a notification",
                 "description": "Creates a notification for multiple persons",
@@ -5766,24 +5766,23 @@
                 ]
             }
         },
-        "/api/users/resendForgottenOtp/{email}": {
+        "/api/users/resendForgottenOtp/{uid}": {
             "post": {
                 "tags": [
                     "Password Recovery"
                 ],
                 "summary": "Resend OTP for password recovery",
-                "description": "Generate a new OTP and send it to the user's email for password recovery.",
-                "operationId": "43f32d5371ac33243a10649c097072af",
+                "description": "Generate a new OTP and send it to the user's uid for password recovery.",
+                "operationId": "afa0e1981169fbb6151336b53a089b7f",
                 "parameters": [
                     {
-                        "name": "email",
+                        "name": "uid",
                         "in": "path",
-                        "description": "Email of the user",
+                        "description": "Uid of the user",
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "format": "email",
-                            "example": "user@example.com"
+                            "example": "dhshfjsg-sgsg-sgg-s"
                         }
                     }
                 ],

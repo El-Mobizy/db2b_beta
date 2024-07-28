@@ -505,7 +505,7 @@ class DeliveryAgencyController extends Controller
      * @OA\Get(
      *     path="/api/deliveryAgency/getDeliveryAgent",
      *     summary="Get all delivery agents",
-     *     tags={"Delivery Agences"},
+     *     tags={"Delivery Agencies"},
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",

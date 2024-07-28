@@ -34,7 +34,7 @@ class NotificationController extends Controller
   /**
  * @OA\Post(
  *     path="/api/notification/create",
- *     tags={"Notification"},
+ *     tags={"Notifications"},
  *     summary="Create a notification",
  *     description="Creates a notification for multiple persons",
  *     @OA\RequestBody(
