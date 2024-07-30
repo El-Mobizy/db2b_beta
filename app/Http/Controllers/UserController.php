@@ -307,7 +307,7 @@ class UserController extends Controller
         
             if(!$user){
                 return response()->json([
-                    'message' => 'Email n est pas valide'
+                    'message' => 'Email is not valid'
                 ]);
             }
                 $hashedPassword = $user->password;
@@ -359,10 +359,10 @@ class UserController extends Controller
                             // 'n' => $n
                         ]);
                     } else {
-                        return response()->json(['error' => 'Mot de passe invalide.'], 200);
+                        return response()->json(['error' => 'Invalid password !'], 200);
                     }
                     } else {
-                    return response()->json(['error' => 'Mot de passe invalide.'], 200);
+                    return response()->json(['error' => 'Invalid password !'], 200);
                 }
            
         }
@@ -398,13 +398,14 @@ class UserController extends Controller
                 $time = ($hours*60)+$minutes;
                 $d = $duration-$time;
                 $d=$d+1;
+                $h = $d/60;
                 if ($currentDateTime->format('Y-m-d') == Carbon::parse($a->created_at)->format('Y-m-d')) {
                     if($time <=$duration){
                     $sumDateTime = $currentDateTime->addMinutes($minutes)->addSeconds($seconds);
                     $formattedSumDateTime = $sumDateTime->format('Y m d H:i:s');
                     return response()->json([
-                        "message" =>"Vous devez attendre $d minutes et quelques secondes  avant de vous connecter.",
-                        "bloked" => "Vous êtes bloqué"
+                        "message" =>"You have to wait $h hours.",
+                        "bloked" => "You're blocked"
                         // 'durée total' => $timeDifference,
                         // 'date actuelle' => $currentTime,
                         // 'time' =>$time
@@ -442,7 +443,7 @@ class UserController extends Controller
  *                 required={"phone", "email", "password", "password_confirmation"},
  *                 @OA\Property(
  *                     property="phone",
- *                     type="string",
+ *                     type="integer",
  *                     description="Numéro de téléphone de l'utilisateur (format international avec le préfixe +)"
  *                 ),
         *   @OA\Property(
@@ -573,6 +574,8 @@ class UserController extends Controller
           $statement->bindParam(8,  $code_user);
 
           $statement->execute();
+
+          $user = User::Where('email',$email)->update(['enabled' => true]);
 
           $createPerson = (new PersonController())->createPerson($country_id, $email, $phone,$request);
           if($createPerson){
@@ -716,6 +719,12 @@ class UserController extends Controller
                 $personQuery = "SELECT * FROM person WHERE user_id = :userId";
                 $person = DB::selectOne($personQuery, ['userId' =>Auth::user()->id]);
                 $client = Client::where('person_id', $person->id)->first();
+
+                
+                $user = Auth::user();
+                unset($user->password);
+                unset($user->code);
+
                 $data = [
                     'User_details' =>Auth::user(),
                     'Person_detail' => $person,
@@ -779,7 +788,17 @@ class UserController extends Controller
                     AND users.deleted = FALSE
                 ");
 
+                $data = [];
+
+                foreach($users as $user){
+                    unset($user->password);
+                    unset($user->code);
+                    $data[] = $user;
+                }
+
                 $totalUsers = count($users);
+
+               
 
                 return response()->json([
                     'data' => $users,
@@ -792,124 +811,6 @@ class UserController extends Controller
             }
         }
 
-
-        /**
- * @OA\Get(
- *     path="/api/users/getUserLogin",
- *     summary="Obtenir la liste des utilisateurs connectés",
- *     description="Renvoie la liste de tous les utilisateurs connectés au système.",
- *     tags={"Users"},
- *     @OA\Response(
- *         response=200,
- *         description="Liste des utilisateurs connectés récupérée avec succès",
- *         @OA\JsonContent(
- *             @OA\Property(
- *                 property="data",
- *                 type="array",
- *                 @OA\Items(),
- *                 description="Liste des utilisateurs connectés avec leurs informations"
- *             ),
- *             @OA\Property(
- *                 property="total_users",
- *                 type="integer",
- *                 description="Nombre total d'utilisateurs connectés dans le système"
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Erreur serveur",
- *         @OA\JsonContent(
- *             @OA\Property(
- *                 property="error",
- *                 type="string",
- *                 description="Détails de l'erreur serveur"
- *             )
- *         )
- *     )
- * )
- */
-        public function getUserLogin(){
-            try {
-                $users = DB::select("
-                    SELECT users.*, person.*
-                    FROM users, person
-                    WHERE users.id = person.user_id
-                    AND  users.deleted = FALSE AND users.connected = TRUE
-                ");
-
-                $totalUsers = count($users);
-
-                return response()->json([
-                    'data' => $users,
-                    'total_users' => $totalUsers
-                ]);
-            } catch (Exception $e) {
-                return response()->json([
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
-
-        /**
- * @OA\Get(
- *     path="/api/users/getUserLogout",
- *     summary="Obtenir la liste des utilisateurs déconnectés",
- *     description="Renvoie la liste de tous les utilisateurs déconnectés du système.",
- *     tags={"Users"},
- *     @OA\Response(
- *         response=200,
- *         description="Liste des utilisateurs déconnectés récupérée avec succès",
- *         @OA\JsonContent(
- *             @OA\Property(
- *                 property="data",
- *                 type="array",
- *                 @OA\Items(),
- *                 description="Liste des utilisateurs déconnectés avec leurs informations"
- *             ),
- *             @OA\Property(
- *                 property="total_users",
- *                 type="integer",
- *                 description="Nombre total d'utilisateurs déconnectés dans le système"
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Erreur serveur",
- *         @OA\JsonContent(
- *             @OA\Property(
- *                 property="error",
- *                 type="string",
- *                 description="Détails de l'erreur serveur"
- *             )
- *         )
- *     )
- * )
- */
-
-
-        public function getUserLogout(){
-            try {
-                $users = DB::select("
-                SELECT users.*, person.*
-                FROM users, person
-                WHERE users.id = person.user_id
-                AND  users.deleted = FALSE AND users.connected = FALSE
-                ");
-
-                $totalUsers = count($users);
-
-                return response()->json([
-                    'data' => $users,
-                    'total_users' => $totalUsers
-                ]);
-            } catch (Exception $e) {
-                return response()->json([
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
 
         /**
  * @OA\Post(
@@ -1077,7 +978,7 @@ class UserController extends Controller
  * )
  */
         public function password_recovery_start_step(Request $request){
-            try{ 
+            try{
 
                 $request->validate([
                     'email' => 'required',
@@ -1085,7 +986,7 @@ class UserController extends Controller
                 // return 1;
                 $email =  htmlspecialchars($request->input('email'));
 
-                $user = User::whereEmail($email)->whereDeleted(false)->first();
+                $user = User::whereEmail($email)->whereDeleted(false)->whereEnabled(true)->first();
 
                 if($user){
 
@@ -1108,7 +1009,7 @@ class UserController extends Controller
                 }else{
                     return response()->json([
                         'status_code' => 404,
-                        'message' => "Email not found"
+                        'message' => "Email not found or already disabled"
                      ],404);
                 }
 

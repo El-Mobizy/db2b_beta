@@ -482,7 +482,7 @@ class ZoneController extends Controller
     }
 
 
-    public function isWithinDeliveryZone($longitude, $latitude)
+    public function isWithinDeliveryZone($longitude, $latitude, $orderUid = 0)
 {
     $zones = DB::table('zones')
         ->join('delivery_agent_zones', 'zones.id', '=', 'delivery_agent_zones.zone_id')
@@ -492,7 +492,7 @@ class ZoneController extends Controller
         ->groupBy('zone_id');
 
     $polygons = [];
-    foreach ($zones as $zoneId => $points) {
+    foreach ($zones as $zoneId => $points) { 
         foreach ($points as $point) {
             $polygons[$zoneId][] = [
                 'latitude' => $point->latitude,
@@ -515,11 +515,15 @@ class ZoneController extends Controller
         }
     }
 
+    
     foreach($inPolygon as $zoneId){
         (new DeliveryAgencyController)->notifyDeliveryAgentsConcerned(Zone::find($zoneId)->delivery_agency->person->user_id);
     }
-
-
+    
+    
+    if(count($inPolygon) == 0){
+        (new DeliveryAgencyController())->notifyDeliveryAgents($orderUid);
+    }
     // return [
     //     'inPolygon' => $inPolygon,
     //     'inNotPolygon' => $inNotPolygon

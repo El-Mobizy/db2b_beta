@@ -11384,7 +11384,7 @@
                                 "properties": {
                                     "phone": {
                                         "description": "Numéro de téléphone de l'utilisateur (format international avec le préfixe +)",
-                                        "type": "string"
+                                        "type": "integer"
                                     },
                                     "country_id": {
                                         "description": "Numéro de téléphone de l'utilisateur (format international avec le préfixe +)",

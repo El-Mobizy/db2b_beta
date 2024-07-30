@@ -1106,6 +1106,7 @@ private function getCartAds($cartItem){
 
         foreach($orderDetails as $orderDetail){
             $ad = Ad::whereId($orderDetail->ad_id)->first();
+
             $seller = User::whereId($ad->owner_id)->first();
              $this->notifySeller($seller->id);
         }
@@ -1113,7 +1114,7 @@ private function getCartAds($cartItem){
         // $notification = new DeliveryAgencyController();
         // $notification->notifyDeliveryAgents($orderUid);
 
-        (new ZoneController())->isWithinDeliveryZone($longitude, $latitude);
+        (new ZoneController())->isWithinDeliveryZone($longitude, $latitude, Order::where('id',$orderId)->first()->uid);
 
         return 'sent';
 

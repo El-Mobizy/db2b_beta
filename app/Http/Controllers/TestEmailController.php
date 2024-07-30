@@ -34,6 +34,6 @@ class TestEmailController extends Controller
 
 
     public function hunterApiKey(){
-        return 'b03ce18847f32555e238af58e5bc1f2a851912a8';
+        return env('API_KEY');
     }
 }
