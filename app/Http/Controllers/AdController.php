@@ -42,24 +42,14 @@ class AdController extends Controller
      *             type="array",
      *             @OA\Items(ref="")
      *         )
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized"
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Forbidden"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Not Found"
      *     )
      * )
      */
     public function allAds(): JsonResponse
     {
-        return response()->json(Ad::with('file')->with('ad_detail')->get());
+        $data = Ad::with('file')->with('ad_detail')->get();
+
+        return(new Service())->apiResponse(200,$data,'');
     }
 
  /**
@@ -112,16 +102,12 @@ class AdController extends Controller
                 $data[] = $ad;
             }
 
-            return response()->json([
-                'data' => $data,
-                'status' => 'success',
-                'message' => 'list of products'
-            ],200);
+            return(new Service())->apiResponse(200,$data, 'list of products');
 
         } catch (Exception $e) {
-           return response()->json([
-            'error' => $e->getMessage()
-           ],500);
+            // $error = 'An error occured';
+            $error = $e->getMessage();
+            return(new Service())->apiResponse(500,$data,$error);
         }
     }
 
@@ -150,16 +136,13 @@ class AdController extends Controller
                     }
                     $data[] = $ad;
                 }
-    
-            return response()->json([
-                'data' => $data,
-                'status' => 'success',
-                'message' => 'List of all products to display for a logged-in user'
-            ],200);
+
+                return(new Service())->apiResponse(200,$data, 'List of all products to display for a logged-in user');
+
         } catch (Exception $e) {
-           return response()->json([
-            'error' => $e->getMessage()
-           ],500);
+             // $error = 'An error occured';
+             $error = $e->getMessage();
+             return(new Service())->apiResponse(500,$data,$error);
         }
     }
 
@@ -199,10 +182,11 @@ class AdController extends Controller
                  'status' => 'success',
                 'message' => 'A paginated list of all products to be displayed to a logged-in user'
             ],200);
+
         } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
-            ],500);
+            ],200);
         }
     }
 
@@ -266,7 +250,7 @@ public function getRecentAdd(Request $request,$perpage)
     } catch (Exception $e) {
         return response()->json([
             'error' => $e->getMessage()
-        ]);
+        ],200);
     }
 }
 
@@ -332,7 +316,7 @@ public function getRecentAdd(Request $request,$perpage)
         } catch (Exception $e) {
         return response()->json([
             'error' => $e->getMessage()
-        ]);
+        ],200);
         }
     }
 
@@ -381,6 +365,13 @@ public function getRecentAdd(Request $request,$perpage)
  *             @OA\Property(property="message", type="string", example="No ad found with the specified UID")
  *         )
  *     ),
+ *  @OA\Response(
+ *         response=203,
+ *         description="You can't delete a ad because it belong to a order",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="No ad found with the specified UID")
+ *         )
+ *     ),
  *     @OA\Response(
  *         response=500,
  *         description="Internal Server Error - An error occurred while deleting the ad",
@@ -401,19 +392,20 @@ public function getRecentAdd(Request $request,$perpage)
             if (!$ad) {
                 return response()->json([
                     'message' => "Ad not found"
-                ]);
+                ],404);
             }
 
             if($ad->deleted == true){
+                return(new Service())->apiResponse(200,[], "You can't delete a ad that's already deleted");
                 return response()->json([
                     'message' => "You can't delete a ad that's already deleted"
-                ]);
+                ],202);
             }
 
             if ($ad->owner_id != Auth::user()->id) {
                 return response()->json([
                     'message' => "You can't delete a ad that you don't belong to"
-                ]);
+                ],403);
             }
 
             $order_details = OrderDetail::where('ad_id',$ad->id)->whereDeleted(0)->get();
@@ -422,7 +414,7 @@ public function getRecentAdd(Request $request,$perpage)
                 if(Order::find($order_detail->order_id)->status != TypeOfType::whereLibelle('validated')->first()->id){
                     return response()->json([
                         'message' => "You can't delete a ad because it belong to a order "
-                    ]);
+                    ],203);
                 }
             }
 

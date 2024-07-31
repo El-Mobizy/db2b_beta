@@ -12,7 +12,11 @@ class AdDetailController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json([
+            'status_code' => 400,
+            'data' =>[],
+            'message' => 'The data provided is not valid.', 'errors' => 'error'
+        ], 200);
     }
 
     /**
@@ -20,7 +24,7 @@ class AdDetailController extends Controller
      */
     public function create()
     {
-        //
+        return(new Service())->apiResponse(400,[],'data provided');
     }
 
     /**

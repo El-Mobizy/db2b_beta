@@ -570,6 +570,15 @@ public function generateSixDigitNumber() {
     return mt_rand(100000, 999999);
 }
 
+public function apiResponse($status,$data,$message){
+
+    return response()->json([
+        'status_code' => $status,
+        'data' =>$data,
+        'message' => $message,
+    ], 200);
+}
+
 // EscrowDelivery(id, person_id, order_id, delivery_agent_amount, order_amount, status, pickup_date, delivery_date, created_at, updated_at)
 
 }

@@ -68,7 +68,7 @@ class CategoryController extends Controller
 
             if($request->input('parent_id') !== null){
                 $parent_id = intval($request->input('parent_id'));
-               if($request->file('files') == null  ){
+               if(count($request->file('files')) == 0  ){
                     return response()->json([
                         'message' => 'file is required'
                     ],200);

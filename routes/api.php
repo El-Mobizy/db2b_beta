@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdController;
+use App\Http\Controllers\AdDetailController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttributeGroupController;
 use App\Http\Controllers\CartController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\OngingTradeStageController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OtpPasswordForgottenController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\PersonController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\RightController;
@@ -149,9 +151,16 @@ Route::prefix('users')->group(function () {
             Route::post('/new_code/{id}', [UserController::class, 'new_code'])->name('new_code');
         });
 
+           //person
+
+           Route::prefix('person')->group(function () {
+               Route::post('/updatePersonInformation', [PersonController::class, 'updatePersonInformation'])->name('person.updatePersonInformation');
+               Route::post('/AddOrUpdateProfileImg', [PersonController::class, 'AddOrUpdateProfileImg'])->name('person.AddOrUpdateProfileImg');
+           });
+
         //Ad
         Route::prefix('ad')->group(function () {
-            Route::get('/ads', [AdController::class, 'allAds'])->name('ad.allAds');
+           
             Route::get('/marchand/{perpage}', [AdController::class, 'getMarchandAd'])->name('ad.marchand');
             Route::delete('/destroyAd/{uid}', [AdController::class, 'destroyAd'])->name('ad.destroyAdd');
         });
@@ -376,6 +385,8 @@ Route::prefix('users')->group(function () {
         Route::get('/getAdDetail/{uid}', [AdController::class, 'getAdDetail'])->name('ad.getAdDetail');
         Route::get('/checkIfAdIsRejected/{uid}', [AdController::class, 'checkIfAdIsRejected'])->name('ad.checkIfAdIsRejected');
         Route::get('/checkIfAdIsValidated/{uid}', [AdController::class, 'checkIfAdIsValidated'])->name('ad.checkIfAdIsValidated');
+
+        Route::get('/ads', [AdController::class, 'allAds'])->name('ad.allAds');
     });
 
    
@@ -452,3 +463,6 @@ Route::prefix('users')->group(function () {
         Route::get('/getAllPaginateSubSubcategory/{paginate}', [CategoryController::class, 'getAllPaginateSubSubcategory'])->name('category.getAllPaginateSubSubcategory');
         Route::get('/getAllSubSubcategory', [CategoryController::class, 'getAllSubSubcategory'])->name('category.getAllSubSubcategory');
     });
+
+
+    Route::get('/test/create', [AdDetailController::class, 'create'])->name('create.create');
