@@ -1512,7 +1512,7 @@ public function enabledUser($uid){
 
         return response()->json([
             'status_code' => 200,
-            'message' => "Too many attempt, you are disabled !"
+            'message' => "enabled"
         ],200);
 
     } catch(Exception $e) {

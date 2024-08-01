@@ -93,7 +93,7 @@ class PersonController extends Controller
  *                 @OA\Property(property="sex", type="boolean", example="1", description ="make 1 if you are a male"),
  *                 @OA\Property(property="dateofbirth", type="string", format="date", example="1990-01-01"),
  *                 @OA\Property(property="country_id", type="integer", example=1),
- *                 @OA\Property(property="phonenumber", type="string", example="+1234567890")
+ *                 @OA\Property(property="phonenumber", type="string", example="1234567890")
  *             )
  *         )
  *     ),
@@ -219,17 +219,19 @@ class PersonController extends Controller
     public function AddOrUpdateProfileImg(Request $request){
         try {
 
-            $request->validate([
-                'files' => 'required'
-            ]);
+            // return $request->all();
 
+            $request->validate([
+                'files' => 'required|array',
+                'files.*' => 'file|mimes:jpeg,jpg,png,gif|max:2048'
+            ]);
             $data = [];
 
 
             $personUid = (new Service())->returnPersonUidAuth();
-  
+
             $person =  Person::whereUid($personUid)->first();
-  
+
             if(!$person){
                 return(new Service())->apiResponse(404,$data, 'Person not found');
             }
@@ -237,15 +239,15 @@ class PersonController extends Controller
             if(File::where('referencecode',$person->profile_img_code)->exists()){
                 File::where('referencecode',$person->profile_img_code)->delete();
             }
-  
-            (new Service())->uploadFiles($request,$person->profile_img_code,'profile_img');
-  
+
+             (new Service())->uploadFiles($request,$person->profile_img_code,'profile_img');
+
               return(new Service())->apiResponse(200,$data, 'Picture add successfully');
-  
+
           } catch (Exception $e) {
               // $error = 'An error occured';
               $error = $e->getMessage();
-              return(new Service())->apiResponse(500,$data,$error);
+              return(new Service())->apiResponse(500,[],$error);
           }
       }
     }

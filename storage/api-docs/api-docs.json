@@ -6003,7 +6003,7 @@
                                     },
                                     "phonenumber": {
                                         "type": "string",
-                                        "example": "+1234567890"
+                                        "example": "1234567890"
                                     }
                                 },
                                 "type": "object"
