@@ -1474,7 +1474,7 @@ public function new_code($id) {
     }
 }
 
-}
+
 
 
 
@@ -1493,3 +1493,33 @@ public function new_code($id) {
 //       'message' =>$mes->original['message']
 // ]);
 // }
+
+
+public function enabledUser($uid){
+    try {
+
+       $user = User::whereUid($uid)->first();
+
+       if(!$user){
+            return response()->json([
+                'status_code' => 200,
+                'message' => "User not found or already disabled !"
+            ],200);
+       }
+
+       $user->enabled = true;
+       $user->save();
+
+        return response()->json([
+            'status_code' => 200,
+            'message' => "Too many attempt, you are disabled !"
+        ],200);
+
+    } catch(Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+}

@@ -69,6 +69,7 @@ Route::prefix('users')->group(function () {
     Route::post('/password_recovery_second_step', [UserController::class, 'password_recovery_second_step'])->name('password_recovery_second_step');
     Route::post('/password_recovery_end_step/{email}', [UserController::class, 'password_recovery_end_step'])->name('password_recovery_end_step');
     Route::post('/disabledUser/{uid}', [UserController::class, 'disabledUser'])->name('disabledUser');
+    Route::post('/enabledUser/{uid}', [UserController::class, 'enabledUser'])->name('enabledUser');
     Route::post('/resendForgottenOtp/{uid}', [OtpPasswordForgottenController::class, 'resendForgottenOtp'])->name('v');
     Route::post('/new_code/{id}', [UserController::class, 'new_code'])->name('new_code');
     Route::post('/verification_code', [UserController::class, 'verification_code'])->name('verification_code');
