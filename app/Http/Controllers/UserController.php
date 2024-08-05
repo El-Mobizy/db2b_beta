@@ -96,7 +96,8 @@ class UserController extends Controller
                     'message' => 'Email invalid',
                 ]);
             }
-
+            unset($user->code);
+            unset($user->password);
             return response()->json([
                 'message' => 'Email valid',
                 'data' => $user
@@ -716,11 +717,17 @@ class UserController extends Controller
 
         public function userAuth(){
             try{
+
+                  $service = new Service();
+                    $checkAuth=$service->checkAuth();
+
+                    if($checkAuth){
+                        return $checkAuth;
+                    }
                 $personQuery = "SELECT * FROM person WHERE user_id = :userId";
                 $person = DB::selectOne($personQuery, ['userId' =>Auth::user()->id]);
                 $client = Client::where('person_id', $person->id)->first();
 
-                
                 $user = Auth::user();
                 unset($user->password);
                 unset($user->code);
@@ -733,7 +740,7 @@ class UserController extends Controller
                 unset(Auth::user()->code);
                 return response()->json([
                     'data' =>$data
-                ]);
+                ],200);
     
             } catch (Exception $e) {
                 return response()->json($e->getMessage());

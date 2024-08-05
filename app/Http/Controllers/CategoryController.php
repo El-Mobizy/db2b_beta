@@ -275,6 +275,8 @@ class CategoryController extends Controller
             if(File::where('referencecode',$categorie->filecode)->exists()){
                 $categorie->category_icone = File::where('referencecode',$categorie->filecode)->first()->location;
             }
+
+            
         }
 
          return response()->json([

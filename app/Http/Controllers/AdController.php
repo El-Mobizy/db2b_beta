@@ -94,6 +94,7 @@ class AdController extends Controller
 
             foreach($ads as $ad){
                 $ad->category_title =  Category::find($ad->category_id)->title;
+                $ad->category_parent =  Category::find($ad->category_id)->parent_id;
                 $ad->issynchronized = true ;
 
                 if(File::where('referencecode',$ad->file_code)->exists()){
@@ -129,6 +130,7 @@ class AdController extends Controller
 
                 foreach($ads as $ad){
                     $ad->category_title =  Category::find($ad->category_id)->title ;
+                    $ad->category_parent =  Category::find($ad->category_id)->parent_id;
                     $ad->issynchronized = true ;
 
                     if(File::where('referencecode',$ad->file_code)->exists() ==1){
@@ -174,6 +176,7 @@ class AdController extends Controller
             foreach ($ads as $ad) {
                 $ad->issynchronized = true ;
                 $ad->category_title =  Category::find($ad->category_id)->title ;
+                $ad->category_parent =  Category::find($ad->category_id)->parent_id;
                 $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
             }
     
@@ -239,6 +242,7 @@ public function getRecentAdd(Request $request,$perpage)
         foreach ($ads as $ad) {
             $ad->category_title =  Category::find($ad->category_id)->title ;
             $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+            $ad->category_parent =  Category::find($ad->category_id)->parent_id;
             $ad->issynchronized = true ;
         }
 
@@ -846,6 +850,12 @@ public function checkCategoryShop($ownerId, Request $request){
         $price = htmlspecialchars($request->input('price'));
         $location_id = htmlspecialchars($request->input('location_id'));
         $category_id = htmlspecialchars($request->input('category_id'));
+
+        if(Category::find($category_id)->parent_id == null){
+            return response()->json([
+                'message' =>"The product must be associated with a subcategory."
+            ],200);
+        }
         $shop_id = htmlspecialchars($request->input('shop_id'));
         $shop = Shop::whereId($shop_id)->first();
         $owner_id = Auth::user()->id;
