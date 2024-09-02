@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\DeliveryAgency;
 use App\Models\OtpPasswordForgotten;
 use App\Models\Person;
 use App\Models\Restricted;
@@ -80,27 +81,28 @@ class UserController extends Controller
             // ", [
             //     'username' => $email
             // ]);
-            $db = DB::connection()->getPdo();
-            $query = "
-                            SELECT * FROM users
-                            WHERE email = :email
-                            LIMIT 1
-                        ";
-            $statement = $db->prepare($query);
-            $statement->execute([
-                'email' => $email,
-            ]);
-            $user = $statement->fetch($db::FETCH_ASSOC);
+            // $db = DB::connection()->getPdo();
+            // $query = "
+            //                 SELECT * FROM users
+            //                 WHERE email = :email A
+            //                 LIMIT 1
+            //             ";
+            // $statement = $db->prepare($query);
+            // $statement->execute([
+            //     'email' => $email,
+            // ]);
+            // $user = $statement->fetch($db::FETCH_ASSOC);
+            $user = User::whereEmail($email)->whereDeleted(false)->whereEnabled(true)->first();
             if (empty($user)) {
                 return response()->json([
-                    'message' => 'Email invalid',
-                ]);
+                    'message' => 'Email invalid  or you are blocked',
+                ],200);
             }
             unset($user->code);
             unset($user->password);
             return response()->json([
                 'message' => 'Email valid',
-                'data' => $user
+                'data' => $user->email
             ]);
         }
         catch (Exception $e)
@@ -290,6 +292,9 @@ class UserController extends Controller
     {
         try
         {
+
+            // return User::whereEmail($request->username)->first();
+
             $request->validate([
                 'username' => 'required',
                 'password' => 'required',
@@ -308,7 +313,7 @@ class UserController extends Controller
         
             if(!$user){
                 return response()->json([
-                    'message' => 'Email is not valid'
+                    'message' => 'Email is not valid or you are blocked'
                 ]);
             }
                 $hashedPassword = $user->password;
@@ -358,7 +363,7 @@ class UserController extends Controller
                             // 'token_type' => 'Bearer',
                             // 'expires_in' => Auth::factory()->getTTL() * 60,
                             // 'n' => $n
-                        ]);
+                        ],200);
                     } else {
                         return response()->json(['error' => 'Invalid password !'], 200);
                     }
@@ -404,9 +409,26 @@ class UserController extends Controller
                     if($time <=$duration){
                     $sumDateTime = $currentDateTime->addMinutes($minutes)->addSeconds($seconds);
                     $formattedSumDateTime = $sumDateTime->format('Y m d H:i:s');
+
+                    $unlockDateTime = Carbon::parse($formattedDateTime)->copy()->addMinutes($duration);
+                    $formattedUnlockDateTime = $unlockDateTime->format('Y-m-d H:i:s');
+
+                    // Convertir le résultat en heures, minutes et secondes
+                    $totalSeconds = $unlockDateTime->diffInSeconds($formattedDateTime);
+                    $hours = floor($totalSeconds / 3600);
+                    $minutes = floor(($totalSeconds % 3600) / 60);
+                    $seconds = $totalSeconds % 60;
+
                     return response()->json([
-                        "message" =>"You have to wait $h hours.",
-                        "bloked" => "You're blocked"
+                        "message" =>"You have to wait.",
+                        "bloked" => "You're blocked",
+                        "bloc_date" => $a->created_at,
+                        "debloc_date" => $formattedUnlockDateTime, // Ajout de l'heure de déblocage
+                        "duree" => [
+                            "heures" => $hours,
+                            "minutes" => $minutes,
+                            "secondes" => $seconds
+                        ]
                         // 'durée total' => $timeDifference,
                         // 'date actuelle' => $currentTime,
                         // 'time' =>$time
@@ -660,12 +682,13 @@ class UserController extends Controller
                 Auth::logout();
                 return response()->json([
                     'message' => 'Successfully logged out',
-                ]);
-            } else {
-                return response()->json([
-                    'error' => 'User is not authenticated',
-                ], 401);
+                ],200);
             }
+            // else {
+            //     return response()->json([
+            //         'error' => 'User is not authenticated',
+            //     ], 401);
+            // }
         } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -727,6 +750,7 @@ class UserController extends Controller
                 $personQuery = "SELECT * FROM person WHERE user_id = :userId";
                 $person = DB::selectOne($personQuery, ['userId' =>Auth::user()->id]);
                 $client = Client::where('person_id', $person->id)->first();
+                $deliveryAgency = DeliveryAgency::where('person_id', $person->id)->first();
 
                 $user = Auth::user();
                 unset($user->password);
@@ -735,7 +759,8 @@ class UserController extends Controller
                 $data = [
                     'User_details' =>Auth::user(),
                     'Person_detail' => $person,
-                    'client_detail' => $client
+                    'client_detail' => $client,
+                    'delivery_agency_detail' => $deliveryAgency
                 ];
                 unset(Auth::user()->code);
                 return response()->json([
@@ -1273,6 +1298,7 @@ public function disabledUser($uid){
  * @OA\Post(
  *     path="/api/users/verification_code",
  *     tags={"Authentication"},
+ *  security={{"bearerAuth": {}}},
  *     summary="Vérification du code de vérification",
  *     description="Vérifie le code de vérification envoyé par l'utilisateur.",
  *     requestBody={
@@ -1355,12 +1381,12 @@ public function disabledUser($uid){
 public function verification_code(Request $request)
 {
     try {
-        // $service = new Service();
-        // $checkAuth=$service->checkAuth();
+        $service = new Service();
+        $checkAuth=$service->checkAuth();
 
-        // if($checkAuth){
-        //     return $checkAuth;
-        // }
+        if($checkAuth){
+            return $checkAuth;
+        }
         $verification = $request->code;
         $user = User::where('code', $verification)->exists();
         // return [$verification,User::where('code', $verification)->exists()];
@@ -1502,31 +1528,31 @@ public function new_code($id) {
 // }
 
 
-public function enabledUser($uid){
-    try {
+// public function enabledUser($uid){
+//     try {
 
-       $user = User::whereUid($uid)->first();
+//        $user = User::whereUid($uid)->first();
 
-       if(!$user){
-            return response()->json([
-                'status_code' => 200,
-                'message' => "User not found or already disabled !"
-            ],200);
-       }
+//        if(!$user){
+//             return response()->json([
+//                 'status_code' => 200,
+//                 'message' => "User not found or already disabled !"
+//             ],200);
+//        }
 
-       $user->enabled = true;
-       $user->save();
+//        $user->enabled = true;
+//        $user->save();
 
-        return response()->json([
-            'status_code' => 200,
-            'message' => "enabled"
-        ],200);
+//         return response()->json([
+//             'status_code' => 200,
+//             'message' => "enabled"
+//         ],200);
 
-    } catch(Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
+//     } catch(Exception $e) {
+//         return response()->json([
+//             'error' => $e->getMessage()
+//         ], 500);
+//     }
+// }
 
 }

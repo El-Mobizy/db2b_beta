@@ -108,7 +108,7 @@ class AdController extends Controller
         } catch (Exception $e) {
             // $error = 'An error occured';
             $error = $e->getMessage();
-            return(new Service())->apiResponse(500,$data,$error);
+            return(new Service())->apiResponse(500,[],$error);
         }
     }
 
@@ -144,7 +144,7 @@ class AdController extends Controller
         } catch (Exception $e) {
              // $error = 'An error occured';
              $error = $e->getMessage();
-             return(new Service())->apiResponse(500,$data,$error);
+             return(new Service())->apiResponse(500,[],$error);
         }
     }
 

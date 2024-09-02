@@ -886,26 +886,48 @@ private function getCartAds($cartItem){
             }
 
             $user = auth()->user();
+            $cartItems=[];
 
-            $cartItems =  Cart::where('user_id', $user->id)->whereIn('id',$request->cartItemids)->get()  ;
+            // $cartItems =  Cart::where('user_id', $user->id)->whereIn('id',$request->cartItemids)->get()  ;
 
-            $ads= [] ;
+            // return Cart::where('user_id', $user->id)->get();
+            $cartIds = [];
 
-            // return $cartItems;
+            foreach(Cart::where('user_id', $user->id)->get() as $cartItem){
+                foreach($request->cartItemids as $adId){
+                    if($cartItem->ad_id == $adId){
+                        $cartItems[] = Cart::where('user_id', $user->id)->where('ad_id',$adId)->first();
+                        $cartIds[] = Cart::where('user_id', $user->id)->where('ad_id',$adId)->first()->id;
+                    }
+                }
+            }
+
+
+
+            $ads=[]  ;
 
             foreach ($cartItems as $cartItem) {
-                $ads[] = $this->getCartAds($cartItem);
+                $ads[] =  [
+                    'id_product' =>Ad::whereId($cartItem->ad_id)->first()->id,
+                    'shop_product' =>Ad::whereId($cartItem->ad_id)->first()->shop->id,
+                    'id_product' =>Ad::whereId($cartItem->ad_id)->first()->id,
+                    'id_product' =>Ad::whereId($cartItem->ad_id)->first()->id,
+                    'id_product' =>Ad::whereId($cartItem->ad_id)->first()->id,
+                    'quantity_product' => $cartItem->quantity,
+                    'price_product' => Ad::whereId($cartItem->ad_id)->first()->price,
+                    'final_price_product' =>Ad::whereId($cartItem->ad_id)->first()->final_price,
+                ];
             }
-            // return [gettype($ads), $ads];
 
-            $flatAds = array_merge(...$ads);//applatir le tableau (❁´◡`❁)
+            $flatAds = array_merge($ads);
 
                     $total = array_sum(array_map(function ($item) {
                         return floatval($item['final_price_product']) * $item['quantity_product'];
                         }, $flatAds));
 
-
-                        if ($cartItems->isEmpty()) {
+                        $cartitemsnumber = count($cartItems);
+                        
+                        if ($cartitemsnumber== 0) {
                             return response()->json(['error' => 'Cart is empty'], 400);
                          }
 
@@ -913,15 +935,13 @@ private function getCartAds($cartItem){
 
                         $orderId = $this->storeOrder($total,$request);
 
-
                         foreach ($ads as $tab) {
                             $this->storeOrderDetail($tab,$orderId);
                         }
 
-
-                foreach( Cart::where('user_id', $user->id)->get() as $cart){
-                    $cart->delete();
-                }
+               foreach($cartIds as $cartId){
+                    Cart::whereId($cartId)->first()->delete();
+               }
 
                 return response()->json(
                     ['message' => 'Order created successffuly'
@@ -1589,6 +1609,73 @@ private function getCartAds($cartItem){
     }
 
 
+     /**
+     * @OA\Get(
+     *     path="/api/order/getMerchantOrder",
+     *     summary="Get all orders of the merchant",
+     *     description="Returns a list of all orders placed by the merchant",
+     *     tags={"Orders"},
+
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error"
+     *     )
+     * )
+     */
+    public function getMerchantOrder(){
+        try {
+
+            $service = new Service();
+
+            $checkAuth=$service->checkAuth();
+            if($checkAuth){
+               return $checkAuth;
+            }
+            
+            $checkIfmerchant = (new AdController())->checkMerchant();
+            
+            if($checkIfmerchant ==0){
+                return response()->json([
+                    'message' => 'You are not merchant'
+                ],200);
+            }
+            
+            $order_details = OrderDetail::whereDeleted(false)->get();
+            $userShops = (new ShopController())->anUserShop(Auth::user()->id);
+            
+            $orders = [];
+            foreach($userShops as $userShop){
+                foreach($order_details as $order_detail){
+                    if($userShop->id == $order_detail->shop_id){
+                        $orders[] = Order::whereId($order_detail->order_id)->first();
+                    }
+                }
+            }
+
+            return response()->json([
+                'data' => $orders
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 
         /**
  * @OA\Post(
@@ -1752,13 +1839,7 @@ private function getCartAds($cartItem){
         }
     }
 
-   
 
-
-
-    
-    
-    
 
 
 }

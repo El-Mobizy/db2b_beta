@@ -69,11 +69,12 @@ Route::prefix('users')->group(function () {
     Route::post('/password_recovery_second_step', [UserController::class, 'password_recovery_second_step'])->name('password_recovery_second_step');
     Route::post('/password_recovery_end_step/{email}', [UserController::class, 'password_recovery_end_step'])->name('password_recovery_end_step');
     Route::post('/disabledUser/{uid}', [UserController::class, 'disabledUser'])->name('disabledUser');
-    Route::post('/enabledUser/{uid}', [UserController::class, 'enabledUser'])->name('enabledUser');
+    // Route::post('/enabledUser/{uid}', [UserController::class, 'enabledUser'])->name('enabledUser');
     Route::post('/resendForgottenOtp/{uid}', [OtpPasswordForgottenController::class, 'resendForgottenOtp'])->name('v');
     Route::post('/new_code/{id}', [UserController::class, 'new_code'])->name('new_code');
     Route::post('/verification_code', [UserController::class, 'verification_code'])->name('verification_code');
 });
+
 
 
     Route::group(['middleware' => 'auth:api'], function () {
@@ -94,6 +95,7 @@ Route::prefix('users')->group(function () {
 
         //Cart
         Route::prefix('cart')->group(function () {
+            Route::post('/actualiseAuthCart', [CartController::class, 'actualiseAuthCart'])->name('cart.actualiseAuthCart');
             Route::post('/addToCart/{ad_id}', [CartController::class, 'addToCart'])->name('cart.addToCart');
             Route::delete('/removeToCart/{adId}', [CartController::class, 'removeToCart'])->name('cart.removeToCart');
             Route::get('/getUserCart/{page}/{perPage}', [CartController::class, 'getUserCart'])->name('cart.getUserCart');
@@ -128,6 +130,7 @@ Route::prefix('users')->group(function () {
         Route::prefix('order')->group(function () {
             Route::post('/CreateAnOrder', [OrderController::class, 'CreateAnOrder'])->name('order.CreateAnOrder');
             Route::post('/orderSingleItem', [OrderController::class, 'orderSingleItem'])->name('order.orderSingleItem');
+            Route::post('/CreateOrderFromProductIds', [OrderController::class, 'CreateOrderFromProductIds'])->name('order.CreateOrderFromProductIds');
             Route::get('/viewOrder/{orderId}', [OrderController::class, 'viewOrder'])->name('order.viewOrder');
             Route::get('/listOrders/{perpage}', [OrderController::class, 'listOrders'])->name('order.listOrders');
             Route::delete('/cancelOrder/{orderId}', [OrderController::class, 'cancelOrder'])->name('order.cancelOrder');
@@ -142,6 +145,7 @@ Route::prefix('users')->group(function () {
             Route::get('/getOrderCanceledTrade/{orderId}', [OrderController::class, 'getOrderCanceledTrade'])->name('order.getOrderCanceledTrade');
             Route::get('/getAllFinalizedOrders', [OrderController::class, 'getAllFinalizedOrders'])->name('order.getAllFinalizedOrders');
             Route::get('/userOrders/{perpage}', [OrderController::class, 'userOrders'])->name('order.userOrders');
+            Route::get('/getMerchantOrder', [OrderController::class, 'getMerchantOrder'])->name('order.getMerchantOrder');
             Route::post('/CreateAndPayOrder', [OrderController::class, 'CreateAndPayOrder'])->name('order.CreateAndPayOrder');
         });
 

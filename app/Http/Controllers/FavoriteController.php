@@ -102,8 +102,8 @@ class FavoriteController extends Controller
     }
     
     private function returnFavoritesList($user_id, $message) {
-        $page = 1; // Default page number, can be adjusted as needed
-        $perPage = 5; // Default per page, can be adjusted as needed
+        $page = 1;
+        $perPage = 6; 
     
         $db = DB::connection()->getPdo();
     

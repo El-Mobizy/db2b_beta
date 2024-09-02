@@ -57,7 +57,6 @@ class CategoryController extends Controller
 
 
             $service = new Service();
-           
 
             $exist = new Category();
                 $randomString = $service->generateRandomAlphaNumeric(7,$exist,'filecode');

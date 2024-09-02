@@ -857,7 +857,7 @@ class ShopController extends Controller
             }
             return response()->json([
                 'data'  => $userShop,
-            ]);
+            ],200);
         } catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()

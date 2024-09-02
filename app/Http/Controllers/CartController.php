@@ -95,7 +95,6 @@ class CartController extends Controller
 
     
         if ($cartItem) {
-            // return 1;
             $cartItem->quantity += 1;
             $cartItem->save();
         } else {
@@ -350,156 +349,6 @@ class CartController extends Controller
             //     ];
             // }
 
-
-    /**
- * @OA\Post(
- *     path="/api/cart/incrementQuantity",
- *     summary="Increment the quantity of a product in the cart",
- *     tags={"Cart"},
- * security={{"bearerAuth": {}}},
- *     @OA\RequestBody(
- *         @OA\MediaType(
- *             mediaType="application/json",
- *             @OA\Schema(
- *                 @OA\Property(
- *                     property="ad_id",
- *                     type="integer",
- *                     description="The ID of the product to increment the quantity of"
- *                 )
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Quantity incremented successfully",
- *         @OA\JsonContent(
- *             @OA\Property(
- *                 property="message",
- *                 type="string",
- *                 example="Quantity incremented successfully"
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Invalid input"
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthorized"
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Server error"
- *     )
- * )
- */
-    public function incrementQuantity(Request $request){
-        try {
-
-            $item = $this->getCartItem($request);
-
-            $cartItem = $item['cartItem'];
-
-            if(!$cartItem){
-                return response()->json([
-                    'message' => ' check if this ad exist '
-                ],200);
-            }
-
-           $cartItem->quantity = $cartItem->quantity + 1;
-           $cartItem->save();
-
-           return response()->json([
-            'message' => ' Incremented successffuly!'
-        ],200);
-
-        }  catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
-        }
-    }
-
-    /**
- * @OA\Post(
- *     path="/api/cart/decrementQuantity",
- *     summary="Decrement the quantity of a product in the cart",
- *     tags={"Cart"},
- * security={{"bearerAuth": {}}},
- *     @OA\RequestBody(
- *         @OA\MediaType(
- *             mediaType="application/json",
- *             @OA\Schema(
- *                 @OA\Property(
- *                     property="ad_id",
- *                     type="integer",
- *                     description="The ID of the product to decrement the quantity of"
- *                 )
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Quantity decremented successfully",
- *         @OA\JsonContent(
- *             @OA\Property(
- *                 property="message",
- *                 type="string",
- *                 example="Quantity decremented successfully"
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Invalid input"
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthorized"
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Server error"
- *     )
- * )
- */
-
-    public function decrementQuantity(Request $request){
-        try {
-
-            $item = $this->getCartItem($request);
-
-            $cartItem = $item['cartItem'];
-            
-
-            if(!$cartItem){
-                return response()->json([
-                    'message' => ' check if this ad exist '
-                ],200);
-            }
-
-           if( $cartItem->quantity == 1){
-            $cartItem->quantity = 1;
-            $cartItem->save();
-
-           }
-
-           $cartItem->quantity = $cartItem->quantity - 1;
-           $cartItem->save();
-
-           return response()->json([
-            'message' => ' Decremented successffuly!'
-        ],200);
-
-        }  catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
-        }
-    }
-
-
 //     /**
 //  * @OA\Get(
 //  *     path="/api/cart/getCartItem/{ad_id}",
@@ -559,29 +408,122 @@ class CartController extends Controller
 //  * )
 //  */
 
-    public function getCartItem(Request $request){
-        try {
-            // $request->validate([
-            //     'ad_id' => 'required',
-            // ]);
 
-          
+/**
+ * @OA\Post(
+ *     path="/api/cart/actualiseAuthCart",
+ *     summary="Update or add items to the user's cart",
+ *     description="Updates the quantity of items in the user's cart. If an item is not present in the cart, it is added.",
+ *   security={{"bearerAuth":{}}},
+ *     tags={"Cart"},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/json",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"carts"},
+ *                 @OA\Property(
+ *                     property="carts",
+ *                     type="array",
+ *                     @OA\Items(
+ *                         type="object",
+ *                         required={"ad_id", "quantity"},
+ *                         @OA\Property(
+ *                             property="ad_id",
+ *                             type="integer",
+ *                             example=1
+ *                         ),
+ *                         @OA\Property(
+ *                             property="quantity",
+ *                             type="integer",
+ *                             example=2
+ *                         )
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Cart updated successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="integer",
+ *                 example=200
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 additionalProperties=true
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Actualisation done"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Ad not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Ad not found"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="An error occurred"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Tag(
+ *         name="Cart",
+ *         description="Operations related to the user's shopping cart"
+ *     )
+ * )
+ */
+public function actualiseAuthCart(Request $request) {
+    try {
+        $request->validate([
+            'carts' => 'required|array',
+            'carts.*.ad_id' => 'required|exists:ads,id',
+            'carts.*.quantity' => 'required|integer|min:1',
+        ]);
 
-            // return ($request->ad_id);
+        $userId = Auth::user()->id;
+        $carts = $request->carts;
 
-           
+        foreach ($carts as $cart) {
+            $adId = $cart['ad_id'];
+            $quantity = $cart['quantity'];
 
-           
-
-            }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            Cart::updateOrCreate(
+                ['user_id' => $userId, 'ad_id' => $adId],
+                ['quantity' => $quantity]
+            );
         }
+
+        $AuthCarts =  Cart::where('user_id',Auth::user()->id)->get();
+
+        return (new Service())->apiResponse(200,$AuthCarts, 'Actualisation done');
+
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
     }
-    
+}
 
-    
 
- 
 }

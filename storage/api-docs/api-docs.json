@@ -1058,21 +1058,42 @@
                 ]
             }
         },
-        "/api/cart/incrementQuantity": {
+        "/api/cart/actualiseAuthCart": {
             "post": {
                 "tags": [
                     "Cart"
                 ],
-                "summary": "Increment the quantity of a product in the cart",
-                "operationId": "ca7469380058981c7073aa844e4f264a",
+                "summary": "Update or add items to the user's cart",
+                "description": "Updates the quantity of items in the user's cart. If an item is not present in the cart, it is added.",
+                "operationId": "3ca6688aa3d88807d817fdbaed7d8354",
                 "requestBody": {
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
+                                "required": [
+                                    "carts"
+                                ],
                                 "properties": {
-                                    "ad_id": {
-                                        "description": "The ID of the product to increment the quantity of",
-                                        "type": "integer"
+                                    "carts": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "ad_id",
+                                                "quantity"
+                                            ],
+                                            "properties": {
+                                                "ad_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -1082,14 +1103,22 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Quantity incremented successfully",
+                        "description": "Cart updated successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": true
+                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "Quantity incremented successfully"
+                                            "example": "Actualisation done"
                                         }
                                     },
                                     "type": "object"
@@ -1097,55 +1126,15 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Invalid input"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "500": {
-                        "description": "Server error"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/cart/decrementQuantity": {
-            "post": {
-                "tags": [
-                    "Cart"
-                ],
-                "summary": "Decrement the quantity of a product in the cart",
-                "operationId": "f0ec31585a76e45fd58b1641b5abc5b2",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "ad_id": {
-                                        "description": "The ID of the product to decrement the quantity of",
-                                        "type": "integer"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Quantity decremented successfully",
+                    "404": {
+                        "description": "Ad not found",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "message": {
+                                        "error": {
                                             "type": "string",
-                                            "example": "Quantity decremented successfully"
+                                            "example": "Ad not found"
                                         }
                                     },
                                     "type": "object"
@@ -1153,14 +1142,21 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Invalid input"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
                     "500": {
-                        "description": "Server error"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -5645,6 +5641,42 @@
                         }
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/order/getMerchantOrder": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Get all orders of the merchant",
+                "description": "Returns a list of all orders placed by the merchant",
+                "operationId": "d890bfb5fcee8a3d18a7e8bc02620e1b",
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -12473,7 +12505,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/users/new_code/{id}": {
