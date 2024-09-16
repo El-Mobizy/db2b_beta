@@ -45,7 +45,7 @@ class MailController extends Controller
                ];
 
             $receiver = User::find($reciever_id);
-               Mail::to($receiver->email)->send(new login($mail));
+            //    Mail::to($receiver->email)->send(new login($mail));
 
             $notification = new NotificationController();
             $service = new Service();

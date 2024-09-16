@@ -329,10 +329,10 @@ Route::prefix('users')->group(function () {
                 Route::post('/addOrRetrieveCategoryToSHop/{shopId}', [ShopController::class, 'addOrRetrieveCategoryToSHop'])->name('shop.addOrRetrieveCategoryToSHop');
                 Route::post('/becomeMerchant', [ShopController::class, 'becomeMerchant'])->name('shop.becomeMerchant');
                 Route::get('/AdMerchant/{shopId}/{perPage}', [ShopController::class, 'AdMerchant'])->name('shop.AdMerchant');
-
                 Route::get('/userShop', [ShopController::class, 'userShop'])->name('shop.userShop');
                 Route::get('/userPaginateShop/{perpage}', [ShopController::class, 'userPaginateShop'])->name('shop.userPaginateShop');
                 Route::get('categories/{shopId}', [ShopController::class, 'getShopCategorie'])->name('shop.getShopCategorie');
+                Route::post('/createShop/{clientId}', [ShopController::class, 'createShop'])->name('shop.createShop');
                 });
 
                 //TradeStage
@@ -448,11 +448,6 @@ Route::prefix('users')->group(function () {
         Route::get('/adminUserAccount', [Service::class, 'adminUserAccount'])->name('admin.adminUserAccount');
     });
 
-    Route::get('/index', [PostController::class, 'index']);
-    Route::get('/show/{id}', [PostController::class, 'show']);
-    Route::post('/store', [PostController::class, 'store']);
-    Route::put('/update/{id}', [PostController::class, 'update']);
-    Route::delete('/destroy/{id}', [PostController::class, 'destroy']);
 
     Route::get('isWithinDeliveryZone/{longitude}/{latitude}', [ZoneController::class, 'isWithinDeliveryZone'])->name('deliveryAgency.isWithinDeliveryZone');
 

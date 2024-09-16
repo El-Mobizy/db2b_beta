@@ -419,9 +419,10 @@ class FavoriteController extends Controller
             }
 
          Favorite::where('user_id',$user_id)->where('ad_id',$blur->id)->first()->delete();
-            return response()->json([
-                'message' => 'ad remove from favorite successfully !'
-            ]);
+         return $this->returnFavoritesList($user_id, 'ad remove from favorite successfully !');
+            // return response()->json([
+            //     'message' => 'ad remove from favorite successfully !'
+            // ]);
 
         } catch (Exception $e) {
            return response()->json([

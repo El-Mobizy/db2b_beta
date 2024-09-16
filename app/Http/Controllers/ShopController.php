@@ -133,13 +133,13 @@ class ShopController extends Controller
                 return response()->json([
                     'message' =>$createShop->original['message'],
                     'error' =>$createShop
-                ]);
+                ],200);
             }
             $client->update(['is_merchant' => 1]);
 
             return response()->json([
                 'message' =>'Shop created successffuly'
-              ]);
+              ],200);
         }catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()
@@ -148,6 +148,74 @@ class ShopController extends Controller
     }
 
 
+  /**
+ * @OA\Post(
+ *     path="/api/shop/createShop/{clientId}",
+ *     summary="Create a new shop for a client",
+ *     description="This endpoint allows you to create a new shop for a specific client. The shop must have a unique title and a description. Optional files can be uploaded and linked to the shop.",
+ *     tags={"Shop"},
+ *     @OA\Parameter(
+ *         name="clientId",
+ *         in="path",
+ *         description="ID of the client to whom the shop will belong",
+ *         required=true,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         content={
+ *             @OA\MediaType(
+ *                 mediaType="multipart/form-data",
+ *                 @OA\Schema(
+ *                     required={"title", "description"},
+ *                     @OA\Property(
+ *                         property="title",
+ *                         type="string",
+ *                         description="Title of the shop, must be unique."
+ *                     ),
+ *                     @OA\Property(
+ *                         property="description",
+ *                         type="string",
+ *                         description="Description of the shop, maximum 500 characters."
+ *                     ),
+ *                     @OA\Property(
+ *                         property="files",
+ *                         type="array",
+ *                         @OA\Items(
+ *                             type="string",
+ *                             format="binary"
+ *                         ),
+ *                         description="Optional files to upload for the shop."
+ *                     )
+ *                 )
+ *             )
+ *         }
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Shop created successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Shop created successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Validation error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="The data provided is not valid."),
+ *             @OA\Property(property="errors", type="object")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Error message")
+ *         )
+ *     ),
+ *     security={{"bearerAuth": {}}},
+ * )
+ */
     public function createShop($clientId, Request $request){
         try{
 
@@ -162,11 +230,11 @@ class ShopController extends Controller
             }
             // return $request;
 
-            if(Shop::where('client_id', $clientId)->whereDeleted(0)->exists()){
-                return response()->json([
-                    'message' => 'You already have a shop !'
-                ]);
-            }
+            // if(Shop::where('client_id', $clientId)->whereDeleted(0)->exists()){
+            //     return response()->json([
+            //         'message' => 'You already have a shop !'
+            //     ]);
+            // }
 
             $client = Client::find($clientId);
 
@@ -185,6 +253,9 @@ class ShopController extends Controller
                 $service->uploadFiles($request,$randomString,"shop");
             }
             $shop->save();
+            return response()->json([
+                'message' =>'Shop created successffuly'
+              ],200);
         }catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()

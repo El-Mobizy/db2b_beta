@@ -166,7 +166,7 @@ class DeliveryAgencyController extends Controller
      $message = new MailController();
 
      //notify delivery agent
-     $message->sendNotification(Auth::user()->id,$title,$body, 'preorder created successfully !');
+     $message->sendNotification(Auth::user()->id,$title,$body, 'delivery agent registration created successfully !');
 
       //notify admin
       $service->notifyAdmin($titleAdmin,$bodyAdmin);
