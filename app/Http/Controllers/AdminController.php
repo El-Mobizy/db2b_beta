@@ -11,11 +11,13 @@ class AdminController extends Controller
         $admin = new Admin();
         $admin->person_id = $id;
         $admin->save();
-        return response()->json(['message' => 'save successfully']);
+        return  (new Service())->apiResponse(200,[],'save successfully');
+        // return response()->json(['message' => 'save successfully']);
     }
 
     public function delete($id){
         Admin::find($id)->delete();
-        return response()->json(['message' => 'delete successfully']);
+        return  (new Service())->apiResponse(200,[],'delete successfully');
+        // return response()->json(['message' => 'delete successfully']);
     }
 }

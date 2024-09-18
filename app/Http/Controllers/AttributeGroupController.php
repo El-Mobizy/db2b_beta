@@ -51,15 +51,18 @@ class AttributeGroupController extends Controller
             $group->uid = $ulidGroup;
             $exist = AttributeGroup::where('attribute_id',$request->attribute_id)->where('group_title_id',$request->group_title_id)->exists();
             if($exist){
-                return response()->json([
-                    'message' => 'This association already exist'
-                ]);
+                return (new Service())->apiResponse(200,[],'This association already exist');
+                // return response()->json([
+                //     'message' => 'This association already exist'
+                // ]);
             }
             $group->save();
 
-            return response()->json([
-                'message' => "attribute group created successfuly"
-            ],200);
+            return (new Service())->apiResponse(200,[],'attribute group created successfuly');
+
+            // return response()->json([
+            //     'message' => "attribute group created successfuly"
+            // ],200);
         } catch (Exception $e) {
            return response()->json([
             'error' => $e->getMessage()

@@ -23,6 +23,9 @@ use Illuminate\Support\Facades\File as F ;
 use Ramsey\Uuid\Uuid;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\Validator;
+
+use Illuminate\Support\Facades\Storage;
 
 class Service extends Controller
 {
@@ -107,6 +110,13 @@ class Service extends Controller
         }
     }
 
+    public function storeSingleFile(Request $request,$randomString,$location){
+        $files = $request->files[0];
+        $this->storeFile($files,$randomString,$location);
+        return 'stock';
+
+    }
+
 
 
     private function storeFile( $photo, $randomString, $location){
@@ -144,6 +154,62 @@ class Service extends Controller
             'error' => $e->getMessage()
            ]);
         }
+    }
+    private function getFileExtension($filePath) {
+        // Retire tout jusqu'au dernier slash
+        $fileName = basename($filePath);
+    
+        // Récupère l'extension du fichier
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+    
+        return $extension;
+    }
+    public function storeFileNative(Request $request,$data= null,$randomString='aloa', $location='uploads'){
+
+        try{
+
+            $filePath =$request->data['path'];
+            // $filePath =$data['path'];
+            $localPath = str_replace('file://', '', $filePath);
+            $uid = Uuid::uuid1();
+
+            if (!F::exists($localPath)) {
+                return response()->json(['error' => 'Fichier non trouvé'], 404);
+            }
+
+
+            F::get($localPath);
+            $size = $request->data['size'];
+            $type = $this->getFileExtension($filePath);
+            $fileName = time() . '_' . basename($localPath);
+        
+            $destinationPath = public_path("image/$location/" . $fileName);
+
+            $destinationDir = public_path("image/$location");
+            if (!F::exists($destinationDir)) {
+                F::makeDirectory($destinationDir, 0755, true);
+            }
+
+            F::copy($localPath, $destinationPath);
+            $publicUrl = asset('uploads/' . $fileName);
+
+            $file = new File();
+            $file->filename = $fileName;
+            $file->type = $type;
+            $file->location =  $publicUrl;
+            $file->size = $size;
+            $file->referencecode = $randomString;
+            $file->uid = $uid;
+            $file->save();
+
+          
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ],500);
+        }
+        
+       
     }
 
     public function checkImageSize ($photo){

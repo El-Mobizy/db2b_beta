@@ -812,6 +812,223 @@
                 ]
             }
         },
+        "/api/ad/getAdBySubCategory/{categoryUid}": {
+            "get": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Get ads by subcategory",
+                "description": "Retrieve a list of ads grouped by category",
+                "operationId": "adaa351c09719ef8d4de84934c550df2",
+                "parameters": [
+                    {
+                        "name": "categoryUid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ad list grouped by category",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "title": {
+                                                        "type": "string"
+                                                    },
+                                                    "category": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found or subcategory required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ad/addInventoryToAd/{adUid}": {
+            "post": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Add inventory to ad",
+                "description": "Add inventory to an existing ad",
+                "operationId": "eda8e6d8c09c168368b494a0bc59bf07",
+                "parameters": [
+                    {
+                        "name": "adUid",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "quantity": {
+                                        "type": "integer"
+                                    },
+                                    "threshold": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Inventory added successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ad not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "405": {
+                        "description": "Quantity must be an integer",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "406": {
+                        "description": "Threshold must be an integer",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/cart/addToCart/{adId}": {
             "post": {
                 "tags": [
@@ -8503,25 +8720,14 @@
                 ]
             }
         },
-        "/api/shop/createShop/{clientId}": {
+        "/api/shop/createShop": {
             "post": {
                 "tags": [
                     "Shop"
                 ],
                 "summary": "Create a new shop for a client",
                 "description": "This endpoint allows you to create a new shop for a specific client. The shop must have a unique title and a description. Optional files can be uploaded and linked to the shop.",
-                "operationId": "e73b54f51a24ae3f9d32ef06caa8fa65",
-                "parameters": [
-                    {
-                        "name": "clientId",
-                        "in": "path",
-                        "description": "ID of the client to whom the shop will belong",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
+                "operationId": "5067dbf8829e0a4a442ba495b97fbff7",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -8540,7 +8746,7 @@
                                         "description": "Description of the shop, maximum 500 characters.",
                                         "type": "string"
                                     },
-                                    "files": {
+                                    "files[]": {
                                         "description": "Optional files to upload for the shop.",
                                         "type": "array",
                                         "items": {
@@ -8973,13 +9179,13 @@
                 ]
             }
         },
-        "/api/shop/addOrRetrieveCategoryToSHop/{shopId}": {
+        "/api/shop/addCategoryToSHop/{shopId}": {
             "post": {
                 "tags": [
                     "Shop"
                 ],
                 "summary": "Add category to shop",
-                "operationId": "9ab149696167191f71e4863807e598c0",
+                "operationId": "21bf64333803aa0b114df2b1844b40bc",
                 "parameters": [
                     {
                         "name": "shopId",
@@ -9071,14 +9277,112 @@
                 ]
             }
         },
-        "/api/shop/AdMerchant/{shopId}/{perPage}": {
+        "/api/shop/RemoveCategoryToSHop/{shopId}": {
+            "post": {
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Remove category to shop",
+                "operationId": "a08e8ffbddd54adfcc7b53df4eee69e5",
+                "parameters": [
+                    {
+                        "name": "shopId",
+                        "in": "path",
+                        "description": "Unique identifier of the shop",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "categoryIds": {
+                                        "description": "Array of category IDs to Remove to the shop",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Category Removed successfully or other message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category Removed successfully"
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": "Category Removed successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or other client error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Server error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shop/AdMerchant/{shopId}": {
             "get": {
                 "tags": [
                     "Shop"
                 ],
                 "summary": "Get ads by merchant",
                 "description": "Retrieve a paginated list of ads for a specific shop by the authenticated merchant.",
-                "operationId": "54b21d6b875c74e537f55bab66f1c2d2",
+                "operationId": "5c2f1b73ada73aa0305e3bc7d00b68ed",
                 "parameters": [
                     {
                         "name": "shopId",
@@ -9314,7 +9618,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/tradeChat/createTradeChat/{tradeId}": {

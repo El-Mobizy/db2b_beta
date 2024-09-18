@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\File;
 use App\Models\Shop;
 use App\Models\ShopHasCategory;
+use App\Models\TypeOfType;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -128,7 +129,7 @@ class ShopController extends Controller
                     'message' =>'You already is merchant'
                   ]);
             }
-            $createShop = $this->createShop($client->id, $request);
+            $createShop = $this->createShop($request);
             if($createShop){
                 return response()->json([
                     'message' =>$createShop->original['message'],
@@ -150,17 +151,10 @@ class ShopController extends Controller
 
   /**
  * @OA\Post(
- *     path="/api/shop/createShop/{clientId}",
+ *     path="/api/shop/createShop",
  *     summary="Create a new shop for a client",
  *     description="This endpoint allows you to create a new shop for a specific client. The shop must have a unique title and a description. Optional files can be uploaded and linked to the shop.",
  *     tags={"Shop"},
- *     @OA\Parameter(
- *         name="clientId",
- *         in="path",
- *         description="ID of the client to whom the shop will belong",
- *         required=true,
- *         @OA\Schema(type="integer")
- *     ),
  *     @OA\RequestBody(
  *         required=true,
  *         content={
@@ -179,7 +173,7 @@ class ShopController extends Controller
  *                         description="Description of the shop, maximum 500 characters."
  *                     ),
  *                     @OA\Property(
- *                         property="files",
+ *                         property="files[]",
  *                         type="array",
  *                         @OA\Items(
  *                             type="string",
@@ -216,18 +210,33 @@ class ShopController extends Controller
  *     security={{"bearerAuth": {}}},
  * )
  */
-    public function createShop($clientId, Request $request){
+    public function createShop(Request $request){
         try{
+
 
             $validator = Validator::make($request->all(), [
                 'title' => 'required|string|unique:shops,title',
                 'description' => ['required','max:500'],
-                'files'
+                'files' => 'required'
             ]);
             
             if ($validator->fails()) {
                 return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
+            } 
+
+            if(!$request->files){
+                return response()->json([
+                    'message' => 'No file found !'
+                ]);
             }
+
+            // if(count($request->files)==0){
+
+            //     // return [gettype($request->files), $request->files];
+            //     return response()->json([
+            //         'message' => 'files is empty'
+            //     ]);
+            // }
             // return $request;
 
             // if(Shop::where('client_id', $clientId)->whereDeleted(0)->exists()){
@@ -236,7 +245,11 @@ class ShopController extends Controller
             //     ]);
             // }
 
-            $client = Client::find($clientId);
+            $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+            $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
+    
+            $client = Client::where('person_id',$person->id)->first();
+
 
             $url = url("/api/shop/catalogueClient/$client->uid");
 
@@ -246,15 +259,15 @@ class ShopController extends Controller
             $shop->title = $request->input('title');
             $shop->description =  $request->input('description');
             $shop->shop_url = $url;
-            $shop->client_id = $clientId;
+            $shop->client_id = $client->id;
             $randomString = $service->generateRandomAlphaNumeric(7,$shop,'filecode');
             $shop->filecode = $randomString;
-            if($request->hasFile('files')){
-                $service->uploadFiles($request,$randomString,"shop");
+            if($request->files){
+                $service->storeSingleFile($request,$randomString,"shop");
             }
             $shop->save();
             return response()->json([
-                'message' =>'Shop created successffuly'
+                'message' =>'Shop created successfully'
               ],200);
         }catch(Exception $e){
             return response()->json([
@@ -466,10 +479,15 @@ class ShopController extends Controller
 
             $service = new AdController();
 
+            if(!Shop::whereUid($uid)->first()){
+                return (new Service())->apiResponse(404,[],'Shop not found');
+            }
+
             $checkShop = $service->checkShop(Shop::whereUid($uid)->first()->id);
             if($checkShop){
                 return $checkShop;
             }
+
 
             $shop = Shop::whereUid($uid)
             ->with('files')
@@ -481,6 +499,12 @@ class ShopController extends Controller
                     'message' => 'Shop not found'
                 ]);
             }
+
+            // $clientid  = (new Service())->returnClientIdUser(Auth::user()->id);
+
+            // if($shop->client_id != $clientid){
+            //     return (new Service())->apiResponse(404,[],'You cannot view the categories of a store that does not belong to you');
+            // }
 
             return response()->json([
                 'data' =>$shop
@@ -661,7 +685,7 @@ class ShopController extends Controller
 
     /**
  * @OA\Post(
- *     path="/api/shop/addOrRetrieveCategoryToSHop/{shopId}",
+ *     path="/api/shop/addCategoryToSHop/{shopId}",
  *     summary="Add category to shop",
  *     tags={"Shop"},
  *     security={{"bearerAuth": {}}},
@@ -728,58 +752,62 @@ class ShopController extends Controller
  * )
  */
 
-    public function addOrRetrieveCategoryToSHop( $shopId,Request $request){
+    public function addCategoryToSHop( $shopId,Request $request){
         try{
+
+            // return [$request->categoryIds,'autre élément'];
 
             $request->validate([
                 'categoryIds' => 'required'
             ]);
 
             if(!Shop::find($shopId)){
-                return response()->json([
-                    'message' =>"Shop not found"
-                ],404);
+                return (new Service())->apiResponse(404, [], "Shop not found");
+                // return response()->json([
+                //     'message' =>"Shop not found"
+                // ],404);
+            }
+
+            $shop = Shop::whereId($shopId)->first();
+            $clientid  = (new Service())->returnClientIdUser(Auth::user()->id);
+
+            if($shop->client_id != $clientid){
+                return (new Service())->apiResponse(404,[],'This shop is not yours');
             }
 
             $countCategory = ShopHasCategory::where('shop_id',$shopId)->whereDeleted(0)->count();
 
-          
+            $limit = TypeOfType::whereLibelle("limitOfCategory")->first()->codereference;
+
+           
 
             foreach($request->input('categoryIds') as $categoryId){
+                $categoryName =  Category::whereId($categoryId)->first()->title;
                 if(ShopHasCategory::where('shop_id',$shopId)->where('category_id',$categoryId)->whereDeleted(0)->exists()){
-
-                    if(Ad::where('shop_id',$shopId)->where('category_id',$categoryId)->whereDeleted(0)->exists())
-                    {
-                        return response()->json([
-                            'message' =>"Unable to delete a category that is associated with products in your store"
-                        ],400);
-                    }
-                    ShopHasCategory::where('shop_id',$shopId)->where('category_id',$categoryId)->delete();
-                    return response()->json([
-                        'message' =>"Category retrieved successfuly"
-                    ],200);
+                    return (new Service())->apiResponse(404,[],"The $categoryName category was already associated with this store");
                 }
-
-                $limit = 3;
-
                 if($countCategory == $limit){
-                    return response()->json([
-                        'message' =>"You have reached the maximum number of categories which is $limit you cannot add others"
-                    ],200);
+                    return (new Service())->apiResponse(404,[],"You have reached the maximum number of categories which is $limit you cannot add others");
+                //     return response()->json([
+                //         'message' =>"You have reached the maximum number of categories which is $limit you cannot add others"
+                //     ],200);
                 }
-
-                $service = new Service();
-
-                $shopHasCategory = new ShopHasCategory();
-                $shopHasCategory->uid = $service->generateUid($shopHasCategory);
-                $shopHasCategory->shop_id = $shopId;
-                $shopHasCategory->category_id = $categoryId;
-                $shopHasCategory->save();
             }
 
-            return response()->json([
-                'data' =>'Category added successfuly'
-            ],200);
+            foreach($request->input('categoryIds') as $categoryId){
+                $service = new Service();
+                    $shopHasCategory = new ShopHasCategory();
+                    $shopHasCategory->uid = $service->generateUid($shopHasCategory);
+                    $shopHasCategory->shop_id = $shopId;
+                    $shopHasCategory->category_id = $categoryId;
+                    $shopHasCategory->save();
+            }
+
+            return (new Service())->apiResponse(200, [], 'Category(ies) added successfully');
+
+            // return response()->json([
+            //     'data' =>'Category added successfully'
+            // ],200);
         }catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()
@@ -788,9 +816,123 @@ class ShopController extends Controller
     }
 
 
+     /**
+ * @OA\Post(
+ *     path="/api/shop/RemoveCategoryToSHop/{shopId}",
+ *     summary="Remove category to shop",
+ *     tags={"Shop"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="shopId",
+ *         in="path",
+ *         description="Unique identifier of the shop",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="integer"
+ *         )
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="categoryIds",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="integer"
+ *                 ),
+ *                 description="Array of category IDs to Remove to the shop"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Category Removed successfully or other message",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Category Removed successfully"
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="string",
+ *                 example="Category Removed successfully"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Validation error or other client error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Validation error message"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Server error message"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+    public function RemoveCategoryToSHop( $shopId,Request $request){
+        try{
+
+            $request->validate([
+                'categoryIds' => 'required'
+            ]);
+
+            if(!Shop::find($shopId)){
+                return (new Service())->apiResponse(404, [], "Shop not found");
+                // return response()->json([
+                //     'message' =>"Shop not found"
+                // ],404);
+            }
+
+            $shop = Shop::whereId($shopId)->first();
+            $clientid  = (new Service())->returnClientIdUser(Auth::user()->id);
+
+            if($shop->client_id != $clientid){
+                return (new Service())->apiResponse(404,[],'This shop is not yours');
+            }
+
+            foreach($request->input('categoryIds') as $categoryId){
+                $categoryName =  Category::whereId($categoryId)->first()->title;
+                if(!ShopHasCategory::where('shop_id',$shopId)->where('category_id',$categoryId)->whereDeleted(0)->exists()){
+                    return (new Service())->apiResponse(404,[],"The $categoryName category was not associated with this store");
+                }
+                if(Ad::where('shop_id',$shopId)->where('category_id',$categoryId)->whereDeleted(0)->exists())
+                {
+                    return (new Service())->apiResponse(404,[],"Unable to delete a category  $categoryName that is associated with products in your store");
+                }
+            }
+
+            foreach($request->input('categoryIds') as $categoryId){
+                ShopHasCategory::where('shop_id',$shopId)->where('category_id',$categoryId)->delete();
+            }
+
+            return (new Service())->apiResponse(200, [], 'Category(ies) removed successfuly');
+            
+        }catch(Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+            ],500);
+        }
+    }
+
 /**
  * @OA\Get(
- *     path="/api/shop/AdMerchant/{shopId}/{perPage}",
+ *     path="/api/shop/AdMerchant/{shopId}",
  *     summary="Get ads by merchant",
  *     tags={"Shop"},
  *     description="Retrieve a paginated list of ads for a specific shop by the authenticated merchant.",
@@ -848,7 +990,7 @@ class ShopController extends Controller
  *     }
  * )
  */
-    public function AdMerchant($shopId,$perPage){
+    public function AdMerchant(Request $request,$shopId){
         try{
 
             if(!Shop::whereId($shopId)->first()){
@@ -857,8 +999,16 @@ class ShopController extends Controller
                 ]) ;
             }
 
-            if($perPage > 50){
+            $perPage = $request->query('perPage');
+
+            if($perPage> 50){
                 $perPage = 50;
+            }
+
+            $clientid  = (new Service())->returnClientIdUser(Auth::user()->id);
+
+            if(Shop::whereId($shopId)->first()->client_id != $clientid){
+                return (new Service())->apiResponse(404,[],'You cannot view products that does not belong to you');
             }
 
             $ad = Ad::whereDeleted(0)
@@ -1032,6 +1182,7 @@ class ShopController extends Controller
  *     summary="Get categories of a shop",
  *     description="Retrieve all categories associated with a specific shop.",
  *     tags={"Shop"},
+ *  security={{"bearerAuth": {}}},
  *     @OA\Parameter(
  *         name="shopId",
  *         in="path",
@@ -1070,9 +1221,45 @@ class ShopController extends Controller
 
     public function getShopCategorie($shopId){
         try {
+
+            $shop = Shop::whereId($shopId)->first();
+            $clientid  = (new Service())->returnClientIdUser(Auth::user()->id);
+
+            if($shop->client_id != $clientid){
+                return (new Service())->apiResponse(404,[],'You cannot view the categories of a store that does not belong to you');
+            }
+
             $shopCategories = ShopHasCategory::where('shop_id',$shopId)->get();
+            $data = [];
             foreach($shopCategories as $shopCategorie){
-                $data[] = Category::whereId($shopCategorie->category_id)->first();
+                $category = Category::whereId($shopCategorie->category_id)->first();
+
+                // return $category->file;
+
+                // $shopCategorie->file =  Category::whereId($shopCategorie->category_id)->first()->file;
+                // $data[] = [
+                //     'category'=>Category::whereId($shopCategorie->category_id)->first(),
+                //     'image' =>Category::whereId($shopCategorie->category_id)->first()->file
+                // ];
+                $data[] = [
+                        'id' => $category->id,
+                        'title' => $category->title,
+                        'slug' => $category->slug,
+                        'total_ads' => $category->total_ads,
+                        'parent_id' => $category->parent_id,
+                        'link_category_id' => $category->link_category_id,
+                        'attribute_group_id' => $category->attribute_group_id,
+                        'deleted' => $category->deleted,
+                        'is_top' => $category->is_top,
+                        'filecode' => $category->filecode,
+                        'uid' => $category->uid,
+                        'created_at' => $category->created_at,
+                        'updated_at' => $category->updated_at,
+                        'image'=> $category->file[0]->location,
+                        'file' => $category->file
+                ];
+                
+
             }
             return response()->json([
                 'data'  => $data,
@@ -1084,6 +1271,8 @@ class ShopController extends Controller
             ],500);
         }
     }
+
+    
 
 
 }

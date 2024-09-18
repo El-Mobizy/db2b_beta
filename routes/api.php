@@ -255,13 +255,7 @@ Route::prefix('users')->group(function () {
 
            //Category
           
-            //Country
-            Route::prefix('country')->group(function () {
-                Route::post('/load', [CountryController::class, 'load'])->name('country.load');
-                Route::post('/add', [CountryController::class, 'add'])->name('country.add');
-                Route::get('/all', [CountryController::class, 'getAllCountries'])->name('country.all');
-                Route::get('/all/{perpage}', [CountryController::class, 'getAllPaginateCountries'])->name('country.getAllPaginateCountries');
-            });
+        
 
             //Favorite
             Route::prefix('favorite')->group(function () {
@@ -326,13 +320,14 @@ Route::prefix('users')->group(function () {
                 Route::get('/showShop/{uid}', [ShopController::class, 'showShop'])->name('shop.showShop');
                 Route::post('/addShopFile/{filecodeShop}', [ShopController::class, 'addShopFile'])->name('preorder.addShopFile');
                 Route::post('/updateShopFile/{uid}', [ShopController::class, 'updateShopFile'])->name('shop.updateShopFile');
-                Route::post('/addOrRetrieveCategoryToSHop/{shopId}', [ShopController::class, 'addOrRetrieveCategoryToSHop'])->name('shop.addOrRetrieveCategoryToSHop');
+                Route::post('/addCategoryToSHop/{shopId}', [ShopController::class, 'addCategoryToSHop'])->name('shop.addCategoryToSHop');
+                Route::post('/RemoveCategoryToSHop/{shopId}', [ShopController::class, 'RemoveCategoryToSHop'])->name('shop.RemoveCategoryToSHop');
                 Route::post('/becomeMerchant', [ShopController::class, 'becomeMerchant'])->name('shop.becomeMerchant');
-                Route::get('/AdMerchant/{shopId}/{perPage}', [ShopController::class, 'AdMerchant'])->name('shop.AdMerchant');
+                Route::get('/AdMerchant/{shopId}', [ShopController::class, 'AdMerchant'])->name('shop.AdMerchant');
                 Route::get('/userShop', [ShopController::class, 'userShop'])->name('shop.userShop');
                 Route::get('/userPaginateShop/{perpage}', [ShopController::class, 'userPaginateShop'])->name('shop.userPaginateShop');
                 Route::get('categories/{shopId}', [ShopController::class, 'getShopCategorie'])->name('shop.getShopCategorie');
-                Route::post('/createShop/{clientId}', [ShopController::class, 'createShop'])->name('shop.createShop');
+                Route::post('/createShop', [ShopController::class, 'createShop'])->name('shop.createShop');
                 });
 
                 //TradeStage
@@ -390,8 +385,10 @@ Route::prefix('users')->group(function () {
         Route::get('/getAdDetail/{uid}', [AdController::class, 'getAdDetail'])->name('ad.getAdDetail');
         Route::get('/checkIfAdIsRejected/{uid}', [AdController::class, 'checkIfAdIsRejected'])->name('ad.checkIfAdIsRejected');
         Route::get('/checkIfAdIsValidated/{uid}', [AdController::class, 'checkIfAdIsValidated'])->name('ad.checkIfAdIsValidated');
-
+        Route::get('/getAdBySubCategory/{catagoryUid}', [AdController::class, 'getAdBySubCategory'])->name('ad.getAdBySubCategory');
+        Route::post('/addInventoryToAd/{adUid}', [AdController::class, 'addInventoryToAd'])->name('ad.addInventoryToAd');
         Route::get('/ads', [AdController::class, 'allAds'])->name('ad.allAds');
+        Route::post('/editAd/{uid}', [AdController::class, 'editAd'])->name('ad.editAd');
     });
 
    
@@ -464,5 +461,17 @@ Route::prefix('users')->group(function () {
         Route::get('/getAllSubSubcategory', [CategoryController::class, 'getAllSubSubcategory'])->name('category.getAllSubSubcategory');
     });
 
+        //Country
+        Route::prefix('country')->group(function () {
+            Route::post('/load', [CountryController::class, 'load'])->name('country.load');
+            Route::post('/add', [CountryController::class, 'add'])->name('country.add');
+            Route::get('/all', [CountryController::class, 'getAllCountries'])->name('country.all');
+            Route::get('/all/{perpage}', [CountryController::class, 'getAllPaginateCountries'])->name('country.getAllPaginateCountries');
+        });
+
 
     Route::get('/test/create', [AdDetailController::class, 'create'])->name('create.create');
+
+    Route::post('/file/storeSingleFile', [Service::class, 'storeSingleFile'])->name('create.storeSingleFile');
+
+    Route::post('/file/storeFileNative', [Service::class, 'storeFileNative'])->name('create.storeFileNative');

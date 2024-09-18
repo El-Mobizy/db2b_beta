@@ -78,9 +78,10 @@ class CartController extends Controller
 
 
         if($checkAd == 0){
-            return response()->json([
-                'message' => 'Check if this ad is validated !'
-            ]);
+            return (new Service())->apiResponse(404,[],'Check if this ad is validated !');
+            // return response()->json([
+            //     'message' => 'Check if this ad is validated !'
+            // ]);
          }
     
         $cartItem = Cart::where('user_id', $user->id)

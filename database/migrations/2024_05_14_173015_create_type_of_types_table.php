@@ -40,6 +40,7 @@ return new class extends Migration
             ['libelle' => 'endtrade','codereference' => 'STATUS_ENDTRADE', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>null],
             ['libelle' => 'canceltrade','codereference' => 'STATUS_CANCEL_TRADE', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>null],
             ['libelle' => 'started','codereference' => 'STATUS_STARTED', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>null],
+          
         ]);
     }
 

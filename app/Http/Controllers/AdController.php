@@ -115,6 +115,8 @@ class AdController extends Controller
     public function getAllAdforAuth()
     {
         try {
+
+            $validatedStatusId = TypeOfType::where('libelle', 'validated')->first()->id;
             $userId = Auth::user()->id;
             $ads = Ad::with('file')
                 ->leftJoin('favorites', function ($join) use ($userId) {
@@ -125,7 +127,7 @@ class AdController extends Controller
                 ->select('ads.*', DB::raw('CASE WHEN favorites.id IS NULL THEN false ELSE true END as is_favorite'))
                 ->orderBy('created_at', 'desc')
                 ->where('ads.deleted', false)
-                ->where('ads.statut',5)
+                ->where('ads.statut',$validatedStatusId)
                 ->get();
 
                 foreach($ads as $ad){
@@ -151,6 +153,7 @@ class AdController extends Controller
     public function getAllRecentAdforAuth($perpage)
     {
         try {
+            $validatedStatusId = TypeOfType::where('libelle', 'validated')->first()->id;
             $service = new Service();
     
             $checkAuth = $service->checkAuth();
@@ -169,10 +172,10 @@ class AdController extends Controller
                 })
                 ->select('ads.*', DB::raw('CASE WHEN favorites.id IS NULL THEN false ELSE true END as is_favorite'))
                 ->where('ads.deleted', false)
-                ->where('ads.statut', 5)
+                ->where('ads.statut',$validatedStatusId)
                 ->orderBy('ads.created_at', 'desc')
                 ->paginate($perpage);
-    
+
             foreach ($ads as $ad) {
                 $ad->issynchronized = true ;
                 $ad->category_title =  Category::find($ad->category_id)->title ;
@@ -187,9 +190,7 @@ class AdController extends Controller
             ],200);
 
         } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-            ],200);
+            return  (new Service())->apiResponse(500,[],$e->getMessage());
         }
     }
 
@@ -246,15 +247,15 @@ public function getRecentAdd(Request $request,$perpage)
             $ad->issynchronized = true ;
         }
 
-        return response()->json([
-            'data' => $ads,
-            'status' => 'success',
-            'message' => 'A paginated list of all products to be displayed to a user'
-        ]);
+        return (new Service())->apiResponse(200,$ads,'A paginated list of all products to be displayed to a user');
+
+        // return response()->json([
+        //     'data' => $ads,
+        //     'status' => 'success',
+        //     'message' => 'A paginated list of all products to be displayed to a user'
+        // ]);
     } catch (Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ],200);
+        return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
 }
 
@@ -297,7 +298,7 @@ public function getRecentAdd(Request $request,$perpage)
     {
         try {
 
-                $ads = Ad::with('ad_detail', 'file')
+                $ads = Ad::with(['ad_detail', 'file'])
                     ->orderBy('created_at', 'desc')
                     ->where('deleted', false)
                     ->where('owner_id', Auth::user()->id)
@@ -311,16 +312,16 @@ public function getRecentAdd(Request $request,$perpage)
                     }
                 }
 
-                return response()->json([
-                    'data'=> $ads,
-                    'status' => 'success',
-                    'message' => 'List of all products to display for a logged-in user'
-                ], 200);
+                return (new Service())->apiResponse(200,$ads,'List of all products to display for a logged-in user');
+
+                // return response()->json([
+                //     'data'=> $ads,
+                //     'status' => 'success',
+                //     'message' => 'List of all products to display for a logged-in user'
+                // ], 200);
 
         } catch (Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ],200);
+            return  (new Service())->apiResponse(500,[],$e->getMessage());
         }
     }
 
@@ -394,31 +395,35 @@ public function getRecentAdd(Request $request,$perpage)
             $ad = Ad::where('uid',$uid)->first();
 
             if (!$ad) {
-                return response()->json([
-                    'message' => "Ad not found"
-                ],404);
+                // return response()->json([
+                //     'message' => "Ad not found"
+                // ],404);
+
+                return (new Service())->apiResponse(404,[],'Ad not found');
             }
 
             if($ad->deleted == true){
-                return(new Service())->apiResponse(200,[], "You can't delete a ad that's already deleted");
-                return response()->json([
-                    'message' => "You can't delete a ad that's already deleted"
-                ],202);
+                return(new Service())->apiResponse(404,[], "You can't delete a ad that's already deleted");
+                // return response()->json([
+                //     'message' => "You can't delete a ad that's already deleted"
+                // ],202);
             }
 
             if ($ad->owner_id != Auth::user()->id) {
-                return response()->json([
-                    'message' => "You can't delete a ad that you don't belong to"
-                ],403);
+                return (new Service())->apiResponse(404,[],"You can't delete a ad that you don't belong to");
+                // return response()->json([
+                //     'message' => "You can't delete a ad that you don't belong to"
+                // ],403);
             }
 
             $order_details = OrderDetail::where('ad_id',$ad->id)->whereDeleted(0)->get();
 
             foreach($order_details  as $order_detail){
                 if(Order::find($order_detail->order_id)->status != TypeOfType::whereLibelle('validated')->first()->id){
-                    return response()->json([
-                        'message' => "You can't delete a ad because it belong to a order "
-                    ],203);
+                    return (new Service())->apiResponse(404,[],'ad list grouped by category');
+                    // return response()->json([
+                    //     'message' => "You can't delete a ad because it belong to a order "
+                    // ],203);
                 }
             }
 
@@ -431,14 +436,14 @@ public function getRecentAdd(Request $request,$perpage)
             $stmt->bindValue(':uid',$uid);
             $stmt->execute();
 
-            return response()->json([
-                'message' => 'ad deleted successfully !'
-            ]);
+            return (new Service())->apiResponse(200,[],'ad deleted successfully !');
+
+            // return response()->json([
+            //     'message' => 'ad deleted successfully !'
+            // ]);
 
         } catch (Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ]);
+        return  (new Service())->apiResponse(500,[],$e->getMessage());
         }
     }
 
@@ -500,28 +505,30 @@ public function getRecentAdd(Request $request,$perpage)
         $checkIfmerchant = $this->checkMerchant();
 
         if($checkIfmerchant ==0){
-            return response()->json([
-                'message' => 'You are not merchant'
-                ],200);
+            return (new Service())->apiResponse(200,[],'You are not merchant');
+            // return response()->json([
+            //     'message' => 'You are not merchant'
+            //     ],200);
                 }
 
-                $checkCategoryShop = $this->checkCategoryShop($checkIfmerchant,$request);
-                if($checkCategoryShop){
-                    return $checkCategoryShop;
-                }
+        $checkCategoryShop = $this->checkCategoryShop($checkIfmerchant,$request);
+        if($checkCategoryShop){
+            return $checkCategoryShop;
+        }
 
-                $checkShop = $this->checkShop($request->shop_id);
-                if($checkShop){
-                    return $checkShop;
-                }
+        $checkShop = $this->checkShop($request->shop_id);
+        if($checkShop){
+            return $checkShop;
+        }
 
 
         $this->validateRequest($request);
 
         if ($request->price <= 0) {
-            return response()->json([
-                'message' => 'The price must be greater than 0'
-                ],200);
+            return (new Service())->apiResponse(200,[],'The price must be greater than 0');
+            // return response()->json([
+            //     'message' => 'The price must be greater than 0'
+            //     ],200);
           }
 
      
@@ -535,6 +542,13 @@ public function getRecentAdd(Request $request,$perpage)
          if($validateCategory){
             return $validateCategory;
          }
+
+         if(Category::find($request->category_id)->parent_id == null){
+            return (new Service())->apiResponse(404,[],'The product must be associated with a subcategory.');
+            // return response()->json([
+            //     'message' =>"The product must be associated with a subcategory."
+            // ],200);
+        }
 
         $checkFile = $service->checkFile($request);
         if($checkFile){
@@ -558,9 +572,10 @@ public function getRecentAdd(Request $request,$perpage)
 
 
      if($checkNumberProductStore === 0){
-        return response()->json([
-            'message' => "You've reached your limit of products on the store"
-        ],200);
+        return (new Service())->apiResponse(404,[],"You've reached your limit of products on the store");
+        // return response()->json([
+        //     'message' => "You've reached your limit of products on the store"
+        // ],200);
      }
 
 
@@ -587,19 +602,18 @@ public function getRecentAdd(Request $request,$perpage)
       $mes =  $message->sendNotification(Auth::user()->id,$title,$body, 'ad added successfully !');
 
       if($mes){
-        return response()->json([
-              'message' =>$mes->original['message']
-        ]);
+        return (new Service())->apiResponse(200,[],$mes->original['message']);
+        // return response()->json([
+        //       'message' =>$mes->original['message']
+        // ]);
       }
 
     } catch (Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ]);
+        return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
 }
 
-public function checkShop( $shop_id){
+public function checkShop($shop_id){
     try {
         $personQuery = "SELECT * FROM person WHERE user_id = :userId";
         $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
@@ -607,14 +621,13 @@ public function checkShop( $shop_id){
         $client = Client::where('person_id',$person->id)->first();
 
         if(!Shop::whereId($shop_id)->where('client_id',$client->id)->exists()){
-            return response()->json([
-                'message' => "Check if this shop is yours"
-            ]);
+            return (new Service())->apiResponse(404,[],'Check if this shop is yours');
+            // return response()->json([
+            //     'message' => "Check if this shop is yours"
+            // ]);
         }
     } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ]);
+        return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
 }
 
@@ -633,9 +646,7 @@ public function checkMerchant(){
 
         return $client->id;
     } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ]);
+        return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
 }
 
@@ -646,14 +657,13 @@ public function checkCategoryShop($ownerId, Request $request){
         $exist = ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->exists();
 
         if(!$exist){
-            return response()->json([
-                'message' =>'You can only add the categories added to your shop'
-            ],200);
+            return (new Service())->apiResponse(404,[],'You can only add the categories added to your shop');
+            // return response()->json([
+            //     'message' =>'You can only add the categories added to your shop'
+            // ],200);
         }
     } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ]);
+        return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
 }
 
@@ -719,9 +729,10 @@ public function checkCategoryShop($ownerId, Request $request){
         $client = Client::where('person_id',$person->id)->first();
 
         if($client->is_merchant == false){
-            return response()->json([
-                'data' =>'You cannot add a ad'
-            ],200);
+            return(new Service())->apiResponse(404,[], 'You cannot add a ad');
+            // return response()->json([
+            //     'data' =>'You cannot add a ad'
+            // ],200);
         }
 
         $shop = Shop::where('client_id',$client->id)->first();
@@ -729,23 +740,27 @@ public function checkCategoryShop($ownerId, Request $request){
         $exist = ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->exists();
 
         if(!$exist){
-            return response()->json([
-                'message' =>'You can only add the categories added to your shop'
-            ],200);
+
+            return (new Service())->apiResponse(404,[],'You can only add the categories added to your shop');
+            // return response()->json([
+            //     'message' =>'You can only add the categories added to your shop'
+            // ],200);
         }
         $existAd = Ad::where('uid',$uid)->first();
         if(!$existAd){
-            return response()->json([
-                'message' => ' Ad not found'
-            ]);
+            return (new Service())->apiResponse(404,[],'Ad not found');
+            // return response()->json([
+            //     'message' => ' Ad not found'
+            // ]);
         }
 
         $this->validateRequest($request);
 
         if ($request->price < 0) {
-            return response()->json([
-                'message' => 'The price must be greater than 0'
-                ],200);
+            return (new Service())->apiResponse(404,[],'The price must be greater than 0');
+            // return response()->json([
+            //     'message' => 'The price must be greater than 0'
+            //     ],200);
           }
 
         $service = new Service();
@@ -756,9 +771,10 @@ public function checkCategoryShop($ownerId, Request $request){
          }
 
         if($existAd->owner_id != Auth::user()->id){
-            return response()->json([
-                'error' => 'Your are not allowed'
-            ]);
+            return (new Service())->apiResponse(404,[],'Your are not allowed');
+            // return response()->json([
+            //     'error' => 'Your are not allowed'
+            // ]);
         }
 
        
@@ -766,9 +782,10 @@ public function checkCategoryShop($ownerId, Request $request){
         $ad = $this->updateAd($request,$existAd);
 
         if($ad->deleted == true){
-            return response()->json([
-                'message' => 'Your cannot edit a ad deleted'
-            ]);
+            return (new Service())->apiResponse(404,[],'Your cannot edit a ad deleted');
+            // return response()->json([
+            //     'message' => 'Your cannot edit a ad deleted'
+            // ]);
         }
 
         if(($request->has('category_id'))){
@@ -793,15 +810,18 @@ public function checkCategoryShop($ownerId, Request $request){
             $this->saveAdDetails($request, $ad);
 
             }else{
-                return response()->json([
-                    'message' => 'Veuillez envoyer  les valeurs des attributs !'
-                ]);
+
+                return(new Service())->apiResponse(404,[], 'Veuillez envoyer  les valeurs des attributs !');
+                // return response()->json([
+                //     'message' => 'Veuillez envoyer  les valeurs des attributs !'
+                // ]);
             }
         }
 
-        return response()->json([
-            'message' => 'ad edited successfully !'
-        ]);
+        return(new Service())->apiResponse(200,[], 'ad edited successfully !');
+        // return response()->json([
+        //     'message' => 'ad edited successfully !'
+        // ]);
 
     } catch (Exception $e) {
        return response()->json([
@@ -851,11 +871,6 @@ public function checkCategoryShop($ownerId, Request $request){
         $location_id = htmlspecialchars($request->input('location_id'));
         $category_id = htmlspecialchars($request->input('category_id'));
 
-        if(Category::find($category_id)->parent_id == null){
-            return response()->json([
-                'message' =>"The product must be associated with a subcategory."
-            ],200);
-        }
         $shop_id = htmlspecialchars($request->input('shop_id'));
         $shop = Shop::whereId($shop_id)->first();
         $owner_id = Auth::user()->id;
@@ -868,9 +883,10 @@ public function checkCategoryShop($ownerId, Request $request){
 
         $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();
         if($existUserAd){
-            return response()->json([
-                'message' =>'You already added this ad'
-            ],200);
+            return(new Service())->apiResponse(404,[], "You already added this ad");
+            // return response()->json([
+            //     'message' =>'You already added this ad'
+            // ],200);
         }
 
 
@@ -897,14 +913,14 @@ public function checkCategoryShop($ownerId, Request $request){
         try {
             $n = Ad::where('shop_id',$request->shop_id)->where('owner_id',Auth::user()->id)->count();
 
-            if($n >=30 ){
+            $limitOfAdInStore = TypeOfType::whereLibelle("limitOfAdInStore")->first()->codereference;
+
+            if($n >=$limitOfAdInStore ){
                 return 0;
             }
 
         } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+            return  (new Service())->apiResponse(500,[],$e->getMessage());
         }
     }
 
@@ -1051,9 +1067,7 @@ public function checkCategoryShop($ownerId, Request $request){
             'message' => 'Ad validated successfully!'
         ]);
     } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ],500);
+         return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
    }
 
@@ -1129,7 +1143,7 @@ public function checkCategoryShop($ownerId, Request $request){
    public function rejectAd(Request $request,$uid){
     try {
 
-         //todo: check if a person who make this action is an admin
+        //  todo: check if a person who make this action is an admin
 
         $request->validate([
             'reject_reason' => 'required'
@@ -1158,15 +1172,12 @@ public function checkCategoryShop($ownerId, Request $request){
         ]);
 
     } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ],500);
+         return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
    }
 
    public function checkIfAdIsPending($adUid){
         try {
-    //code...
 
             $a =  Ad::where('uid',$adUid)->first()->statut ;
             $b =TypeOfType::whereLibelle('pending')->first()->id;
@@ -1182,7 +1193,6 @@ public function checkCategoryShop($ownerId, Request $request){
 
    public function checkIfAdIsRejected($adUid){
     try {
-//code...
 
         $a =  Ad::where('uid',$adUid)->first()->statut ;
         $b =TypeOfType::whereLibelle('rejected')->first()->id;
@@ -1190,15 +1200,12 @@ public function checkCategoryShop($ownerId, Request $request){
         return $a == $b?1:0;
 
     } catch(Exception $e){
-        return response()->json([
-            'error' => $e->getMessage()
-        ],500);
+         return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
 }
 
 public function checkIfAdIsValidated($adUid){
     try {
-//code...
 
         $a =  Ad::where('uid',$adUid)->first()->statut ;
         $b =TypeOfType::whereLibelle('validated')->first()->id;
@@ -1207,9 +1214,7 @@ public function checkIfAdIsValidated($adUid){
 
         // return $a == $b?1:0;
     } catch(Exception $e){
-        return response()->json([
-            'error' => $e->getMessage()
-        ],500);
+         return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
 }
 
@@ -1220,6 +1225,7 @@ public function checkIfAdIsValidated($adUid){
      *     summary="Get ad details",
      *     description="Retrieve detailed information about an advertisement by its UID.",
      *     tags={"Ad"},
+     *  security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="adUid",
      *         in="path",
@@ -1308,10 +1314,287 @@ public function getAdDetail($adUid){
         ]);
 
     } catch(Exception $e){
-        return response()->json([
-            'error' => $e->getMessage()
-        ],500);
+         return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
 }
+/**
+ * @OA\Get(
+ *     path="/api/ad/getAdBySubCategory/{categoryUid}",
+ *     tags={"Ad"},
+ *     summary="Get ads by subcategory",
+ *     description="Retrieve a list of ads grouped by category",
+ *     @OA\Parameter(
+ *         name="categoryUid",
+ *         in="path",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\Parameter(
+ *         name="perPage",
+ *         in="query",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="integer"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Ad list grouped by category",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     @OA\Property(
+ *                         property="id",
+ *                         type="integer"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="title",
+ *                         type="string"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="category",
+ *                         type="object",
+ *                         @OA\Property(
+ *                             property="id",
+ *                             type="integer"
+ *                         ),
+ *                         @OA\Property(
+ *                             property="name",
+ *                             type="string"
+ *                         )
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Category not found or subcategory required",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+    public function getAdBySubCategory($categoryUid,$perPage=5){
+        try {
+
+            $category = Category::whereUid($categoryUid)->first();
+            if(!$category){
+                return (new Service())->apiResponse(404,[],'Category not found');
+            }
+
+            if(is_null($category->parent_id)){
+                return (new Service())->apiResponse(404,[],'You must enter a subcategory');
+            }
+
+            $ads = Ad::where('category_id',$category->id)
+            ->whereDeleted(0)
+            ->with(['ad_detail', 'file'])
+            ->with('category')
+            ->paginate($perPage);
+
+            return (new Service())->apiResponse(200,$ads,'ad list grouped by category');
+
+        } catch(Exception $e){
+        return  (new Service())->apiResponse(500,[],$e->getMessage());
+        }
+    }
+/**
+ * @OA\Post(
+ *     path="/api/ad/addInventoryToAd/{adUid}",
+ *     tags={"Ad"},
+ * security={{"bearerAuth": {}}},
+ *     summary="Add inventory to ad",
+ *     description="Add inventory to an existing ad",
+ *     @OA\Parameter(
+ *         name="adUid",
+ *         in="path",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="quantity",
+ *                 type="integer",
+ *             ),
+ *             @OA\Property(
+ *                 property="threshold",
+ *                 type="integer",
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Inventory added successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Ad not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=405,
+ *         description="Quantity must be an integer",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=406,
+ *         description="Threshold must be an integer",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+    public function addInventoryToAd(Request $request, $adUid) {
+        try {
+            $ad = Ad::whereUid($adUid)->first();
+            if (!$ad) {
+                return (new Service())->apiResponse(200, [], 'Ad not found');
+            }
+
+            
+            if($ad->owner_id ==! Auth::user()->id){
+                return (new Service())->apiResponse(404, [], "This ad it's not yours");
+            }
+            
+            $requiresQuantity = is_null($ad->quantity);
+            $requiresThreshold = is_null($ad->threshold);
+
+            $request->validate([
+                'quantity' => $requiresQuantity ? 'required|integer' : 'nullable|integer',
+                'threshold' => $requiresThreshold ? 'required|integer' : 'nullable|integer',
+            ]);
+
+            if ($request->has('quantity')) {
+                if (!is_int($request->quantity)) {
+                    return (new Service())->apiResponse(200, [], 'Quantity must be an integer');
+                }
+
+                if($request->quantity<=0){
+                    return (new Service())->apiResponse(404, [], 'Quantity must be strictly positive');
+                }
+                $ad->quantity = $request->quantity;
+            }
+
+            if ($request->has('threshold')) {
+                if (!is_int($request->threshold)) {
+                    return (new Service())->apiResponse(200, [], 'Threshold must be an integer');
+                }
+
+                if($request->threshold<=0){
+                    return (new Service())->apiResponse(404, [], 'Threshold must be strictly positive');
+                }
+                $ad->threshold = $request->threshold;
+            }
+
+            $ad->save();
+            return (new Service())->apiResponse(200, [], 'Inventory updated successfully');
+
+        } catch (Exception $e) {
+            return (new Service())->apiResponse(500, [], $e->getMessage());
+        }
+    }
+
+    public function incrementQuantity(Request $request, $adUid) {
+        try {
+            $request->validate([
+                'quantity' => 'required|integer|min:1'
+            ]);
+    
+            $ad = Ad::whereUid($adUid)->first();
+            if (!$ad) {
+                return (new Service())->apiResponse(200, [], 'Ad not found');
+            }
+    
+            $ad->quantity += $request->quantity;
+            $ad->save();
+    
+            return (new Service())->apiResponse(200, [], 'Quantity incremented successfully');
+    
+        } catch (Exception $e) {
+            return (new Service())->apiResponse(500, [], $e->getMessage());
+        }
+    }
+
+    public function decrementQuantity(Request $request, $adUid) {
+        try {
+            $request->validate([
+                'quantity' => 'required|integer|min:1'
+            ]);
+    
+            $ad = Ad::whereUid($adUid)->first();
+            if (!$ad) {
+                return (new Service())->apiResponse(200, [], 'Ad not found');
+            }
+    
+            if ($ad->quantity < $request->quantity) {
+                return (new Service())->apiResponse(200, [], 'Insufficient quantity in stock');
+            }
+    
+            $ad->quantity -= $request->quantity;
+            $ad->save();
+    
+            return (new Service())->apiResponse(200, [], 'Quantity decremented successfully');
+    
+        } catch (Exception $e) {
+            return (new Service())->apiResponse(500, [], $e->getMessage());
+        }
+    }
+    
+
 
 }
