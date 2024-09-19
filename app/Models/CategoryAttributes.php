@@ -22,4 +22,8 @@ class CategoryAttributes extends Model
         'deleted',
         'uid',
     ];
+
+    public function attribute_group(){
+        return $this->belongsTo(AttributeGroup::class);
+    }
 }

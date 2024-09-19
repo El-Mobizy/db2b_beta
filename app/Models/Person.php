@@ -44,4 +44,9 @@ class Person extends Model
         return $this->hasMany(CommissionWallet::class)->whereDeleted(0);
     }
 
+    public function file()
+    {
+        return $this->hasOne(File::class,'referencecode','profile_img_code');
+    }
+
 }

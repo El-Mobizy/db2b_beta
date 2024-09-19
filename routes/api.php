@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\AdDetailController;
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttributeGroupController;
 use App\Http\Controllers\CartController;
@@ -364,6 +365,18 @@ Route::prefix('users')->group(function () {
                     Route::post('/removeZone/{zoneUid}', [DeliveryAgentZoneController::class, 'removeZone'])->name('deliveryzone.removeZone');
                     Route::get('/DeliveryAgentZones', [DeliveryAgentZoneController::class, 'DeliveryAgentZones'])->name('deliveryzone.DeliveryAgentZones');
                 });
+
+                //Address
+
+                Route::prefix('address')->group(function () {
+                    Route::post('/createAddress', [AddressController::class, 'createAddress'])->name('address.createAddress');
+                    Route::get('/getAddress/{addressUid}', [AddressController::class, 'getAddress'])->name('address.getAddress');
+                    Route::get('/getAllAuthAddresses', [AddressController::class, 'getAllAuthAddresses'])->name('address.getAllAuthAddresses');
+                    Route::get('/getAllUserAddresses/{userUid}', [AddressController::class, 'getAllUserAddresses'])->name('address.getAllUserAddresses');
+                    Route::put('/updateAddress/{addressUid}', [AddressController::class, 'updateAddress'])->name('address.updateAddress');
+                    Route::delete('/deleteAddress/{id}', [AddressController::class, 'deleteAddress'])->name('address.deleteAddress');
+                });
+                
 
     });
 

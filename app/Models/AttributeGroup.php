@@ -14,4 +14,13 @@ class AttributeGroup extends Model
         'deleted',
         'uid',
     ];
+
+    public function categories(){
+        return $this->hasMany(Category::class);
+    }
+
+    public function attributes()
+    {
+        return $this->hasMany(CategoryAttributes::class);
+    }
 }

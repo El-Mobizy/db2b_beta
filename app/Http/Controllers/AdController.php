@@ -544,7 +544,7 @@ public function getRecentAdd(Request $request,$perpage)
          }
 
          if(Category::find($request->category_id)->parent_id == null){
-            return (new Service())->apiResponse(404,[],'The product must be associated with a subcategory.');
+            return (new Service())->apiResponse(404,[],'Ad must be associated with a subcategory.');
             // return response()->json([
             //     'message' =>"The product must be associated with a subcategory."
             // ],200);
@@ -980,7 +980,8 @@ public function checkCategoryShop($ownerId, Request $request){
     // $existAd->category_id = $category_id ?? $existAd->category_id;
     $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();
         if($existUserAd){
-            throw new \Exception('You already added this ad');
+            // throw new \Exception('You already added this ad');
+            return (new Service())->apiResponse(404,[],'You already added this ad');
         }
 
     $existAd->save();
@@ -1047,15 +1048,17 @@ public function checkCategoryShop($ownerId, Request $request){
         $ad = Ad::where('uid',$uid)->first();
         // dd($ad->validated_by_id);
         if(!$ad){
-            return response()->json([
-                'message' => ' Ad not found'
-            ],404);
+            return (new Service())->apiResponse(404,[],' Ad not found');
+            // return response()->json([
+            //     'message' => ' Ad not found'
+            // ],404);
         }
 
         if($ad->statut != TypeOfType::whereLibelle('pending')->first()->id){
-            return response()->json([
-                'message' => 'Statut of ad must be pending. Please, check it !'
-            ]);
+            return (new Service())->apiResponse(404,[],'Statut of ad must be pending. Please, check it !');
+            // return response()->json([
+            //     'message' => 'Statut of ad must be pending. Please, check it !'
+            // ]);
         }
 
         $ad->statut = TypeOfType::whereLibelle('validated')->first()->id;
@@ -1063,9 +1066,11 @@ public function checkCategoryShop($ownerId, Request $request){
         $ad->validated_by_id = Auth::user()->id;
         $ad->save();
 
-        return response()->json([
-            'message' => 'Ad validated successfully!'
-        ]);
+        return (new Service())->apiResponse(404,[],'Ad validated successfully!');
+
+        // return response()->json([
+        //     'message' => 'Ad validated successfully!'
+        // ]);
     } catch (\Exception $e) {
          return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
@@ -1150,15 +1155,17 @@ public function checkCategoryShop($ownerId, Request $request){
         ]);
         $ad = Ad::where('uid',$uid)->first();
         if(!$ad){
-            return response()->json([
-                'message' => ' Ad not found'
-            ]);
+            return (new Service())->apiResponse(404,[],'Ad not found');
+            // return response()->json([
+            //     'message' => ' Ad not found'
+            // ]);
         }
 
         if($ad->statut != TypeOfType::whereLibelle('pending')->first()->id){
-            return response()->json([
-                'message' => 'Statut of ad must be pending. Please, check it !'
-            ]);
+            return (new Service())->apiResponse(404,[],'Statut of ad must be pending. Please, check it !');
+            // return response()->json([
+            //     'message' => 'Statut of ad must be pending. Please, check it !'
+            // ]);
         }
 
         $ad->validated_by_id = Auth::user()->id;
@@ -1167,9 +1174,11 @@ public function checkCategoryShop($ownerId, Request $request){
         $ad->reject_reason = $request->input('reject_reason');
         $ad->save();
 
-        return response()->json([
-            'message' => 'Ad rejected successfully!'
-        ]);
+        return (new Service())->apiResponse(404,[],'Ad rejected successfully!');
+
+        // return response()->json([
+        //     'message' => 'Ad rejected successfully!'
+        // ]);
 
     } catch (\Exception $e) {
          return  (new Service())->apiResponse(500,[],$e->getMessage());
@@ -1185,9 +1194,7 @@ public function checkCategoryShop($ownerId, Request $request){
             return $a == $b?1:0;
 
         } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return  (new Service())->apiResponse(500,[],$e->getMessage());
         }
    }
 
@@ -1282,9 +1289,10 @@ public function getAdDetail($adUid){
         $ad =  Ad::where('uid',$adUid)->first() ;
 
            if(!$ad){
-            return response()->json([
-                'message' => 'Ad not found !'
-            ]);
+            return (new Service())->apiResponse(404,[],'Ad not found !');
+            // return response()->json([
+            //     'message' => 'Ad not found !'
+            // ]);
         }
 
         $attributes = AdDetail::where('ad_id',$ad->id)->whereDeleted(false)->get();
@@ -1503,7 +1511,7 @@ public function getAdDetail($adUid){
         try {
             $ad = Ad::whereUid($adUid)->first();
             if (!$ad) {
-                return (new Service())->apiResponse(200, [], 'Ad not found');
+                return (new Service())->apiResponse(404, [], 'Ad not found');
             }
 
             
@@ -1532,7 +1540,7 @@ public function getAdDetail($adUid){
 
             if ($request->has('threshold')) {
                 if (!is_int($request->threshold)) {
-                    return (new Service())->apiResponse(200, [], 'Threshold must be an integer');
+                    return (new Service())->apiResponse(404, [], 'Threshold must be an integer');
                 }
 
                 if($request->threshold<=0){

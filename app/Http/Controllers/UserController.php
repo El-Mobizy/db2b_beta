@@ -737,39 +737,56 @@ class UserController extends Controller
  * )
  */
 
-        public function userAuth(){
-            try{
+ public function userAuth()
+ {
+     try {
+         $service = new Service();
+         $checkAuth = $service->checkAuth();
+ 
+         if ($checkAuth) {
+             return $checkAuth;
+         }
 
-                  $service = new Service();
-                    $checkAuth=$service->checkAuth();
+         $personId = (new Service())->returnPersonIdAuth();
 
-                    if($checkAuth){
-                        return $checkAuth;
-                    }
-                $personQuery = "SELECT * FROM person WHERE user_id = :userId";
-                $person = DB::selectOne($personQuery, ['userId' =>Auth::user()->id]);
-                $client = Client::where('person_id', $person->id)->first();
-                $deliveryAgency = DeliveryAgency::where('person_id', $person->id)->first();
+         $person = Person::whereId($personId)->first();
+ 
+         $client = Client::where('person_id', $personId)->first();
+         $deliveryAgency = DeliveryAgency::where('person_id', $personId)->first();
 
-                $user = Auth::user();
-                unset($user->password);
-                unset($user->code);
-
-                $data = [
-                    'User_details' =>Auth::user(),
-                    'Person_detail' => $person,
-                    'client_detail' => $client,
-                    'delivery_agency_detail' => $deliveryAgency
-                ];
-                unset(Auth::user()->code);
-                return response()->json([
-                    'data' =>$data
-                ],200);
-    
-            } catch (Exception $e) {
-                return response()->json($e->getMessage());
-            }
-        }
+         $roles = [];
+ 
+         $user = Auth::user();
+         unset($user->password, $user->code);
+ 
+         
+         $roles[] = 'user'; 
+ 
+         if ($client && $client->is_merchant) {
+             $roles[] = 'merchant';
+         }
+ 
+         if ($deliveryAgency) {
+             $roles[] = 'delivery_agent';
+         }
+ 
+         $data = [
+             'User_details' => $user,
+             'Person_detail' => $person->file,
+             'client_detail' => $client,
+             'delivery_agency_detail' => $deliveryAgency,
+             'role' => $roles,
+             'file' => $person->file->location
+         ];
+ 
+         return response()->json([
+             'data' => $data
+         ], 200);
+     } catch (Exception $e) {
+         return response()->json($e->getMessage());
+     }
+ }
+ 
 
 /**
  * @OA\Get(

@@ -38,5 +38,9 @@ class Category extends Model
     {
         return $this->hasMany(File::class,'referencecode','filecode');
     }
+
+    public function attribute_group(){
+        return $this->belongsTo(AttributeGroup::class);
+    }
 }
 

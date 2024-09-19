@@ -6,6 +6,7 @@ use App\Models\Ad;
 use App\Models\Category;
 use App\Models\Client;
 use App\Models\File;
+use App\Models\Order;
 use App\Models\Shop;
 use App\Models\ShopHasCategory;
 use App\Models\TypeOfType;
@@ -125,26 +126,31 @@ class ShopController extends Controller
             $client = Client::where('person_id',$person->id)->first();
             // $client = Client::where('id',$clientId)->first();
             if($client->is_merchant == 1){
-                return response()->json([
-                    'message' =>'You already is merchant'
-                  ]);
+                return (new Service())->apiResponse(404, [], 'You already is merchant');
+                // return response()->json([
+                //     'message' =>'You already is merchant'
+                //   ]);
             }
             $createShop = $this->createShop($request);
             if($createShop){
-                return response()->json([
-                    'message' =>$createShop->original['message'],
-                    'error' =>$createShop
-                ],200);
+                return (new Service())->apiResponse(404,$createShop, $createShop->original['message']);
+                // return response()->json([
+                //     'message' =>$createShop->original['message'],
+                //     'error' =>$createShop
+                // ],200);
             }
-            $client->update(['is_merchant' => 1]);
+            // $client->update(['is_merchant' => 1]);
 
-            return response()->json([
-                'message' =>'Shop created successffuly'
-              ],200);
+            $client->is_merchant = 1;
+            $client->save();
+
+            return (new Service())->apiResponse(200, [], 'Shop created successfully');
+
+            // return response()->json([
+            //     'message' =>'Shop created successffuly'
+            //   ],200);
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -221,13 +227,15 @@ class ShopController extends Controller
             ]);
             
             if ($validator->fails()) {
-                return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
+                return (new Service())->apiResponse(404, [], 'The data provided is not valid. '. $validator->errors());
+                // return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
             } 
 
             if(!$request->files){
-                return response()->json([
-                    'message' => 'No file found !'
-                ]);
+                return (new Service())->apiResponse(404, [], 'No file found !');
+                // return response()->json([
+                //     'message' => 'No file found !'
+                // ]);
             }
 
             // if(count($request->files)==0){
@@ -266,9 +274,10 @@ class ShopController extends Controller
                 $service->storeSingleFile($request,$randomString,"shop");
             }
             $shop->save();
-            return response()->json([
-                'message' =>'Shop created successfully'
-              ],200);
+            return (new Service())->apiResponse(200, [], 'Shop created successfully');
+            // return response()->json([
+            //     'message' =>'Shop created successfully'
+            //   ],200);
         }catch(Exception $e){
             return response()->json([
                 'error' => $e->getMessage()
@@ -375,18 +384,20 @@ class ShopController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
+                 return (new Service())->apiResponse(200, [], 'The data provided is not valid.'.$validator->errors());
+                // return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
             }
             $request->validate([
-                'title' => 'required',
-                'description' => 'required'
+                'title' => '',
+                'description' => ''
             ]);
             $shop = Shop::whereUid($uid)->whereDeleted(0)->first();
 
             if(!$shop){
-                return response()->json([
-                    'message' => 'Shop not found!'
-                ]);
+                return (new Service())->apiResponse(404, [], 'Shop not found!');
+                // return response()->json([
+                //     'message' => 'Shop not found!'
+                // ]);
             }
 
             $shopv = new AdController();
@@ -396,24 +407,25 @@ class ShopController extends Controller
                 return $checkShop;
             }
             $service = new Service();
-            $shop->title = $request->input('title');
-            $shop->description = $request->input('description');
+            $shop->title = $request->input('title')??$shop->title;
+            $shop->description = $request->input('description')??$shop->description;
             if($request->hasFile('files')){
                 $service->uploadFiles($request,$shop->filecode,"shop");
             }
             if(Shop::whereTitle($request->input('title'))->whereDeleted(0)->exists()){
-                return response()->json([
-                    'message' => 'This name is already takken, please change it!'
-                ]);
+                return (new Service())->apiResponse(404, [], 'This name is already takken, please change it!');
+                // return response()->json([
+                //     'message' => 'This name is already takken, please change it!'
+                // ]);
             }
             $shop->save();
-            return response()->json([
-                'message' =>'Shop updated successffuly'
-              ]); 
+
+            return (new Service())->apiResponse(404, [], 'Shop updated successfully');
+            // return response()->json([
+            //     'message' =>'Shop updated successffuly'
+            //   ]); 
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -472,9 +484,10 @@ class ShopController extends Controller
         try{
 
             if (!Auth::user()) {
-                return response()->json([
-                    'message' => 'UNAUTHENFICATED'
-                ]);
+                return (new Service())->apiResponse(404, [], 'UNAUTHENFICATED');
+                // return response()->json([
+                //     'message' => 'UNAUTHENFICATED'
+                // ]);
             }
 
             $service = new AdController();
@@ -491,29 +504,47 @@ class ShopController extends Controller
 
             $shop = Shop::whereUid($uid)
             ->with('files')
-            ->with('ads')
             ->whereDeleted(0)
             ->first();
             if(!$shop){
-                return response()->json([
-                    'message' => 'Shop not found'
-                ]);
+                return (new Service())->apiResponse(404, [], 'Shop not found');
+                // return response()->json([
+                //     'message' => 'Shop not found'
+                // ]);
             }
 
-            // $clientid  = (new Service())->returnClientIdUser(Auth::user()->id);
+            $validatedStatusId = TypeOfType::where('libelle', 'validated')->first()->id;
 
-            // if($shop->client_id != $clientid){
-            //     return (new Service())->apiResponse(404,[],'You cannot view the categories of a store that does not belong to you');
-            // }
+            $clients = Order::where('status',$validatedStatusId)->whereHas('order_details.ad', function($query) use ($shop) {
+                $query->where('shop_id', $shop->id);
+            })->pluck('user_id')->unique()->values()->toArray();
 
-            return response()->json([
-                'data' =>$shop
-            ]);
+            // return $clients;
+
+            $statistique = [
+                'category' => count($this->getShopCategorie($shop->id)->original['data']),
+                'customer' => $clients,
+                'ad' => Ad::where('owner_id',Auth::user()->id)->where('shop_id',$shop->id)->count(),
+                'orders' =>Order::where('status',$validatedStatusId)->whereHas('order_details.ad', function($query) use ($shop) {
+                    $query->where('shop_id', $shop->id);
+                })->count()
+            ];
+
+            $clientid  = (new Service())->returnClientIdUser(Auth::user()->id);
+
+            if($shop->client_id != $clientid){
+                return (new Service())->apiResponse(404,[],'You cannot view the categories of a store that does not belong to you');
+            }
+
+            $shop->statistique = $statistique;
+
+            return (new Service())->apiResponse(404, $shop, 'Shop detail');
+            // return response()->json([
+            //     'data' =>$shop
+            // ]);
 
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -581,14 +612,13 @@ class ShopController extends Controller
 
             $service->uploadFiles($request,$filecodeShop,'shop');
 
+            return (new Service())->apiResponse(404, [], 'file add successfully');
 
-            return response()->json([
-                'data' =>'file add successfuly'
-            ]);
+            // return response()->json([
+            //     'data' =>'file add successfuly'
+            // ]);
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -666,6 +696,11 @@ class ShopController extends Controller
                 'files' => 'required'
             ]);
             $existFile = File::whereUid($uid)->first();
+
+            if(!$existFile){
+                return (new Service())->apiResponse(404, [], 'Shop file not found');
+            }
+
             $randomString = $existFile->codereference;
 
             $service = new Service();
@@ -677,9 +712,7 @@ class ShopController extends Controller
                 'messge' =>'file update successfuly'
             ],200);
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -758,7 +791,8 @@ class ShopController extends Controller
             // return [$request->categoryIds,'autre élément'];
 
             $request->validate([
-                'categoryIds' => 'required'
+                'categoryIds' => 'required|array',
+                'categoryIds.*' => 'integer|exists:categories,id'
             ]);
 
             if(!Shop::find($shopId)){
@@ -786,6 +820,10 @@ class ShopController extends Controller
                 if(ShopHasCategory::where('shop_id',$shopId)->where('category_id',$categoryId)->whereDeleted(0)->exists()){
                     return (new Service())->apiResponse(404,[],"The $categoryName category was already associated with this store");
                 }
+                if(Category::whereId($categoryId)->first()->attribute_group_id == null){
+                    return (new Service())->apiResponse(404,[],"The $categoryName category does not have an attribute so you cannot associate it with your store");
+                }
+        
                 if($countCategory == $limit){
                     return (new Service())->apiResponse(404,[],"You have reached the maximum number of categories which is $limit you cannot add others");
                 //     return response()->json([
@@ -809,9 +847,7 @@ class ShopController extends Controller
             //     'data' =>'Category added successfully'
             // ],200);
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -889,7 +925,8 @@ class ShopController extends Controller
         try{
 
             $request->validate([
-                'categoryIds' => 'required'
+                'categoryIds' => 'required|array',
+                'categoryIds.*' => 'integer|exists:categories,id'
             ]);
 
             if(!Shop::find($shopId)){
@@ -924,9 +961,7 @@ class ShopController extends Controller
             return (new Service())->apiResponse(200, [], 'Category(ies) removed successfuly');
             
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -1011,7 +1046,7 @@ class ShopController extends Controller
                 return (new Service())->apiResponse(404,[],'You cannot view products that does not belong to you');
             }
 
-            $ad = Ad::whereDeleted(0)
+            $ads = Ad::whereDeleted(0)
             ->where('owner_id',Auth::user()->id)
             ->where('shop_id',$shopId)
             ->with('file')
@@ -1019,13 +1054,24 @@ class ShopController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
-            return response()->json([
-                'data' => $ad
-            ]) ;
+            foreach($ads as $ad){
+                $ad->category_title =  Category::find($ad->category_id)->title;
+                $ad->category_parent =  Category::find($ad->category_id)->parent_id;
+                $ad->issynchronized = true ;
+
+                if(File::where('referencecode',$ad->file_code)->exists()){
+                    $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+                }
+                $data[] = $ad;
+            }
+
+            return (new Service())->apiResponse(200,  $ads, 'list of ads for a specific shop by the authenticated merchant.');
+
+            // return response()->json([
+            //     'data' => $ad
+            // ]) ;
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -1034,7 +1080,7 @@ class ShopController extends Controller
  * @OA\Get(
  *     path="/api/shop/userShop",
  *     summary="Get user's shop",
- *     description="Retrieve the shop details for the authenticated user",
+ *     description="Retrieve the shop for the authenticated user",
  *     operationId="getUserShop",
  *     tags={"Shop"},
  *     @OA\Response(
@@ -1072,17 +1118,18 @@ class ShopController extends Controller
             ->get();
 
             if(count(  $userShop) === 0){
-                return response()->json([
-                    'message'  => "No shop found",
-                ]);
+                return (new Service())->apiResponse(404, [], 'No shop found');
+                // return response()->json([
+                //     'message'  => "No shop found",
+                // ]);
             }
-            return response()->json([
-                'data'  => $userShop,
-            ],200);
+
+            return (new Service())->apiResponse(200, $userShop, 'list of shop for the authenticated user');
+            // return response()->json([
+            //     'data'  => $userShop,
+            // ],200);
         } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -1096,17 +1143,16 @@ class ShopController extends Controller
             ->get();
 
             if(count(  $userShop) === 0){
-                return response()->json([
-                    'message'  => "No shop found",
-                ]);
+                return (new Service())->apiResponse(404, [], 'No shop found');
+                // return response()->json([
+                //     'message'  => "No shop found",
+                // ]);
             }
 
             return $userShop;
 
         } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -1161,17 +1207,18 @@ class ShopController extends Controller
         ->paginate($perpage);
 
         if(count(  $userShop) === 0){
-            return response()->json([
-                'message'  => "No shop found",
-            ]);
+            return (new Service())->apiResponse(404, [], 'No shop found');
+            // return response()->json([
+            //     'message'  => "No shop found",
+            // ]);
         }
-        return response()->json([
-            'data'  => $userShop,
-        ]);
+
+        return (new Service())->apiResponse(200, $userShop, 'list of shop for the authenticated user');
+        // return response()->json([
+        //     'data'  => $userShop,
+        // ]);
     } catch(Exception $e){
-        return response()->json([
-            'error' => $e->getMessage()
-        ],500);
+        return (new Service())->apiResponse(500, [], $e->getMessage());
     }
 }
 
@@ -1234,13 +1281,6 @@ class ShopController extends Controller
             foreach($shopCategories as $shopCategorie){
                 $category = Category::whereId($shopCategorie->category_id)->first();
 
-                // return $category->file;
-
-                // $shopCategorie->file =  Category::whereId($shopCategorie->category_id)->first()->file;
-                // $data[] = [
-                //     'category'=>Category::whereId($shopCategorie->category_id)->first(),
-                //     'image' =>Category::whereId($shopCategorie->category_id)->first()->file
-                // ];
                 $data[] = [
                         'id' => $category->id,
                         'title' => $category->title,
@@ -1261,14 +1301,13 @@ class ShopController extends Controller
                 
 
             }
-            return response()->json([
-                'data'  => $data,
-            ]);
+            return (new Service())->apiResponse(404, $data,'Get categories of specific shop');
+            // return response()->json([
+            //     'data'  => $data,
+            // ]);
 
         } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 

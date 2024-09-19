@@ -16,4 +16,10 @@ class OrderDetail extends Model
     public function trade(){
         return $this->hasOne(Trade::class);
     }
+
+    public function ad()
+{
+    return $this->belongsTo(Ad::class);
+}
+
 }

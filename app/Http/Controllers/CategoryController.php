@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AttributeGroup;
 use App\Models\Category;
+use App\Models\CategoryAttributes;
 use App\Models\File;
 use Exception;
 use Illuminate\Http\Request;
@@ -292,9 +294,9 @@ class CategoryController extends Controller
 
  /**
  * @OA\Get(
- *     path="/api/category/getAllSubSubcategory",
+ *     path="/api/category/getAllSubCategory",
  *     summary="Get all sub-subcategories",
- *     tags={"SubSubcategories"},
+ *     tags={"SubCategories"},
  *     @OA\Response(
  *         response=200,
  *         description="Successful operation",
@@ -324,16 +326,32 @@ class CategoryController extends Controller
  public function getAllSubSubcategory()
 {
     try {
-        $subSubcategories = Category::with('file')->whereDeleted(0)->whereNotNull('parent_id')->get();
+        // Récupère toutes les sous-catégories avec leurs fichiers associés
+        $subCategories = Category::with('file')
+            ->whereDeleted(0)
+            ->whereNotNull('parent_id')
+            ->get();
 
-        foreach ($subSubcategories as $subSubcategory) {
-            if (File::where('referencecode', $subSubcategory->filecode)->exists()) {
-                $subSubcategory->category_icone = File::where('referencecode', $subSubcategory->filecode)->first()->location;
+        $attributes = [];
+
+        foreach ($subCategories as $subCategory) {
+            if (File::where('referencecode', $subCategory->filecode)->exists()) {
+                $subCategory->category_icone = File::where('referencecode', $subCategory->filecode)->first()->location;
             }
+
+            if ($subCategory->attribute_group_id != null) {
+                $attributes[] = $subCategory->attribute_group;
+                // $attributes[] = CategoryAttributes::whereId($subCategory->attribute_group->attributes->id)->first();
+                // foreach (AttributeGroup::where('group_title_id', $subCategory->attribute_group->group_title_id)->get() as $group) {
+                //     $attributes[] = CategoryAttributes::whereId($group->attribute_id)->first();
+                // }
+            }
+
+            $subCategory->attribute = $attributes;
         }
 
         return response()->json([
-            'data' => $subSubcategories
+            'data' => $subCategories
         ]);
 
     } catch (Exception $e) {
@@ -343,11 +361,12 @@ class CategoryController extends Controller
     }
 }
 
+
 /**
  * @OA\Get(
- *     path="/api/category/getAllPaginateSubSubcategory/paginate",
+ *     path="/api/category/getAllPaginateSubCategory/paginate",
  *     summary="Get paginated sub-subcategories",
- *     tags={"SubSubcategories"},
+ *     tags={"SubCategories"},
  *     @OA\Parameter(
  *         name="perpage",
  *         in="query",
@@ -386,16 +405,19 @@ class CategoryController extends Controller
 public function getAllPaginateSubSubcategory($perpage)
 {
     try {
-        $subSubcategories = Category::with('file')->whereDeleted(0)->whereNotNull('parent_id')->paginate(intval($perpage));
+        $subCategories = Category::with('file')->whereDeleted(0)->whereNotNull('parent_id')->paginate(intval($perpage));
 
-        foreach ($subSubcategories as $subSubcategory) {
-            if (File::where('referencecode', $subSubcategory->filecode)->exists()) {
-                $subSubcategory->category_icone = File::where('referencecode', $subSubcategory->filecode)->first()->location;
+        foreach ($subCategories as $subCategory) {
+            if (File::where('referencecode', $subCategory->filecode)->exists()) {
+                $subCategory->category_icone = File::where('referencecode', $subCategory->filecode)->first()->location;
             }
+           
         }
 
+     
+
         return response()->json([
-            'data' => $subSubcategories
+            'data' => $subCategories
         ]);
 
     } catch (Exception $e) {
