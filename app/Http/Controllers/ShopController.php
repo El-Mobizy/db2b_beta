@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Shop;
 use App\Models\ShopHasCategory;
 use App\Models\TypeOfType;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -220,38 +221,20 @@ class ShopController extends Controller
         try{
 
 
+
             $validator = Validator::make($request->all(), [
                 'title' => 'required|string|unique:shops,title',
                 'description' => ['required','max:500'],
-                'files' => 'required'
+                'files' => ''
             ]);
+
+            DB::beginTransaction();
             
             if ($validator->fails()) {
                 return (new Service())->apiResponse(404, [], 'The data provided is not valid. '. $validator->errors());
                 // return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
             } 
 
-            if(!$request->files){
-                return (new Service())->apiResponse(404, [], 'No file found !');
-                // return response()->json([
-                //     'message' => 'No file found !'
-                // ]);
-            }
-
-            // if(count($request->files)==0){
-
-            //     // return [gettype($request->files), $request->files];
-            //     return response()->json([
-            //         'message' => 'files is empty'
-            //     ]);
-            // }
-            // return $request;
-
-            // if(Shop::where('client_id', $clientId)->whereDeleted(0)->exists()){
-            //     return response()->json([
-            //         'message' => 'You already have a shop !'
-            //     ]);
-            // }
 
             $personQuery = "SELECT * FROM person WHERE user_id = :userId";
             $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
@@ -271,14 +254,22 @@ class ShopController extends Controller
             $randomString = $service->generateRandomAlphaNumeric(7,$shop,'filecode');
             $shop->filecode = $randomString;
             if($request->files){
-                $service->storeSingleFile($request,$randomString,"shop");
+                // return (new Service())->apiResponse(200,  $request, '');
+                return  $service->uploadFiles($request,$randomString,"shop");
             }
+            // else{
+            //     return (new Service())->apiResponse(200, [], 'no file');
+            // }
+
             $shop->save();
+            DB::commit();
+            
             return (new Service())->apiResponse(200, [], 'Shop created successfully');
             // return response()->json([
             //     'message' =>'Shop created successfully'
             //   ],200);
         }catch(Exception $e){
+            DB::rollBack();
             return response()->json([
                 'error' => $e->getMessage()
             ]);
@@ -1135,6 +1126,10 @@ class ShopController extends Controller
 
     public function anUserShop($userId){
         try {
+
+            if(!User::whereId($userId)->first()){
+                return (new Service())->apiResponse(404,[],'User not found');
+            }
             $service = new Service();
             $clientId = $service->returnClientIdUser($userId);
             $userShop = Shop::where('client_id',$clientId)
@@ -1206,7 +1201,7 @@ class ShopController extends Controller
         ->with('files')
         ->paginate($perpage);
 
-        if(count(  $userShop) === 0){
+        if(count( $userShop) === 0){
             return (new Service())->apiResponse(404, [], 'No shop found');
             // return response()->json([
             //     'message'  => "No shop found",
@@ -1270,6 +1265,9 @@ class ShopController extends Controller
         try {
 
             $shop = Shop::whereId($shopId)->first();
+            if(!$shop){
+                return (new Service())->apiResponse(404,[],'Shop not found');
+            }
             $clientid  = (new Service())->returnClientIdUser(Auth::user()->id);
 
             if($shop->client_id != $clientid){
@@ -1298,7 +1296,6 @@ class ShopController extends Controller
                         'image'=> $category->file[0]->location,
                         'file' => $category->file
                 ];
-                
 
             }
             return (new Service())->apiResponse(404, $data,'Get categories of specific shop');
@@ -1311,7 +1308,28 @@ class ShopController extends Controller
         }
     }
 
-    
+    public function getOrdersShop($shopUid)
+{
+    try {
+        $shop = Shop::where('uid', $shopUid)->first();
+
+        if (!$shop) {
+            return (new Service())->apiResponse(404, [], 'Shop not found');
+        }
+
+        $orders = Order::whereHas('order_details.ad', function ($query) use ($shop) {
+                $query->where('shop_id', $shop->id);
+            })
+            ->get()
+            ->groupBy('status');
+
+        return (new Service())->apiResponse(200, $orders, 'Orders grouped by status retrieved successfully');
+
+    } catch (Exception $e) {
+        return (new Service())->apiResponse(500, [], $e->getMessage());
+    }
+}
+
 
 
 }

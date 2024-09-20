@@ -98,21 +98,24 @@ class Service extends Controller
     }
 
     public function uploadFiles(Request $request, $randomString,$location){
-        foreach($request->file('files') as $photo){
-            $errorUploadFiles = $this->validateFile($photo);
-            $this->storeFile($photo, $randomString, $location);
+          return $this->storeFileNative($request, $randomString, $location);
+        // return $this->storeFile($request->files, $randomString, $location);
+        // foreach($request->files as $photo){
+        //     $errorUploadFiles = $this->validateFile($photo);
+        //     return $this->storeFile($photo, $randomString, $location);
+        //     // $this->storeFileNative($request, $randomString, $location);
 
-            if($errorUploadFiles){
-                return $errorUploadFiles;
-            }
+        //     if($errorUploadFiles){
+        //         return $errorUploadFiles;
+        //     }
 
             // return 1;
-        }
+        // }
     }
 
     public function storeSingleFile(Request $request,$randomString,$location){
         $files = $request->files[0];
-        $this->storeFile($files,$randomString,$location);
+         $this->storeFile($files,$randomString,$location);
         return 'stock';
 
     }
@@ -121,6 +124,7 @@ class Service extends Controller
 
     private function storeFile( $photo, $randomString, $location){
         try {
+
 
             $db = DB::connection()->getPdo();
 
@@ -148,11 +152,11 @@ class Service extends Controller
             $stmt->bindParam(7,  $created_at);
             $stmt->bindParam(8,  $updated_at);
             $stmt->execute();
-
+            return (new Service())->apiResponse(200, [], 'done');
         } catch (Exception $e) {
            return response()->json([
             'error' => $e->getMessage()
-           ]);
+           ],200);
         }
     }
     private function getFileExtension($filePath) {
@@ -164,53 +168,134 @@ class Service extends Controller
     
         return $extension;
     }
-    public function storeFileNative(Request $request,$data= null,$randomString='aloa', $location='uploads'){
+    // public function storeFileNative(Request $request,$randomString='aloa', $location='uploads'){
 
-        try{
+    //     try{
 
-            $filePath =$request->data['path'];
-            // $filePath =$data['path'];
-            $localPath = str_replace('file://', '', $filePath);
-            $uid = Uuid::uuid1();
+    //         $filePath =$request->data['path'];
+    //         // $filePath =$data['path'];
+    //         if (filter_var($filePath, FILTER_VALIDATE_URL)) {
+    //             // Télécharge le fichier distant
+    //             $localPath = tempnam(sys_get_temp_dir(), 'download_');
+    //             F::put($localPath, file_get_contents($filePath));
+    //         } else {
+    //             $localPath = str_replace('file://', '', $filePath);
+    //         }
+    //         $uid = Uuid::uuid1();
 
-            if (!F::exists($localPath)) {
-                return response()->json(['error' => 'Fichier non trouvé'], 404);
-            }
+    //         if (!F::exists($localPath)) {
+    //             return response()->json(['error' => 'Fichier non trouvé'], 200);
+    //         }
 
 
-            F::get($localPath);
-            $size = $request->data['size'];
-            $type = $this->getFileExtension($filePath);
-            $fileName = time() . '_' . basename($localPath);
+    //         F::get($localPath);
+    //         $size = $request->data['size'];
+    //         // $size = 2;
+    //         $type = $this->getFileExtension($filePath);
+    //         $fileName = time() . '_' . basename($localPath);
         
-            $destinationPath = public_path("image/$location/" . $fileName);
+    //         $destinationPath = public_path("image/$location/" . $fileName);
 
+    //         $destinationDir = public_path("image/$location");
+    //         if (!F::exists($destinationDir)) {
+    //             F::makeDirectory($destinationDir, 0755, true);
+    //         }
+
+    //         F::copy($localPath, $destinationPath);
+    //         $publicUrl = asset('uploads/' . $fileName);
+
+    //         $file = new File();
+    //         $file->filename = $fileName;
+    //         $file->type = $type;
+    //         $file->location =  $publicUrl;
+    //         $file->size = $size;
+    //         $file->referencecode = $randomString;
+    //         $file->uid = $uid;
+    //         $file->save();
+
+    //       return 'done';
+    //     }catch(Exception $e){
+    //         return response()->json([
+    //             'error' => $e->getMessage()
+    //         ],500);
+    //     }
+        
+       
+    // }
+    public function storeFileNative(Request $request, $randomString = 'aloa', $location = 'uploads') {
+        try {
+            
+            $filePath = $request['files']['path'];
+            $uid = Uuid::uuid1();
+           
+
+    
+            // Vérifie si c'est une URL ou un chemin local
+            if (filter_var($filePath, FILTER_VALIDATE_URL)) {
+                // Récupère le nom et l'extension du fichier depuis l'URL
+                $fileNameFromUrl = basename(parse_url($filePath, PHP_URL_PATH));
+                $localPath = tempnam(sys_get_temp_dir(), 'download_');
+
+                // Télécharge le fichier distant
+                $fileContent = file_get_contents($filePath);
+                if ($fileContent === false) {
+                    return response()->json(['error' => 'Erreur lors du téléchargement du fichier distant'], 200);
+                }
+    
+                // Sauvegarde le contenu du fichier dans un fichier temporaire
+                F::put($localPath, $fileContent);
+    
+                // Renomme le fichier temporaire avec le vrai nom et l'extension du fichier
+                $fileName = time() . '_' . $fileNameFromUrl;
+            } else {
+                // Traite un fichier local
+                $localPath = str_replace('file://', '', $filePath);
+                $fileName = time() . '_' . basename($localPath);
+            }
+    
+            // Vérifie si le fichier existe localement après le téléchargement ou s'il s'agit d'un fichier local
+            if (!F::exists($localPath)) {
+                return response()->json(['error' => 'Fichier non trouvé'], 200);
+            }
+    
+            // Obtient la taille et le type de fichier
+            $size = $request['files']['size'];
+            $type = $this->getFileExtension($fileName); // Utilise le nom correct pour obtenir l'extension
+    
+            // Définit le chemin de destination
+            $destinationPath = public_path("image/$location/" . $fileName);
             $destinationDir = public_path("image/$location");
+    
+            // Crée le répertoire de destination s'il n'existe pas
             if (!F::exists($destinationDir)) {
                 F::makeDirectory($destinationDir, 0755, true);
             }
-
+    
+            // Copie le fichier téléchargé ou local dans le répertoire public
             F::copy($localPath, $destinationPath);
-            $publicUrl = asset('uploads/' . $fileName);
-
+            $publicUrl = asset("image/$location/" . $fileName);
+    
+            // Sauvegarde les informations du fichier en base de données
             $file = new File();
             $file->filename = $fileName;
             $file->type = $type;
-            $file->location =  $publicUrl;
+            $file->location = $publicUrl;
             $file->size = $size;
             $file->referencecode = $randomString;
             $file->uid = $uid;
             $file->save();
-
-          
-        }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+    
+            // Supprime le fichier temporaire si c'était un fichier téléchargé
+            if (filter_var($filePath, FILTER_VALIDATE_URL)) {
+                F::delete($localPath);
+            }
+    
+            return 'done';
+        } catch (Exception $e) {
+            return response()->json(['errorA' => $e->getMessage()], 500);
         }
-        
-       
     }
+    
 
     public function checkImageSize ($photo){
         if(filesize($photo) >= 2097152){

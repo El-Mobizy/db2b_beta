@@ -350,6 +350,8 @@ class UserController extends Controller
                         $mail = new MailController();
                         $n=0;
 
+                        // return $mail->sendLoginConfirmationNotification(Auth::user()->id, $title, $body, 'code sent successfully !');
+
                         if ( $mail->sendLoginConfirmationNotification(Auth::user()->id, $title, $body, 'code sent successfully !')) {
                             Log::info('Login confirmation email sent to user ID: ' . Auth::user()->id);
                             $n = $n + 1;
@@ -829,16 +831,19 @@ class UserController extends Controller
         public function getUser()
         {
             try {
-                $users = DB::select("
-                    SELECT users.*, person.*
-                    FROM users, person
-                    WHERE users.id = person.user_id
-                    AND users.deleted = FALSE
-                ");
+                // $users = DB::select("
+                //     SELECT users.*, person.*
+                //     FROM users, person
+                //     WHERE users.id = person.user_id
+                //     AND users.deleted = FALSE
+                // ");
+
+                $users = User::with('person')->where('deleted',0)->get();
 
                 $data = [];
 
                 foreach($users as $user){
+                    $user->image = $user->person->file!=null? $user->person->file->location:null;
                     unset($user->password);
                     unset($user->code);
                     $data[] = $user;

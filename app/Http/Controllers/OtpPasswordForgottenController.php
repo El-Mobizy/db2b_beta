@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendEmail;
 use App\Models\OtpPasswordForgotten;
 use App\Models\User;
 use DateTime;
@@ -39,7 +40,10 @@ class OtpPasswordForgottenController extends Controller
         $title= "Recovery your password";
         $body = "$otp_code is your password reset code. You have thirty minutes before this code becomes invalid. ";
 
-        (new MailController())->sendNotification(User::where('email',$email)->first()->id,$title,$body, 'Email sent successfully !');
+        dispatch(new SendEmail(User::where('email',$email)->first()->id,$title,$body,'Email sent successfully !',1));
+
+
+       
     }
 
 
