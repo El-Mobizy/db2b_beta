@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendEmail;
 use App\Models\Client;
 use App\Models\Person;
 use App\Models\Preorder;
@@ -108,11 +109,13 @@ class ClientController extends Controller
 
      public function notifyMerchantConcernedByPreorder($title,$body,$preorderUid){
         try{
+            if((new Service())->isValidUuid($preorderUid)){
+                return (new Service())->isValidUuid($preorderUid);
+            }
            $merchants = $this->getMerchantCOncernedByPreorder($preorderUid);
-           $message = new ChatMessageController();
     
            foreach($merchants as $user){
-                (new MailController)->sendNotification($user->id,$title,$body, '');
+            dispatch(new SendEmail($user->id,$title,$body,2));
            }
     
         } catch (\Exception $e) {

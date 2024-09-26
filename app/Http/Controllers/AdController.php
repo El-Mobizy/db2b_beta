@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
 use App\Interfaces\Interfaces\FileRepositoryInterface;
+use App\Jobs\SendEmail;
 use App\Models\Client;
 use App\Models\Country;
 use App\Models\File;
@@ -598,15 +599,10 @@ public function getRecentAdd(Request $request,$perpage)
         $service->notifyAdmin($titleAdmin,$bodyAdmin);
 
 
-      $message = new MailController();
-      $mes =  $message->sendNotification(Auth::user()->id,$title,$body, 'ad added successfully !');
+      dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
 
-      if($mes){
-        return (new Service())->apiResponse(200,[],$mes->original['message']);
-        // return response()->json([
-        //       'message' =>$mes->original['message']
-        // ]);
-      }
+      return (new Service())->apiResponse(200,[],'ad added successfully !');
+
 
     } catch (Exception $e) {
         return  (new Service())->apiResponse(500,[],$e->getMessage());
@@ -721,6 +717,10 @@ public function checkCategoryShop($ownerId, Request $request){
         if($checkAuth){
            return $checkAuth;
         }
+
+        if((new Service())->isValidUuid($uid)){
+            return (new Service())->isValidUuid($uid);
+        }
   
 
         $personQuery = "SELECT * FROM person WHERE user_id = :userId";
@@ -735,32 +735,13 @@ public function checkCategoryShop($ownerId, Request $request){
             // ],200);
         }
 
-        $shop = Shop::where('client_id',$client->id)->first();
-
-        $exist = ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->exists();
-
-        if(!$exist){
-
-            return (new Service())->apiResponse(404,[],'You can only add the categories added to your shop');
-            // return response()->json([
-            //     'message' =>'You can only add the categories added to your shop'
-            // ],200);
-        }
         $existAd = Ad::where('uid',$uid)->first();
         if(!$existAd){
             return (new Service())->apiResponse(404,[],'Ad not found');
-            // return response()->json([
-            //     'message' => ' Ad not found'
-            // ]);
         }
-
-        $this->validateRequest($request);
 
         if ($request->price < 0) {
             return (new Service())->apiResponse(404,[],'The price must be greater than 0');
-            // return response()->json([
-            //     'message' => 'The price must be greater than 0'
-            //     ],200);
           }
 
         $service = new Service();
@@ -779,46 +760,20 @@ public function checkCategoryShop($ownerId, Request $request){
 
        
 
-        $ad = $this->updateAd($request,$existAd);
+        
 
-        if($ad->deleted == true){
+        if($existAd->deleted == true){
             return (new Service())->apiResponse(404,[],'Your cannot edit a ad deleted');
             // return response()->json([
             //     'message' => 'Your cannot edit a ad deleted'
             // ]);
         }
 
-        if(($request->has('category_id'))){
+        $ad = $this->updateAd($request,$existAd);
 
-            if($request->has('value_entered')){
+       
 
-                $validateCategory = $service->validateCategory($request->category_id);
-                if($validateCategory){
-                   return $validateCategory;
-                }
-
-                $checkAdAttribute = $service->checkAdAttribute($request,$request->input('category_id'));
-                if($checkAdAttribute){
-                    return $checkAdAttribute;
-                 }
-
-                $ad_details = AdDetail::where('ad_id',$ad->id)->get();
-                foreach($ad_details as $ad_detail){
-                    $ad_detail->update(['deleted' => true]);
-                }
-
-            $this->saveAdDetails($request, $ad);
-
-            }else{
-
-                return(new Service())->apiResponse(404,[], 'Veuillez envoyer  les valeurs des attributs !');
-                // return response()->json([
-                //     'message' => 'Veuillez envoyer  les valeurs des attributs !'
-                // ]);
-            }
-        }
-
-        return(new Service())->apiResponse(200,[], 'ad edited successfully !');
+        return(new Service())->apiResponse(200,$ad, 'ad edited successfully !');
         // return response()->json([
         //     'message' => 'ad edited successfully !'
         // ]);
@@ -975,7 +930,7 @@ public function checkCategoryShop($ownerId, Request $request){
 
 
     $existAd->title = $title ?? $existAd->title;
-    $existAd->location_id = $location_id ?? $existAd->location_id;
+    $existAd->shop_id = $shop_id ?? $existAd->shop_id;
     $existAd->price = $price ?? $existAd->price;
     // $existAd->category_id = $category_id ?? $existAd->category_id;
     $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();

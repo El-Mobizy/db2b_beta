@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 
 class MailController extends Controller
 {
-    public function sendNotification($reciever_id,$title,$body,$return,$mode = 2){
+    public function sendNotification($reciever_id,$title,$body,$mode = 2){
         try {
             //2 => notif et mail
             //0 => notif seul
@@ -33,10 +33,6 @@ class MailController extends Controller
                 $receiver = User::find($reciever_id);
                 Mail::to($receiver->email)->send(new NotificationEmailWithoutfile($mail));
             }
-
-               return response()->json([
-                'message' =>$return
-            ],200);
         } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
@@ -58,13 +54,10 @@ class MailController extends Controller
             // $service = new Service();
             // $notification->addNotification($service->returnUserPersonId($reciever_id),$title,$body);
 
-               return response()->json([
-                'message' =>$return
-            ],200);
+            return (new Service())->apiResponse(404,[],$return);
+
         } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 }

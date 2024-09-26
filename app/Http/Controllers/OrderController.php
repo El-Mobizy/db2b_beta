@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendEmail;
 use App\Models\Ad;
 use App\Models\AllowTransaction;
 use App\Models\Cart;
 use App\Models\Commission;
 use App\Models\CommissionWallet;
 use App\Models\Escrow;
+use App\Models\EscrowDelivery;
+use App\Models\File;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Person;
 use App\Models\Shop;
 use App\Models\Trade;
 use App\Models\User;
@@ -1635,45 +1639,56 @@ private function getCartAds($cartItem){
      *     )
      * )
      */
-    public function getMerchantOrder(){
-        try {
-
-            $service = new Service();
-
-            $checkAuth=$service->checkAuth();
-            if($checkAuth){
-               return $checkAuth;
-            }
-            
-            $checkIfmerchant = (new AdController())->checkMerchant();
-            
-            if($checkIfmerchant ==0){
-                return response()->json([
-                    'message' => 'You are not merchant'
-                ],200);
-            }
-            
-            $order_details = OrderDetail::whereDeleted(false)->get();
-            $userShops = (new ShopController())->anUserShop(Auth::user()->id);
-            
-            $orders = [];
-            foreach($userShops as $userShop){
-                foreach($order_details as $order_detail){
-                    if($userShop->id == $order_detail->shop_id){
-                        $orders[] = Order::whereId($order_detail->order_id)->first();
-                    }
-                }
-            }
-
-            return response()->json([
-                'data' => $orders
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
+    public function getMerchantOrder()
+{
+    try {
+        $service = new Service();
+        $checkAuth = $service->checkAuth();
+        if ($checkAuth) {
+            return $checkAuth;
         }
+
+        $checkIfmerchant = (new AdController())->checkMerchant();
+        if ($checkIfmerchant == 0) {
+            return response()->json([
+                'message' => 'You are not merchant'
+            ], 200);
+        }
+
+        $userShops = (new ShopController())->anUserShop(Auth::user()->id)->pluck('id')->toArray();
+        if (empty($userShops)) {
+            return response()->json([
+                'data' => 0
+            ]);
+        }
+
+        $orderDetails = OrderDetail::whereIn('shop_id', $userShops)
+            ->whereDeleted(false)
+            ->get();
+
+        $orderIds = $orderDetails->pluck('order_id')->unique();
+
+        $orders = Order::whereIn('id', $orderIds)->get();
+
+        foreach ($orders as $order) {
+            $shopUid = Shop::find($order->order_details->first()->shop_id)->uid;
+            $order->ads = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'];
+            $order->ads_number = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['number'];
+            $order->ad_image = File::whereReferencecode((new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'][0]->file_code)->first()->location;
+            $order->statut =  TypeOfType::whereId($order->status)->first()->libelle;
+        }
+
+        return response()->json([
+            'data' => $orders,
+            'number' => count($orders)
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
 
 
 
@@ -1805,6 +1820,11 @@ private function getCartAds($cartItem){
     public function notifyBuyer($orderUid) {
         try {
 
+
+            if((new Service())->isValidUuid($orderUid)){
+                return (new Service())->isValidUuid($orderUid);
+            }
+
             $user = User::whereId(Order::whereUid($orderUid)->first()->user_id)
             ->first();
 
@@ -1815,9 +1835,9 @@ private function getCartAds($cartItem){
             $title = "Payment Successful: Wallet Debited";
             $body = "Your order has been placed successfully. Your wallet has been debited, and your new balance is $balance XOF. Thank you for your purchase!";
 
-           $mail = new MailController();
 
-            $mail->sendNotification($user->id,$title,$body, '');
+
+            dispatch(new SendEmail($user->id,$title,$body,2));
 
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -1830,8 +1850,7 @@ private function getCartAds($cartItem){
             $title = "New Order Placed: Action Required";
             $body = "One of your products has just been ordered. Please start the necessary steps to complete the transaction. Thank you!";
 
-            $mail = new MailController();
-            $mail->sendNotification($userId,$title,$body, '');
+            dispatch(new SendEmail($userId,$title,$body,2));
 
     
         } catch (Exception $e) {
@@ -1839,7 +1858,271 @@ private function getCartAds($cartItem){
         }
     }
 
+/**
+ * @OA\Get(
+ *     path="/api/order/getOrderAds/{orderUid}",
+ *     tags={"Orders"},
+ *     summary="Récupère les produits d'une commande",
+ *     description="Cette route permet de récupérer la liste des produits associées à une commande spécifique.",
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="orderUid",
+ *         in="path",
+ *         required=true,
+ *         description="UID de la commande",
+ *         @OA\Schema(
+ *             type="string",
+ *             format="uuid"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Liste des produits dans la commande",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(ref="")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Commande non trouvée",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Order not found"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Erreur interne du serveur"
+ *             )
+ *         )
+ *     )
+ * )
+ */
 
+
+    public function getOrderAds($orderUid){
+        try {
+
+            if((new Service())->isValidUuid($orderUid)){
+                return (new Service())->isValidUuid($orderUid);
+            }
+
+            $order = Order::whereUid($orderUid)->first();
+            if(!$order){
+                return (new Service())->apiResponse(404 , [], 'Order not found');
+            }
+
+            // return $order->order_details;
+
+            $ad = [];
+
+            foreach($order->order_details as $detail){
+                // return $detail;
+                $adItem= Ad::whereDeleted(0)->whereId($detail->ad_id)->first();
+                $adItem->quantity_sale = $detail->quantity;
+
+                $ad[] = $adItem;
+            }
+            $order->ad = $ad;
+            $order->order_statut =  TypeOfType::whereId($order->status)->first()->libelle;
+
+            unset($order->order_details);
+
+            return (new Service())->apiResponse(200, $order, 'list of ad in order');
+    
+        } catch (Exception $e) {
+            return (new Service())->apiResponse(500, [], $e->getMessage());
+        }
+    }
+
+
+    /**
+ * @OA\Get(
+ *     path="/api/order/getMerchantOrderAds/{orderUid}",
+ *     tags={"Orders"},
+ *     summary="Récupère les produits d'une commande d'un marchand",
+ *     description="Cette route permet de récupérer la liste des produits d'un marchand associées à une commande spécifique.",
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="orderUid",
+ *         in="path",
+ *         required=true,
+ *         description="UID de la commande",
+ *         @OA\Schema(
+ *             type="string",
+ *             format="uuid"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Liste des produits dans la commande",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(ref="")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Commande non trouvée",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Order not found"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Erreur interne du serveur"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+    public function getMerchantOrderAds($orderUid){
+        try {
+
+            if((new Service())->isValidUuid($orderUid)){
+                return (new Service())->isValidUuid($orderUid);
+            }
+
+            $order = Order::whereUid($orderUid)->first();
+            if(!$order){
+                return (new Service())->apiResponse(404 , [], 'Order not found');
+            }
+
+            // return $order->order_details;
+
+            $ad = [];
+            $order->order_statut =  TypeOfType::whereId($order->status)->first()->libelle;
+
+            foreach($order->order_details as $detail){
+                // return $detail;
+                
+                $adElement= Ad::whereDeleted(0)->whereId($detail->ad_id)->whereOwnerId(Auth::user()->id)->first();
+                $adItem = $adElement;
+                $adItem->quantity_sale = $detail->quantity;
+
+                if(File::where('referencecode',$adElement->file_code)->exists()){
+                    $adItem->image = File::where('referencecode',$adElement->file_code)->first()->location;
+                }
+
+                $ad[] = $adItem;
+            }
+            $order->adNumber = count($ad);
+            $order->adItems = $ad;
+           
+
+            unset($order->order_details);
+
+            return (new Service())->apiResponse(200, $order, 'list of ad in order');
+    
+        } catch (Exception $e) {
+            return (new Service())->apiResponse(500, [], $e->getMessage());
+        }
+    }
+
+
+    public function getMerchantOrderWithDelivery()
+{
+    try {
+        $service = new Service();
+        $checkAuth = $service->checkAuth();
+        if ($checkAuth) {
+            return $checkAuth;
+        }
+
+        $checkIfmerchant = (new AdController())->checkMerchant();
+        if ($checkIfmerchant == 0) {
+            return response()->json([
+                'message' => 'You are not merchant'
+            ], 200);
+        }
+
+        $userShops = (new ShopController())->anUserShop(Auth::user()->id)->pluck('id')->toArray();
+        if (empty($userShops)) {
+            return (new Service())->apiResponse(404, 0, 'detail');
+        }
+
+        $orderDetails = OrderDetail::whereIn('shop_id', $userShops)
+            ->whereDeleted(false)
+            ->get();
+
+        $orderIds = $orderDetails->pluck('order_id')->unique();
+
+        $orderswithdelivery = [];
+
+        foreach (Order::whereIn('id', $orderIds)->get() as $order) {
+            $escrowDelivery = EscrowDelivery::where('order_uid', $order->uid)->first();
+            if ($escrowDelivery) {
+                $orderswithdelivery[] = $order->id;
+            }
+        }
+
+        $orders = [];
+
+        foreach ($orderswithdelivery as $orderId) {
+
+            $order = Order::whereId($orderId)->first();
+            if(!$order){
+                return (new Service())->apiResponse(404, [], 'Order not found');
+            }
+
+            $escrowDelivery = EscrowDelivery::where('order_uid', $order->uid)->first();
+            
+            if ($escrowDelivery) {
+                // Commande affectée à un livreur, ajouter les informations du livreur et de livraison
+                $deliveryPerson = Person::where('uid', $escrowDelivery->person_uid)->first();
+
+                $order->Adimage = File::whereReferencecode((new OrderController())->getMerchantOrderAds($order->uid)->original['data'][0]['file_code'])->first()->location;
+                $order->Adnumber =  count((new OrderController())->getOrderAds($order->uid)->original['data']);
+                // $order->ad= (new OrderController())->getOrderAds($order->uid)->original['data'];
+
+                $order->delivery_person = [
+                    'name' => $deliveryPerson->first_name ?? 'N/A',
+                    'email' => User::whereId($deliveryPerson->user_id)->first()->email ,
+                    'phone' =>User::whereId($deliveryPerson->user_id)->first()->phone ?? 'N/A',
+                    'image' => User::whereId($deliveryPerson->user_id)->first()->person->file!=null?  User::whereId($deliveryPerson->user_id)->first()->person->file->location:null ?? 'N/A',
+                ];
+                $order->delivery_info = [
+                    // 'pickup_date' => $escrowDelivery->pickup_date,
+                    // 'delivery_date' => $escrowDelivery->delivery_date,
+                    'delivery_agent_amount' => $escrowDelivery->delivery_agent_amount,
+                  
+                ];
+            }
+
+            $orders[] = $order;
+        }
+
+        return response()->json([
+            'data' => $orders
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
 
 }

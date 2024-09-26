@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendEmail;
 use App\Models\Commission;
 use App\Models\CommissionWallet;
 use App\Models\DeliveryAgency;
@@ -163,17 +164,16 @@ class DeliveryAgencyController extends Controller
      $titleAdmin = "New Delivery Agent Registration Request";
      $bodyAdmin = "A new registration request as a delivery agent has been submitted. Please log in to your account to review and validate the request promptly. Your attention is required. Thank you!";
 
-     $message = new MailController();
 
      //notify delivery agent
-     $message->sendNotification(Auth::user()->id,$title,$body, 'delivery agent registration created successfully !');
+
+     dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
 
       //notify admin
       $service->notifyAdmin($titleAdmin,$bodyAdmin);
 
      return  $deliveryAgency->file_reference_code;
  }
- 
 
  public function checkifAlreadyDeliveryAgent($personId){
    
@@ -200,6 +200,15 @@ class DeliveryAgencyController extends Controller
 
     public function storeEscrowDelivery($deliveryPersonUid, $orderUid){
         try {
+            if((new Service())->isValidUuid($deliveryPersonUid)){
+                return (new Service())->isValidUuid($deliveryPersonUid);
+            }
+            if((new Service())->isValidUuid($orderUid)){
+                return (new Service())->isValidUuid($orderUid);
+            } 
+            if(!Order::whereUid($orderUid)->first()){
+                return (new Service())->apiResponse(404, [], 'Order not found');
+            }
             $escrowDelivery = new EscrowDelivery();
             $escrowDelivery->person_uid = $deliveryPersonUid;
             $escrowDelivery->order_uid = $orderUid;
@@ -220,6 +229,9 @@ class DeliveryAgencyController extends Controller
 
     public function reserveAmount($deliveryPersonId, $orderUid) {
         try {
+            if((new Service())->isValidUuid($orderUid)){
+                return (new Service())->isValidUuid($orderUid);
+            }
             $order = Order::whereUid($orderUid)->first();
             // return $order;
             if (!$order) {
@@ -296,6 +308,9 @@ class DeliveryAgencyController extends Controller
     public function acceptOrder($orderUid){
         try{
             // return Order::whereUid($orderUid)->first();
+            if((new Service())->isValidUuid($orderUid)){
+                return (new Service())->isValidUuid($orderUid);
+            }
 
             if(!Order::whereUid($orderUid)->first()){
                 return response()->json([
@@ -434,22 +449,23 @@ class DeliveryAgencyController extends Controller
     public function notifyDeliveryAgents($orderUid) {
         try {
 
+            if((new Service())->isValidUuid($orderUid)){
+                return (new Service())->isValidUuid($orderUid);
+            }
+
             $data = $this->getDeliveryAgentConcernedByOrder($orderUid);
 
            $title =  "New Order in Your Area: Immediate Action Required";
            $body =  "A new order has just been placed in your area. Please log in to your account to view and accept the delivery. Your timely response is essential. Thank you!";
 
            foreach($data as $item){
-            $mail = new MailController();
-            $mes = $mail->sendNotification($item->id,$title,$body, 'Payement done Successfully !');
+            // $mail = new MailController();
+            // $mes = $mail->sendNotification($item->id,$title,$body, 'Payement done Successfully !');
+
+            dispatch(new SendEmail($item->id,$title,$body,2));
            }
 
-           if($mes){
-            return response()->json([
-                  'message' =>$mes->original['message']
-                // $mes
-            ]);
-          }
+        
     
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -461,13 +477,10 @@ class DeliveryAgencyController extends Controller
            $title =  "New Order in Your Area: Immediate Action Required";
            $body =  "A new order has just been placed in your area. Please log in to your account to view and accept the delivery. Your timely response is essential. Thank you!";
            $mail = new MailController();
-           $mes = $mail->sendNotification($userId,$title,$body, '');
+        //    $mes = $mail->sendNotification($userId,$title,$body, '');
 
-           if($mes){
-            return response()->json([
-                  'message' =>$mes->original['message']
-            ]);
-          }
+           dispatch(new SendEmail($userId,$title,$body,2));
+
     
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -478,6 +491,9 @@ class DeliveryAgencyController extends Controller
     public function getDeliveryAgentConcernedByOrder($orderUid){
         try{
             $data= [];
+            if((new Service())->isValidUuid($orderUid)){
+                return (new Service())->isValidUuid($orderUid);
+            }
             $deliveryAgents = $this->getDeliveryAgent(1);
            $userLocation = Person::whereId(Order::whereUid($orderUid)->first()->user_id)->first()->country_id ;
 
@@ -602,6 +618,10 @@ class DeliveryAgencyController extends Controller
      */
     public function rejectOrder($orderUid){
         try{
+
+            if((new Service())->isValidUuid($orderUid)){
+                return (new Service())->isValidUuid($orderUid);
+            }
 
             if(!Order::whereUid($orderUid)->first()){
                 return response()->json([

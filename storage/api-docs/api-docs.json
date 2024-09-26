@@ -1029,6 +1029,497 @@
                 ]
             }
         },
+        "/api/address/createAddress": {
+            "post": {
+                "tags": [
+                    "Address"
+                ],
+                "summary": "Create a new address for the authenticated user",
+                "operationId": "f15cc7a3d187ca271a59ca2f4bd97fad",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Home"
+                                    },
+                                    "latitude": {
+                                        "type": "number",
+                                        "example": "40.712776"
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "example": "-74.005974"
+                                    },
+                                    "formatted_address": {
+                                        "type": "string",
+                                        "example": "New York, NY, USA"
+                                    },
+                                    "place_id": {
+                                        "type": "string",
+                                        "example": "ChIJrTLr-GyuEmsRBfy61i59si0"
+                                    },
+                                    "is_default": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Address created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": ""
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/address/getAddress/{addressUid}": {
+            "get": {
+                "tags": [
+                    "Address"
+                ],
+                "summary": "Get a specific address by UID for the authenticated user",
+                "operationId": "bd754913a02dfae7e90dc6994c0301ae",
+                "parameters": [
+                    {
+                        "name": "addressUid",
+                        "in": "path",
+                        "description": "The UID of the address",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail of specific address",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": ""
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Address not found"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/address/getAllAuthAddresses": {
+            "get": {
+                "tags": [
+                    "Address"
+                ],
+                "summary": "Get all addresses for the authenticated user",
+                "operationId": "b09f17b6218bc995047015ea455bdb5f",
+                "responses": {
+                    "200": {
+                        "description": "Auth user addresses",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/address/getAllUserAddresses/{userUid}": {
+            "get": {
+                "tags": [
+                    "Address"
+                ],
+                "summary": "Get all addresses for a specific user by their UID",
+                "operationId": "b5f810d8ddd3932596fb41f342e1187e",
+                "parameters": [
+                    {
+                        "name": "userUid",
+                        "in": "path",
+                        "description": "The UID of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Specific user addresses",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/address/updateAddress/{addressUid}": {
+            "post": {
+                "tags": [
+                    "Address"
+                ],
+                "summary": "Update a specific address by UID for the authenticated user",
+                "operationId": "9b97f77c2fb6f8d6db29831d69981269",
+                "parameters": [
+                    {
+                        "name": "addressUid",
+                        "in": "path",
+                        "description": "The UID of the address",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Home"
+                                    },
+                                    "latitude": {
+                                        "type": "number",
+                                        "example": "40.712776"
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "example": "-74.005974"
+                                    },
+                                    "formatted_address": {
+                                        "type": "string",
+                                        "example": "New York, NY, USA"
+                                    },
+                                    "place_id": {
+                                        "type": "string",
+                                        "example": "ChIJrTLr-GyuEmsRBfy61i59si0"
+                                    },
+                                    "is_default": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Address updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": ""
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Address not found"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/address/deleteAddress/{id}": {
+            "post": {
+                "tags": [
+                    "Address"
+                ],
+                "summary": "Delete a specific address by ID for the authenticated user",
+                "operationId": "133c3ebc59d61b8c1a27f2f0f269cc9f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the address",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Address deleted successfully"
+                    },
+                    "404": {
+                        "description": "Address not found"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/address/activateAddress/{addressUid}": {
+            "post": {
+                "tags": [
+                    "Address"
+                ],
+                "summary": "Activate a specific address by UID for the authenticated user",
+                "operationId": "b2fc609242ecd9b005722882be191fa6",
+                "parameters": [
+                    {
+                        "name": "addressUid",
+                        "in": "path",
+                        "description": "The UID of the address",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Address activated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": ""
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Address not found"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/address/getActiveService": {
+            "get": {
+                "tags": [
+                    "Address"
+                ],
+                "summary": "Get active service of the authenticated user",
+                "operationId": "7703b7fdcd796fd56df24ef42b86ff5e",
+                "responses": {
+                    "200": {
+                        "description": "Successful response with active service",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": {
+                                                "id": 1,
+                                                "user_id": 5,
+                                                "is_default": true
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Active service retrieved successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No active service found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": []
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No active service found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/address/getUserActiveService/{userUid}": {
+            "get": {
+                "tags": [
+                    "Address"
+                ],
+                "summary": "Get active service of a specific user by UID",
+                "operationId": "51d7e02251fe7461ddc1b08e0053fc33",
+                "parameters": [
+                    {
+                        "name": "userUid",
+                        "in": "path",
+                        "description": "UID of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response with active service",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": {
+                                                "id": 1,
+                                                "user_id": 5,
+                                                "is_default": true
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Active service retrieved successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No active service found for the specified user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": []
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No active service found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/cart/addToCart/{adId}": {
             "post": {
                 "tags": [
@@ -1552,13 +2043,13 @@
                 }
             }
         },
-        "/api/category/getAllSubSubcategory": {
+        "/api/category/getAllSubCategory": {
             "get": {
                 "tags": [
-                    "SubSubcategories"
+                    "SubCategories"
                 ],
                 "summary": "Get all sub-subcategories",
-                "operationId": "0b1ff89facf3d8628af0994c72fc8012",
+                "operationId": "cd22d4375d0b2e10f7deafb041d33c18",
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -1596,13 +2087,13 @@
                 }
             }
         },
-        "/api/category/getAllPaginateSubSubcategory/paginate": {
+        "/api/category/getAllPaginateSubCategory/paginate": {
             "get": {
                 "tags": [
-                    "SubSubcategories"
+                    "SubCategories"
                 ],
                 "summary": "Get paginated sub-subcategories",
-                "operationId": "9a048a6033b61e64dd2834c9fff921b9",
+                "operationId": "194bf2e702e74738d5b3ebb1b886d3ac",
                 "parameters": [
                     {
                         "name": "perpage",
@@ -6022,6 +6513,154 @@
                 ]
             }
         },
+        "/api/order/getOrderAds/{orderUid}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Récupère les produits d'une commande",
+                "description": "Cette route permet de récupérer la liste des produits associées à une commande spécifique.",
+                "operationId": "24a95bcb0454dbc12ae1891752773c00",
+                "parameters": [
+                    {
+                        "name": "orderUid",
+                        "in": "path",
+                        "description": "UID de la commande",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des produits dans la commande",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Commande non trouvée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur interne du serveur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/order/getMerchantOrderAds/{orderUid}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Récupère les produits d'une commande d'un marchand",
+                "description": "Cette route permet de récupérer la liste des produits d'un marchand associées à une commande spécifique.",
+                "operationId": "e0848ca25f9a8c9a3f0a460bce479da1",
+                "parameters": [
+                    {
+                        "name": "orderUid",
+                        "in": "path",
+                        "description": "UID de la commande",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des produits dans la commande",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Commande non trouvée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur interne du serveur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/users/resendForgottenOtp/{uid}": {
             "post": {
                 "tags": [
@@ -9467,7 +10106,7 @@
                     "Shop"
                 ],
                 "summary": "Get user's shop",
-                "description": "Retrieve the shop details for the authenticated user",
+                "description": "Retrieve the shop for the authenticated user",
                 "operationId": "getUserShop",
                 "responses": {
                     "200": {
@@ -9611,6 +10250,296 @@
                                         "error": {
                                             "type": "string",
                                             "example": "An error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shop/getOrdersShop/{shopUid}": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Retrieve orders grouped by status for a specific shop",
+                "description": "This endpoint retrieves orders grouped by status for a given shop, identified by its unique shopUid.",
+                "operationId": "37a8f9a401a4f232ad7bcb256d72a507",
+                "parameters": [
+                    {
+                        "name": "shopUid",
+                        "in": "path",
+                        "description": "Unique identifier of the shop",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "perpage",
+                        "in": "query",
+                        "description": "Number of results per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orders grouped by status retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "pending"
+                                                    },
+                                                    "orders": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer",
+                                                                    "example": 123
+                                                                },
+                                                                "order_details": {
+                                                                    "properties": {
+                                                                        "ad": {
+                                                                            "properties": {
+                                                                                "shop_id": {
+                                                                                    "type": "integer",
+                                                                                    "example": 1
+                                                                                }
+                                                                            },
+                                                                            "type": "object"
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Shop not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Shop not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An unexpected error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shop/getShopOrderAds/{orderUid}/{shopUid}": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Récupère les annonces d'une commande dans un magasin",
+                "description": "Cette route permet de récupérer les annonces associées à une commande spécifique dans un magasin.",
+                "operationId": "64cce8ae11dc0369bb5852bbdac325bd",
+                "parameters": [
+                    {
+                        "name": "orderUid",
+                        "in": "path",
+                        "description": "UID de la commande",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "shopUid",
+                        "in": "path",
+                        "description": "UID du magasin",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des annonces trouvées dans la commande",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ads": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        },
+                                        "number": {
+                                            "description": "Nombre d'annonces trouvées",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Commande ou magasin non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Order not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur interne du serveur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shop/getMerchantStatistic": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Statistiques d'un marchand",
+                "description": "Cette route fournit des statistiques globales pour un marchand, y compris les commandes, les clients, et les gains.",
+                "operationId": "8f14f6e55efa2c6aa359cf5adcd4aac5",
+                "responses": {
+                    "200": {
+                        "description": "Statistiques du marchand",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_orders": {
+                                            "description": "Nombre total de commandes",
+                                            "type": "integer"
+                                        },
+                                        "total_customers": {
+                                            "description": "Nombre total de clients",
+                                            "type": "integer"
+                                        },
+                                        "total_earning": {
+                                            "description": "Revenus totaux du marchand",
+                                            "type": "number",
+                                            "format": "float"
+                                        },
+                                        "merchant_earning_per_order": {
+                                            "description": "Gains du marchand par commande",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur interne du serveur"
                                         }
                                     },
                                     "type": "object"

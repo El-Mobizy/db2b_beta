@@ -282,6 +282,10 @@ class ZoneController extends Controller
     public function destroy($uid){
         try {
 
+            if((new Service())->isValidUuid($uid)){
+                return (new Service())->isValidUuid($uid);
+            }
+
             $zone = Zone::whereUid($uid)->first();
 
             if(!$zone){
@@ -484,6 +488,9 @@ class ZoneController extends Controller
 
     public function isWithinDeliveryZone($longitude, $latitude, $orderUid = 0)
 {
+    if((new Service())->isValidUuid($orderUid)){
+        return (new Service())->isValidUuid($orderUid);
+    }
     $zones = DB::table('zones')
         ->join('delivery_agent_zones', 'zones.id', '=', 'delivery_agent_zones.zone_id')
         ->select('zones.id as zone_id', 'zones.delivery_agency_id', 'delivery_agent_zones.latitude', 'delivery_agent_zones.longitude', 'delivery_agent_zones.id')

@@ -136,6 +136,9 @@ class PersonController extends Controller
           $data = [];
 
           $personUid = (new Service())->returnPersonUidAuth();
+          if((new Service())->isValidUuid($personUid)){
+            return (new Service())->isValidUuid($personUid);
+        }
 
           $person =  Person::whereUid($personUid)->first();
 

@@ -171,23 +171,7 @@ class RoleController extends Controller
     {
         try {
             
-            $role = Role::find($id);
-            if (!$role) {
-                return response()->json(['message' => 'Rôle introuvable.']);
-            }
-    
-            $usersWithRole = User_right::where('right_id', $id)->exists();
-            if ($usersWithRole) {
-                return response()->json([
-                    'message' => 'Impossible de supprimer le rôle car il est utilisé par un ou plusieurs utilisateurs.'
-                ]);
-            }
-    
-     
-            Role::destroy($id);
-            Right::destroy($id);
-    
-            return response()->json(['message' => 'Rôle supprimé avec succès.']);
+        
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

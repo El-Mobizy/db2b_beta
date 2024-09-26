@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendEmail;
 use App\Models\Preorder;
 use App\Models\PreorderAnswers;
 use App\Models\TypeOfType;
@@ -15,6 +16,8 @@ use App\Mail\NotificationEmailWithoutfile;
 use App\Mail\NotificationEmail;
 use App\Models\Ad;
 use App\Models\Client;
+use App\Models\Country;
+use App\Models\Category;
 use App\Models\Review;
 use Ramsey\Uuid\Type\Integer;
 use Ramsey\Uuid\Uuid;
@@ -130,7 +133,10 @@ class PreorderController extends Controller
               $message = new MailController();
 
               //notify buyer
-              $mes =  $message->sendNotification(Auth::user()->id,$title,$body, 'preorder created successfully !');
+
+              dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
+
+              return (new Service())->apiResponse(200,[],'preorder created successfully !');
 
                //notify admin
                $service->notifyAdmin($titleAdmin,$bodyAdmin);
@@ -271,7 +277,10 @@ class PreorderController extends Controller
       $message = new MailController();
 
       //notify buyer
-      $mes = $message->sendNotification(Auth::user()->id,$title,$body, 'preorder answers created successfully !');
+
+      dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
+
+      return (new Service())->apiResponse(200,[],'preorder answers created successfully !');
 
        //notify admin
        $service->notifyAdmin($titleAdmin,$bodyAdmin);
@@ -452,13 +461,9 @@ public function getPreorderPending(){
         $title = "Confirmation of your pre-order";
         $body = "Your pre-order has just been validated by the admin, and you will shortly be receiving proposals from merchants. We'll keep you informed if there's a proposal.";
 
-        $message = new MailController();
-        $mes = $message->sendNotification($preorder->user_id,$title,$body, 'preorder answers validated successfully !');
-        if($mes){
-            return response()->json([
-                  'message' =>$mes->original['message']
-            ]);
-          }
+        dispatch(new SendEmail($preorder->user_id,$title,$body,2));
+
+      return (new Service())->apiResponse(200,[],'preorder answers validated successfully !');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -863,6 +868,9 @@ public function getPreorderWitnAnswer(){
 public function getPreorderWithValidatedAnswers($uid,$perpage)
 {
     try {
+        if((new Service())->isValidUuid($uid)){
+            return (new Service())->isValidUuid($uid);
+        }
         if(!Preorder::whereUid($uid)->first()){
             return response()->json([
                 'data' => 'Preorder not found !'
@@ -936,6 +944,9 @@ public function getPreorderWithValidatedAnswers($uid,$perpage)
  */
 public function getSpecificPreorderAnswer($uid){
     try {
+        if((new Service())->isValidUuid($uid)){
+            return (new Service())->isValidUuid($uid);
+        }
         if(!PreorderAnswers::whereUid($uid)->first()){
             return response()->json([
                 'data' => 'Preorder answer not found !'
@@ -1440,18 +1451,13 @@ public function write(Request $request, $PreordersAnswerUid){
 
         $receiver_id= $r->user->id;
 
-       $message = new MailController();
-    //   $mes =  $message->sendNotification($receiver_id,$title,$body, 'comment submited successfully !');
+    dispatch(new SendEmail($receiver_id,$title,$body,2));
 
-    //   if($mes){
-    //     return response()->json([
-    //           'message' =>$mes->original['message']
-    //     ]);
-    //   }
+    return (new Service())->apiResponse(200,[],'comment submited successfully !');
 
-    return response()->json([
-        'message' => 'comment submited successfully !'
-        ],200);
+    // return response()->json([
+    //     'message' => 'comment submited successfully !'
+    //     ],200);
 
     }catch(Exception $e){
         return response()->json([
@@ -1506,11 +1512,20 @@ public function merchantAffectedByPreorder($perPage){
 
             $validatedStatus = TypeOfType::where('libelle', 'validated')->first()->id;
 
+            
+
             $preorders = Preorder::where('statut', $validatedStatus)
+            ->with('file')
                          ->whereIn('category_id', $categories)
                          ->whereDeleted(0)
                          ->orderBy('created_at', 'desc')
                          ->paginate($perPage);
+                foreach($preorders as $preorder){
+                    
+                    $preorder->country = Country::whereId($preorder->location_id)->first()->fullname;
+                    $preorder->preorder_statut =  TypeOfType::whereId($preorder->statut)->first()->libelle;
+                    $preorder->category = Category::whereId($preorder->category_id)->first()->title;
+                }
 
                          if(count($preorders) == 0){
                             return response()->json([
@@ -1583,10 +1598,10 @@ public function getValidatedPreordersWithAnswers($preorderUid,$perPage)
                                  ->get();
 
             $preorderAnswers = PreorderAnswers::whereIn('preorder_id', $preorders->pluck('id'))
-                                             ->whereDeleted(0)
-                                             ->where('statut', $validatedStatus)
-                                             ->orderBy('created_at', 'desc')
-                                             ->paginate(intval($perPage));
+                ->whereDeleted(0)
+                ->where('statut', $validatedStatus)
+                ->orderBy('created_at', 'desc')
+                ->paginate(intval($perPage));
 
 
             return response()->json([

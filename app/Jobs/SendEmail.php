@@ -22,24 +22,19 @@ class SendEmail implements ShouldQueue
     protected $title;
     protected $body;
     protected $mode ;
-    protected $message ;
     protected $reciever_id;
 
-    public function __construct($reciever_id,$title,$body,$message,$mode=0)
+    public function __construct($reciever_id,$title,$body,$mode=0)
     {
         $this->title = $title;
         $this->body = $body;
         $this->mode = $mode;
-        $this->message = $message;
         $this->reciever_id = $reciever_id;
     }
 
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
-        (new MailController())->sendNotification($this->reciever_id,$this->title,$this->body,$this->message,$this->mode);
+        (new MailController())->sendNotification($this->reciever_id,$this->title,$this->body,$this->mode);
     }
 }

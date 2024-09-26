@@ -145,8 +145,13 @@ Route::prefix('users')->group(function () {
             Route::get('/getOrderEndTrade/{orderId}', [OrderController::class, 'getOrderEndTrade'])->name('order.getOrderEndTrade');
             Route::get('/getOrderCanceledTrade/{orderId}', [OrderController::class, 'getOrderCanceledTrade'])->name('order.getOrderCanceledTrade');
             Route::get('/getAllFinalizedOrders', [OrderController::class, 'getAllFinalizedOrders'])->name('order.getAllFinalizedOrders');
+            Route::get('/getOrderAds/{orderUid}', [OrderController::class, 'getOrderAds'])->name('order.getOrderAds');
+
+            Route::get('/getMerchantOrderAds/{orderUid}', [OrderController::class, 'getMerchantOrderAds'])->name('order.getMerchantOrderAds');
+            
             Route::get('/userOrders/{perpage}', [OrderController::class, 'userOrders'])->name('order.userOrders');
             Route::get('/getMerchantOrder', [OrderController::class, 'getMerchantOrder'])->name('order.getMerchantOrder');
+            Route::get('/getMerchantOrderWithDelivery', [OrderController::class, 'getMerchantOrderWithDelivery'])->name('order.getMerchantOrderWithDelivery');
             Route::post('/CreateAndPayOrder', [OrderController::class, 'CreateAndPayOrder'])->name('order.CreateAndPayOrder');
         });
 
@@ -326,9 +331,12 @@ Route::prefix('users')->group(function () {
                 Route::post('/becomeMerchant', [ShopController::class, 'becomeMerchant'])->name('shop.becomeMerchant');
                 Route::get('/AdMerchant/{shopId}', [ShopController::class, 'AdMerchant'])->name('shop.AdMerchant');
                 Route::get('/userShop', [ShopController::class, 'userShop'])->name('shop.userShop');
+                Route::get('/getOrdersShop/{shopUid}', [ShopController::class, 'getOrdersShop'])->name('shop.getOrdersShop');
                 Route::get('/userPaginateShop/{perpage}', [ShopController::class, 'userPaginateShop'])->name('shop.userPaginateShop');
                 Route::get('categories/{shopId}', [ShopController::class, 'getShopCategorie'])->name('shop.getShopCategorie');
                 Route::post('/createShop', [ShopController::class, 'createShop'])->name('shop.createShop');
+                Route::get('/getShopOrderAds/{orderUid}/{shopUid}', [ShopController::class, 'getShopOrderAds'])->name('order.getShopOrderAds');
+                Route::get('/getMerchantStatistic', [ShopController::class, 'getMerchantStatistic'])->name('shop.getMerchantStatistic');
                 });
 
                 //TradeStage
@@ -373,8 +381,10 @@ Route::prefix('users')->group(function () {
                     Route::get('/getAddress/{addressUid}', [AddressController::class, 'getAddress'])->name('address.getAddress');
                     Route::get('/getAllAuthAddresses', [AddressController::class, 'getAllAuthAddresses'])->name('address.getAllAuthAddresses');
                     Route::get('/getAllUserAddresses/{userUid}', [AddressController::class, 'getAllUserAddresses'])->name('address.getAllUserAddresses');
-                    Route::put('/updateAddress/{addressUid}', [AddressController::class, 'updateAddress'])->name('address.updateAddress');
-                    Route::delete('/deleteAddress/{id}', [AddressController::class, 'deleteAddress'])->name('address.deleteAddress');
+                    Route::post('/updateAddress/{addressUid}', [AddressController::class, 'updateAddress'])->name('address.updateAddress');
+                    Route::post('/deleteAddress/{id}', [AddressController::class, 'deleteAddress'])->name('address.deleteAddress');
+                    Route::get('/getActiveService', [AddressController::class, 'getActiveService'])->name('address.getActiveService');
+                    Route::get('/getUserActiveService/{userUid}', [AddressController::class, 'getUserActiveService'])->name('address.getUserActiveService');
                 });
                 
 
@@ -485,6 +495,9 @@ Route::prefix('users')->group(function () {
 
     Route::get('/test/create', [AdDetailController::class, 'create'])->name('create.create');
 
-    Route::post('/file/storeSingleFile', [Service::class, 'storeSingleFile'])->name('create.storeSingleFile');
+    Route::post('/file/storeSingleFile/{random}/{location}', [Service::class, 'storeSingleFile'])->name('create.storeSingleFile');
 
     Route::post('/file/storeFileNative', [Service::class, 'storeFileNative'])->name('create.storeFileNative');
+
+
+    Route::post('/file/storeImage', [Service::class, 'storeImage'])->name('create.storeImage');

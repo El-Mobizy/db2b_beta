@@ -143,6 +143,9 @@ class NotificationController extends Controller
 
     public function makeAsReadOrUnRead($notificationUid){
          try {
+            if((new Service())->isValidUuid($notificationUid)){
+                return (new Service())->isValidUuid($notificationUid);
+            }
             $notification = Notification::whereUid($notificationUid)->first();
 
             if(!$notification){

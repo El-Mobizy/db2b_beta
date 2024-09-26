@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendEmail;
 use App\Models\Client;
 use App\Models\DeliveryAgency;
 use App\Models\OtpPasswordForgotten;
@@ -74,40 +75,23 @@ class UserController extends Controller
 
             $email = htmlspecialchars($request->input('email'));
 
-            // $user = DB::select("
-            //     SELECT * FROM users
-            //     WHERE email = :username OR phone = :username
-            //     LIMIT 1
-            // ", [
-            //     'username' => $email
-            // ]);
-            // $db = DB::connection()->getPdo();
-            // $query = "
-            //                 SELECT * FROM users
-            //                 WHERE email = :email A
-            //                 LIMIT 1
-            //             ";
-            // $statement = $db->prepare($query);
-            // $statement->execute([
-            //     'email' => $email,
-            // ]);
-            // $user = $statement->fetch($db::FETCH_ASSOC);
-            $user = User::whereEmail($email)->whereDeleted(false)->whereEnabled(true)->first();
+
+            $user = User::whereEmail($email)->whereDeleted(false)->first();
             if (empty($user)) {
-                return response()->json([
-                    'message' => 'Email invalid  or you are blocked',
-                ],200);
+                return (new Service())->apiResponse(404, [], 'Email invalid');
+            }
+
+            if ($user->enabled == false) {
+                return (new Service())->apiResponse(404, [], 'You are disabled');
             }
             unset($user->code);
             unset($user->password);
-            return response()->json([
-                'message' => 'Email valid',
-                'data' => $user->email
-            ]);
+
+            return (new Service())->apiResponse(200,$user->email, 'Email valid');
         }
         catch (Exception $e)
         {
-            return response()->json($e->getMessage());
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -186,9 +170,7 @@ class UserController extends Controller
             $existEmail = User::where('email',$email)->exists();
 
             if(!$existEmail){
-                return response()->json([
-                    'message' =>'Check if the email exist'
-                ]);
+                return (new Service())->apiResponse(404, [], 'Check if the email exist');
             }
             $service = new Service();
             $restrict = new Restricted();
@@ -197,10 +179,10 @@ class UserController extends Controller
             $restrict->uid =  $service->generateUid($restrict);
             $restrict->save();
 
-            return response()->json(['message' => 'stocké avec succès'],200);
+            return (new Service())->apiResponse(200, [], 'Saved successfully');
 
         } catch (\Exception $e) {
-           return response()->json($e->getMessage(),500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -312,9 +294,7 @@ class UserController extends Controller
            }
         
             if(!$user){
-                return response()->json([
-                    'message' => 'Email is not valid or you are blocked'
-                ]);
+                return (new Service())->apiResponse(404, [], 'Email is not valid or you are blocked');
             }
                 $hashedPassword = $user->password;
     
@@ -359,23 +339,25 @@ class UserController extends Controller
 
 
                         unset($user->code);
-                        return response()->json([
-                            'user' => $user,
-                            'access_token' => $token,
-                            // 'token_type' => 'Bearer',
-                            // 'expires_in' => Auth::factory()->getTTL() * 60,
-                            // 'n' => $n
-                        ],200);
+
+                        $data = [
+                                'user' => $user,
+                                'access_token' => $token,
+                                // 'token_type' => 'Bearer',
+                                // 'expires_in' => Auth::factory()->getTTL() * 60,
+                                // 'n' => $n
+                        ];
+                        return (new Service())->apiResponse(200, $data, 'Logged sucessfully');
                     } else {
-                        return response()->json(['error' => 'Invalid password !'], 200);
+                        return (new Service())->apiResponse(404, [], 'Empty authentificate user');
                     }
                     } else {
-                    return response()->json(['error' => 'Invalid password !'], 200);
+                        return (new Service())->apiResponse(404, [], 'Invalid password !');
                 }
         }
         catch (Exception $e)
         {
-            return response()->json(['error' => $e->getMessage()]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -420,9 +402,9 @@ class UserController extends Controller
                     $minutes = floor(($totalSeconds % 3600) / 60);
                     $seconds = $totalSeconds % 60;
 
-                    return response()->json([
+                    $data = [
                         "message" =>"You have to wait.",
-                        "bloked" => "You're blocked",
+                        "bloked" => "You're restricted",
                         "bloc_date" => $a->created_at,
                         "debloc_date" => $formattedUnlockDateTime, // Ajout de l'heure de déblocage
                         "duree" => [
@@ -433,7 +415,9 @@ class UserController extends Controller
                         // 'durée total' => $timeDifference,
                         // 'date actuelle' => $currentTime,
                         // 'time' =>$time
-                    ]);
+                        ];
+
+                    return (new Service())->apiResponse(404, $data, 'detail');
                 }
                 }
 
@@ -448,7 +432,7 @@ class UserController extends Controller
             }
         } catch (Exception $e)
         {
-            return response()->json(['error' => $e->getMessage()]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -553,7 +537,7 @@ class UserController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
+                return (new Service())->apiResponse(404,  $validator->errors(), 'The data provided is not valid.');
             }
 
 
@@ -579,9 +563,7 @@ class UserController extends Controller
           $test = $testEmail->verifyEmail($request->email);
      
           if($test == 'undeliverable'){
-             return response()->json([
-                 'message' => "Please enter a functional email address",
-             ], 200);
+            return (new Service())->apiResponse(404, [], 'Please enter a functional email address');
           }
 
           $query = "INSERT INTO users (email, phone, password,uid,last_ip_login,created_at,updated_at,code_user) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
@@ -603,10 +585,7 @@ class UserController extends Controller
 
           $createPerson = (new PersonController())->createPerson($country_id, $email, $phone,$request);
           if($createPerson){
-            return response()->json([
-                'message' =>$createPerson->original['message']
-              ]);
-           
+            return (new Service())->apiResponse(200, [], $createPerson->original['message']);
           }
 
           $title = "Confirmation registration";
@@ -614,20 +593,15 @@ class UserController extends Controller
 
           $user = User::Where('email',$email)->first();
   
-          $mail = new MailController();
-          $mes = $mail->sendNotification($user->id,$title,$body, 'User created successfully!');
-          if($mes){
-              return response()->json([
-                'message' =>$mes->original['message']
-              ]);
-            }
 
-         
-    
+          dispatch(new SendEmail($user->id,$title,$body,2));
+
+          return (new Service())->apiResponse(200,[],'User created successfully!');
+
         }
         catch (Exception $e)
         {
-            return response()->json(['error' => $e->getMessage()]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -681,9 +655,7 @@ class UserController extends Controller
                 $user = Auth::user();
                 DB::update('UPDATE users SET connected = ? WHERE id = ?', [0, $user->id]);
                 Auth::logout();
-                return response()->json([
-                    'message' => 'Successfully logged out',
-                ],200);
+                return (new Service())->apiResponse(200, [], 'Successfully logged out');
             }
             // else {
             //     return response()->json([
@@ -691,9 +663,7 @@ class UserController extends Controller
             //     ], 401);
             // }
         } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-            ]);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
     
@@ -778,14 +748,13 @@ class UserController extends Controller
              'client_detail' => $client,
              'delivery_agency_detail' => $deliveryAgency,
              'role' => $roles,
-             'file' => $person->file->location
+             'file' => $user->person->file!=null? $user->person->file->location:null
          ];
- 
-         return response()->json([
-             'data' => $data
-         ], 200);
+
+         return (new Service())->apiResponse(200, $data, 'Authentificated user detail');
+
      } catch (Exception $e) {
-         return response()->json($e->getMessage());
+         return (new Service())->apiResponse(500, [], $e->getMessage());
      }
  }
  
@@ -831,16 +800,11 @@ class UserController extends Controller
         public function getUser()
         {
             try {
-                // $users = DB::select("
-                //     SELECT users.*, person.*
-                //     FROM users, person
-                //     WHERE users.id = person.user_id
-                //     AND users.deleted = FALSE
-                // ");
 
                 $users = User::with('person')->where('deleted',0)->get();
 
                 $data = [];
+
 
                 foreach($users as $user){
                     $user->image = $user->person->file!=null? $user->person->file->location:null;
@@ -851,16 +815,15 @@ class UserController extends Controller
 
                 $totalUsers = count($users);
 
-               
-
-                return response()->json([
+                $data = [
                     'data' => $users,
                     'total_users' => $totalUsers
-                ]);
+                ];
+
+                return (new Service())->apiResponse(200, $data, 'List of users');
+
             } catch (Exception $e) {
-                return response()->json([
-                    'error' => $e->getMessage(),
-                ]);
+                return (new Service())->apiResponse(500, [], $e->getMessage());
             }
         }
 
@@ -958,7 +921,7 @@ class UserController extends Controller
         
             // Vérification de l'ancien mot de passe
             if (!password_verify($request->old_password, $user['password'])) {
-                return response()->json(['message' => 'Old password is incorrect.'], 422);
+                return (new Service())->apiResponse(404, [], 'Old password is incorrect');
             }
         
             // Mise à jour du mot de passe
@@ -973,8 +936,7 @@ class UserController extends Controller
                 'password' => $newPasswordHash,
                 'id' => $userId,
             ]);
-        
-            return response()->json(['message' => 'Password updated successfully.'], 200);
+            return (new Service())->apiResponse(200, [], 'Password updated successfully.');
         }
         
 
@@ -1053,21 +1015,16 @@ class UserController extends Controller
 
                     $uid = User::whereEmail($email)->first()->uid;
 
-                    return response()->json([
-                        'status_code' => 200,
-                        'message' => "We would like to inform you that a message containing 6 digits has been sent to you by e-mail. Please enter the code to change your password.",
-                        'uid' =>$uid
-                     ],200);
+                    $data = [
+                        'uid' => $uid
+                    ];
 
+                    return (new Service())->apiResponse(200,$data, "We would like to inform you that a message containing 6 digits has been sent to you by e-mail. Please enter the code to change your password.");
                 }else{
-                    return response()->json([
-                        'status_code' => 404,
-                        'message' => "Email not found or already disabled"
-                     ],404);
+                    return (new Service())->apiResponse(404,[], "Email not found or already disabled.");
                 }
-
             } catch(Exception $e) {
-                return response()->json($e->getMessage());
+                return (new Service())->apiResponse(500, [], $e->getMessage());
             }
         }
 
@@ -1137,25 +1094,18 @@ class UserController extends Controller
             $differenceInMinutes = $currentDateTime->diffInMinutes($expiredAt);
 
             if (($differenceInMinutes * (-1)) > 30) {
-                return response()->json([
-                    'status_code' => 200,
-                    'message' => 'code already expired'
-                ]);
+                return (new Service())->apiResponse(404,[], 'code already expired');
             } else {
                 $existOtp->deleted = true;
                 $existOtp->save();
-
-                return response()->json([
-                    'status_code' => 200,
-                    'message' => 'otp valide'
-                ]);
+                return (new Service())->apiResponse(200,[], 'otp valide');
             }
         } else {
-            return response()->json(['message' => 'Code not found or already used'], 200);
+            return (new Service())->apiResponse(200,[], 'Code not found or already used');
         }
 
           } catch(Exception $e) {
-            return response()->json($e->getMessage());
+            return (new Service())->apiResponse(500, [], $e->getMessage());
     }
 }
 
@@ -1227,24 +1177,24 @@ public function password_recovery_end_step(Request $request,$uid){
                 'password' =>'required',
                 'password_confirmation' =>'required'
             ]);
+            if((new Service())->isValidUuid($uid)){
+                return (new Service())->isValidUuid($uid);
+            }
+    
 
             if($request->password !== $request->password_confirmation){
-                return response()->json([
-                    'status_code' => 200,
-                    'message' => 'password does not match'
-                ]);
+                return (new Service())->apiResponse(404, [], 'password does not match');
             }
 
-            User::whereUid($uid)->update(['password' => bcrypt($request->password)]);
-            // User::whereEmail($uid)->update(['password' => bcrypt($request->password)]);
+            // User::whereUid($uid)->update(['password' => bcrypt($request->password)]);
+            $user = User::whereUid($uid)->first();
+            $user->password = bcrypt($request->password);
+            $user->save();
 
-            return response()->json([
-                'status_code' => 200,
-                'message' => 'password updated successfully'
-            ]);
+            return (new Service())->apiResponse(200, [], 'password updated successfully');
 
           } catch(Exception $e) {
-            return response()->json($e->getMessage());
+            return (new Service())->apiResponse(500, [], $e->getMessage());
     }
 }
 
@@ -1290,22 +1240,24 @@ public function password_recovery_end_step(Request $request,$uid){
 public function disabledUser($uid){
     try {
 
-       $user = User::whereUid($uid)->whereEnabled(true)->first();
+        if((new Service())->isValidUuid($uid)){
+            return (new Service())->isValidUuid($uid);
+        }
+
+       $user = User::whereUid($uid)->first();
 
        if(!$user){
-            return response()->json([
-                'status_code' => 200,
-                'message' => "User not found or already disabled !"
-            ],200);
+            return (new Service())->apiResponse(404, [], 'User not found  !');
+       }
+
+        if(!$user->enabled){
+            return (new Service())->apiResponse(404, [], 'User  already disabled !');
        }
 
        $user->enabled = false;
        $user->save();
 
-        return response()->json([
-            'status_code' => 200,
-            'message' => "Too many attempt, you are disabled !"
-        ],200);
+       return (new Service())->apiResponse(200, [], 'Too many attempt, you are disabled !');
 
     } catch(Exception $e) {
         return response()->json([
@@ -1413,32 +1365,18 @@ public function verification_code(Request $request)
         // return [$verification,User::where('code', $verification)->exists()];
 
         if (!$user) {
-            return response()->json([
-                'status_code' => 200,
-                'message' => 'Code invalid',
-            ]);
+            return (new Service())->apiResponse(404, [], 'Code invalid');
         }
       
         if ($user) {
-            // $users =User::whereId(Auth::user()->id)->whereCode($verification)->first();
             $users =User::whereId(Auth::user()->id)->whereCode($verification)->first();
             $users->code = 0;
             $users->save();
-            return response()->json([
-                'status_code' => 200,
-                'message' => 'Verification passed',
-            ]);
+            return (new Service())->apiResponse(200, [], 'Verification passed');
         }
 
-       
-
-     
-
     } catch (Exception $e) {
-        return response()->json([
-            'status_code' => 500,
-            'message' => $e->getMessage(),
-        ]);
+        return (new Service())->apiResponse(500, [], $e->getMessage());
     }
 }
 
@@ -1489,9 +1427,7 @@ public function new_code($id) {
         $user = User::find($id);
 
         if(!$user){
-            return response()->json([
-                'message' => 'Check if user exist',
-            ],200);
+            return (new Service())->apiResponse(404, [], 'Check if user exist');
         }
 
         // if(Auth::user()->id != $id){
@@ -1508,23 +1444,16 @@ public function new_code($id) {
             $body =$user->code;
             $mail = new MailController();
             $mes =  $mail->sendLoginConfirmationNotification(Auth::user()->id,$title,$body, 'code sent successfully !');
-            // dd('allo');
 
-          
             if($mes){
-                return response()->json([
-                      'message' =>$mes->original['message']
-                ]);
+                return (new Service())->apiResponse(200, [], $mes->original['message']);
               }
 
-        } 
-        return response()->json([
-            'status_code' => 404,
-            'message' => 'This id does not exist'
-        ]);
+        }
+        return (new Service())->apiResponse(404, [], 'This id does not exist');
 
     } catch (Exception $e) {
-        return response()->json(['message' =>$e->getMessage()], 500);
+        return (new Service())->apiResponse(500, [], $e->getMessage());
     }
 }
 

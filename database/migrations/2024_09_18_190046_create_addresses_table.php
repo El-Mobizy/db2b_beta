@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('addresses', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade')->nullable();
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('name')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
             $table->uuid('uid')->unique();
             $table->string('formatted_address')->nullable();
             $table->string('place_id')->nullable();
-            $table->boolean('is_default')->default(false);
+            $table->boolean('is_default');
             $table->timestamps();
         });
     }

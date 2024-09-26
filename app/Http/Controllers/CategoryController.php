@@ -157,6 +157,9 @@ class CategoryController extends Controller
     {
            try {
             $db = DB::connection()->getPdo();
+            if((new Service())->isValidUuid($uid)){
+                return (new Service())->isValidUuid($uid);
+            }
             $query = "SELECT * FROM categories WHERE uid = :uid";
             $stmt = $db->prepare($query);
             $stmt->bindParam(':uid', $uid);

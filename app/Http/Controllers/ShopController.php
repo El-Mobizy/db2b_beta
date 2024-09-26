@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Client;
 use App\Models\File;
 use App\Models\Order;
+use App\Models\OrderDetail;
 use App\Models\Shop;
 use App\Models\ShopHasCategory;
 use App\Models\TypeOfType;
@@ -220,6 +221,8 @@ class ShopController extends Controller
     public function createShop(Request $request){
         try{
 
+          return (new Service())->storeImage($request);
+
 
 
             $validator = Validator::make($request->all(), [
@@ -361,6 +364,10 @@ class ShopController extends Controller
     public function updateShop($uid, Request $request){
         try{
 
+            if((new Service())->isValidUuid($uid)){
+                return (new Service())->isValidUuid($uid);
+            }
+
            
       $service = new Service();
 
@@ -481,6 +488,10 @@ class ShopController extends Controller
                 // ]);
             }
 
+            if((new Service())->isValidUuid($uid)){
+                return (new Service())->isValidUuid($uid);
+            }
+
             $service = new AdController();
 
             if(!Shop::whereUid($uid)->first()){
@@ -518,7 +529,8 @@ class ShopController extends Controller
                 'ad' => Ad::where('owner_id',Auth::user()->id)->where('shop_id',$shop->id)->count(),
                 'orders' =>Order::where('status',$validatedStatusId)->whereHas('order_details.ad', function($query) use ($shop) {
                     $query->where('shop_id', $shop->id);
-                })->count()
+                })->count(),
+               
             ];
 
             $clientid  = (new Service())->returnClientIdUser(Auth::user()->id);
@@ -686,6 +698,9 @@ class ShopController extends Controller
             $request->validate([
                 'files' => 'required'
             ]);
+            if((new Service())->isValidUuid($uid)){
+                return (new Service())->isValidUuid($uid);
+            }
             $existFile = File::whereUid($uid)->first();
 
             if(!$existFile){
@@ -1308,27 +1323,415 @@ class ShopController extends Controller
         }
     }
 
-    public function getOrdersShop($shopUid)
-{
+
+    /**
+ * @OA\Get(
+ *     path="/api/shop/getOrdersShop/{shopUid}",
+ *     tags={"Shop"},
+ *     summary="Retrieve orders grouped by status for a specific shop",
+ *     description="This endpoint retrieves orders grouped by status for a given shop, identified by its unique shopUid.",
+ *     security={{"bearerAuth": {}}},
+ * 
+ *     @OA\Parameter(
+ *         name="shopUid",
+ *         in="path",
+ *         required=true,
+ *         description="Unique identifier of the shop",
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\Parameter(
+ *         name="perpage",
+ *         in="query",
+ *         required=false,
+ *         description="Number of results per page",
+ *         @OA\Schema(
+ *             type="integer",
+ *             example=15
+ *         )
+ *     ),
+ * 
+ *     @OA\Response(
+ *         response=200,
+ *         description="Orders grouped by status retrieved successfully",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="string",
+ *                 example="success"
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(
+ *                         property="status",
+ *                         type="string",
+ *                         example="pending"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="orders",
+ *                         type="array",
+ *                         @OA\Items(
+ *                             type="object",
+ *                             @OA\Property(
+ *                                 property="id",
+ *                                 type="integer",
+ *                                 example=123
+ *                             ),
+ *                             @OA\Property(
+ *                                 property="order_details",
+ *                                 type="object",
+ *                                 @OA\Property(
+ *                                     property="ad",
+ *                                     type="object",
+ *                                     @OA\Property(
+ *                                         property="shop_id",
+ *                                         type="integer",
+ *                                         example=1
+ *                                     )
+ *                                 )
+ *                             )
+ *                         )
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Shop not found",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="string",
+ *                 example="error"
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Shop not found"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="string",
+ *                 example="error"
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="An unexpected error occurred"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+ public function getOrdersShop(Request $request, $shopUid)
+ {
+     try {
+
+        if((new Service())->isValidUuid($shopUid)){
+            return (new Service())->isValidUuid($shopUid);
+        }
+         $shop = Shop::where('uid', $shopUid)->first();
+         $perpage = $request->query('perpage') ?? 15;
+ 
+         if (!$shop) {
+             return (new Service())->apiResponse(404, [], 'Shop not found');
+         }
+
+         
+         $orders = Order::whereHas('order_details.ad', function ($query) use ($shop) {
+            $query->where('shop_id', $shop->id);
+        })
+        ->paginate($perpage);
+
+
+            foreach ($orders as $order) {
+                $order->ads = $this->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'];
+                $order->ads_number = $this->getShopOrderAds($order->uid, $shopUid)->original['data']['number'];
+                $order->ad_image = File::whereReferencecode($this->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'][0]->file_code)->first()->location;
+                $order->statut =  TypeOfType::whereId($order->status)->first()->libelle;
+            }
+
+         return (new Service())->apiResponse(200, $orders, 'Orders grouped by status retrieved successfully');
+ 
+     } catch (Exception $e) {
+         return (new Service())->apiResponse(500, [], $e->getMessage());
+     }
+ }
+ 
+
+ /**
+ * @OA\Get(
+ *     path="/api/shop/getShopOrderAds/{orderUid}/{shopUid}",
+ *     tags={"Shop"},
+ *     summary="Récupère les annonces d'une commande dans un magasin",
+ *     description="Cette route permet de récupérer les annonces associées à une commande spécifique dans un magasin.",
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="orderUid",
+ *         in="path",
+ *         required=true,
+ *         description="UID de la commande",
+ *         @OA\Schema(
+ *             type="string",
+ *             format="uuid",
+ *         )
+ *     ),
+ *     @OA\Parameter(
+ *         name="shopUid",
+ *         in="path",
+ *         required=true,
+ *         description="UID du magasin",
+ *         @OA\Schema(
+ *             type="string",
+ *             format="uuid",
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Liste des annonces trouvées dans la commande",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="ads",
+ *                 type="array",
+ *                 @OA\Items(type="object", ref="")
+ *             ),
+ *             @OA\Property(
+ *                 property="number",
+ *                 type="integer",
+ *                 description="Nombre d'annonces trouvées"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Commande ou magasin non trouvé",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Order not found"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Erreur interne du serveur"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+public function getShopOrderAds($orderUid, $shopUid) {
     try {
-        $shop = Shop::where('uid', $shopUid)->first();
+
+        if((new Service())->isValidUuid($shopUid)){
+            return (new Service())->isValidUuid($shopUid);
+        }
+
+        if((new Service())->isValidUuid($orderUid)){
+            return (new Service())->isValidUuid($orderUid);
+        }
+        $data = [];
+
+        $order = Order::whereUid($orderUid)->first();
+        $shop = Shop::whereUid($shopUid)->first();
+
+        if (!$order) {
+            return (new Service())->apiResponse(404, [], 'Order not found');
+        }
 
         if (!$shop) {
             return (new Service())->apiResponse(404, [], 'Shop not found');
         }
 
-        $orders = Order::whereHas('order_details.ad', function ($query) use ($shop) {
-                $query->where('shop_id', $shop->id);
-            })
-            ->get()
-            ->groupBy('status');
+        foreach ($order->order_details as $detail) {
+            $ad = Ad::whereDeleted(0)
+                    ->whereId($detail->ad_id)
+                    ->where('shop_id', $shop->id)
+                    ->first();
 
-        return (new Service())->apiResponse(200, $orders, 'Orders grouped by status retrieved successfully');
+            if ($ad) {
+                $data[] = $ad;
+            }
+        }
+
+        $datas = [
+            'ads' => $data,
+            'number' => count($data)
+        ];
+
+        return (new Service())->apiResponse(200, $datas, 'List of ads in order');
 
     } catch (Exception $e) {
         return (new Service())->apiResponse(500, [], $e->getMessage());
     }
 }
+
+/**
+ * @OA\Get(
+ *     path="/api/shop/getMerchantStatistic",
+ *     tags={"Shop"},
+ *     summary="Statistiques d'un marchand",
+ *     description="Cette route fournit des statistiques globales pour un marchand, y compris les commandes, les clients, et les gains.",
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Statistiques du marchand",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="total_orders",
+ *                 type="integer",
+ *                 description="Nombre total de commandes"
+ *             ),
+ *             @OA\Property(
+ *                 property="total_customers",
+ *                 type="integer",
+ *                 description="Nombre total de clients"
+ *             ),
+ *             @OA\Property(
+ *                 property="total_earning",
+ *                 type="number",
+ *                 format="float",
+ *                 description="Revenus totaux du marchand"
+ *             ),
+ *             @OA\Property(
+ *                 property="merchant_earning_per_order",
+ *                 type="array",
+ *                 description="Gains du marchand par commande",
+ *                 @OA\Items(type="object", ref="")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Erreur interne du serveur"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+
+    public function getMerchantStatistic(){
+        try {
+
+            $userId = Auth::user()->id;
+
+            $clients = Order::whereHas('order_details.ad', function($query) use ($userId) {
+                $query->where('owner_id', $userId);
+            })->pluck('user_id')->unique()->values()->toArray();
+
+            $merchant_earning_per_order = $this->getMerchantEarningsPerOrder();
+
+            $totalEarning = 0;
+
+            foreach($merchant_earning_per_order as $earning){
+                $totalEarning = $totalEarning + $earning['total_earnings'];
+            }
+
+            $data = [
+                'total_orders' => count((new OrderController())->getMerchantOrder()->original['data']),
+                'total_customers' => count($clients),
+                'total_earning' => $totalEarning,
+                'total_shop' =>count( (new ShopController())->userShop()->original['data'])
+                // 'merchant_earning_per_order' =>$this->getMerchantEarningsPerOrder()
+            ];
+
+            return (new Service())->apiResponse(200, $data, 'Merchant statistics');
+    
+        } catch (Exception $e) {
+            return (new Service())->apiResponse(500, [], $e->getMessage());
+        }
+    }
+
+    public function getMerchantEarningsPerOrder()
+    {
+        try {
+            $service = new Service();
+            $checkAuth = $service->checkAuth();
+            if ($checkAuth) {
+                return $checkAuth;
+            }
+    
+            $checkIfMerchant = (new AdController())->checkMerchant();
+            if ($checkIfMerchant == 0) {
+                return response()->json([
+                    'message' => 'You are not merchant'
+                ], 200);
+            }
+    
+            $merchantId = Auth::user()->id;
+            $userShops = (new ShopController())->anUserShop($merchantId)->pluck('id')->toArray();
+            if (empty($userShops)) {
+                return response()->json([
+                    'data' => 0
+                ]);
+            }
+    
+            $orderDetails = OrderDetail::whereIn('shop_id', $userShops)
+                ->whereDeleted(false)
+                ->with('ad') 
+                ->get();
+    
+            $ordersEarnings = [];
+    
+            foreach ($orderDetails as $orderDetail) {
+                if ($orderDetail->ad && $orderDetail->ad->owner_id == $merchantId) {
+                    $orderId = $orderDetail->order_id;
+    
+                    if (!isset($ordersEarnings[$orderId])) {
+                        $ordersEarnings[$orderId] = [
+                            'order_id' => $orderId,
+                            'total_earnings' => 0,
+                            // 'order_details' => []
+                        ];
+                    }
+    
+                    $totalPrice = $orderDetail->price * $orderDetail->quantity; 
+                    $ordersEarnings[$orderId]['total_earnings'] += $totalPrice;
+                    // $ordersEarnings[$orderId]['order_details'][] = $orderDetail;
+                }
+            }
+            return array_values($ordersEarnings);
+
+        } catch (\Exception $e) {
+            return (new Service())->apiResponse(500, [], $e->getMessage());
+        }
+    }
+    
+
+
 
 
 

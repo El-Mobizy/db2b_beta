@@ -11,6 +11,7 @@ use App\Http\Controllers\MailController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Service;
 use App\Http\Controllers\TransactionController;
+use App\Jobs\SendEmail;
 use App\Models\Favorite;
 use App\Models\Ad;
 use App\Models\Category;
@@ -305,7 +306,7 @@ class OngingTradeStageService
     public function cancelTrade($tradeStage, $trade) {
         $tradeStage->update(['complete' => true]);
         $statut_trade_id = TypeOfType::whereLibelle('canceltrade')->first()->id;
-        $status_order_id = TypeOfType::whereLibelle('started')->first()->id;
+        $status_order_id = TypeOfType::whereLibelle('canceled')->first()->id;
         $statut_escrow_id = TypeOfType::whereLibelle('partially_released')->first()->id;
 
         if (!$statut_trade_id || !$status_order_id || !$statut_escrow_id) {
@@ -468,9 +469,8 @@ class OngingTradeStageService
 
             Best regards.";
 
-            $mail = new MailController();
 
-            $mail->sendNotification($sellerUserId,$title,$body, '');
+            dispatch(new SendEmail($sellerUserId,$title,$body,2));
 
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -489,9 +489,8 @@ class OngingTradeStageService
     
             $title = "Delivery Completed Successfully!";
             $body = "The delivery for order #{$order->uid} has been completed successfully. Your Bonus Delivery Commission wallet has been credited. Your new balance is {$balance} XOF.";
-    
-            $mail = new MailController();
-            $mail->sendNotification(Person::whereId($deliveryPersonId)->first()->user_id, $title, $body,'');
+
+            dispatch(new SendEmail(Person::whereId($deliveryPersonId)->first()->user_id,$title,$body,2));
     
             return response()->json([
                 'message' => 'Notification sent successfully'

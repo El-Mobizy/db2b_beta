@@ -30,4 +30,9 @@ class Order extends Model
     public function user(){
         return $this->belongsTo(User::class);
     }
+
+    public function statusType()
+    {
+        return $this->belongsTo(TypeOfType::class, 'status');
+    }
 }

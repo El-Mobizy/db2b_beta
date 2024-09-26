@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendEmail;
 use App\Models\Ad;
 use App\Models\Admin;
 use App\Models\AttributeGroup;
@@ -114,13 +115,107 @@ class Service extends Controller
     }
 
     public function storeSingleFile(Request $request,$randomString,$location){
+         dd($request->files);
         $files = $request->files[0];
          $this->storeFile($files,$randomString,$location);
         return 'stock';
 
     }
 
+    public function storeImage(Request $request)
+{
 
+    $image_base64 = $request->input('files')['data'];
+
+    $image = base64_decode($image_base64);
+
+    // $image->getClientOriginalExtension();
+
+
+    $fileName = uniqid() . '.png'; 
+
+    $filePath = public_path('uploads/' . $fileName);
+
+    file_put_contents($filePath, $image);
+
+    $file = new File();
+    $file->filename = $fileName;
+    $file->type = 'a';
+    $file->location ='uploads/' . $fileName;
+    $file->size = 32;
+    $file->referencecode = 'abc';
+    $file->uid = '5b32dd70-356c-11ef-9f05-00ff5210c7f4';
+    $file->save();
+
+    return response()->json([
+        'message' => 'Image uploaded successfully',
+        'path' =>  $file->location,
+        'type' => gettype($image)
+    ]);
+}
+
+// public function storeImage(Request $request)
+// {
+//     $image_base64 = $request->input('files')['data'];
+
+//     // Vérifier si les métadonnées indiquent une image et si l'encodage est en base64
+//     if (preg_match('/^data:image\/(\w+);base64,/', $image_base64, $type)) {
+//         // Récupérer l'extension de l'image (par exemple, png, jpg)
+//         $extension = strtolower($type[1]); // Convertir en minuscule par précaution
+
+//         // Liste des extensions d'image acceptées
+//         $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+
+//         // Vérifier si l'extension est valide
+//         if (in_array($extension, $allowedExtensions)) {
+//             // Supprimer la partie 'data:image/type;base64,' pour ne garder que les données
+//             $image_base64 = substr($image_base64, strpos($image_base64, ',') + 1);
+
+//             // Décoder les données base64
+//             $image = base64_decode($image_base64);
+
+//             // Générer un nom de fichier unique avec l'extension correcte
+//             $fileName = uniqid() . '.' . $extension;
+
+//             // Chemin du fichier
+//             $filePath = public_path('uploads/' . $fileName);
+
+//             // Sauvegarder l'image sur le disque
+//             file_put_contents($filePath, $image);
+
+//             // Sauvegarder les informations du fichier dans la base de données
+//             $file = new File();
+//             $file->filename = $fileName;
+//             $file->type = 'a';
+//             $file->location = 'uploads/' . $fileName;
+//             $file->size = filesize($filePath); // Obtenir la taille du fichier
+//             $file->referencecode = 'abc';
+//             $file->uid = '5b32dd70-356c-11ef-9f05-00ff5210c7f4';
+//             $file->save();
+
+//             return response()->json([
+//                 'message' => 'Image uploaded successfully',
+//                 'path' => $file->location,
+//                 'type' => gettype($image)
+//             ]);
+//         } else {
+//             // Si l'extension n'est pas autorisée
+//             return response()->json(['error' => 'Invalid image format. Only jpg, jpeg, png, gif are allowed.'], 401);
+//         }
+//     } else {
+//         // Si ce n'est pas une image ou un format base64 incorrect
+//         return response()->json(['error' => 'Invalid image data.'], 400);
+//     }
+// }
+
+function isValidUuid($uuid) {
+    $pattern = '/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i';
+
+    if (preg_match($pattern, $uuid) != 1){
+        return (new Service())->apiResponse(404, [], "$uuid is not valid for format uuid");
+    }
+
+}
 
     private function storeFile( $photo, $randomString, $location){
         try {
@@ -621,9 +716,7 @@ class Service extends Controller
 
    public function checkAuth(){
     if (!Auth::user()) {
-        return response()->json([
-            'message' => 'UNAUTHENTIFICATED'
-        ],200);
+        return (new Service())->apiResponse(403, [], 'UNAUTHENTIFICATED');
     }
    }
 
@@ -700,10 +793,9 @@ public function adminUserAccount(){
 public function notifyAdmin($title,$body){
     try{
        $admins = $this->adminUserAccount();
-       $mail = new MailController();
 
        foreach($admins as $user){
-            $mail->sendNotification($user->id,$title,$body, '');
+            dispatch(new SendEmail($user->id,$title,$body,2));
        }
 
     } catch (Exception $e) {

@@ -42,44 +42,44 @@ class CountryController extends Controller
 
  public function getAllCountries()
  {
-    //  try {
+     try {
  
-    //      $db = DB::connection()->getPdo();
-    //      $query = "SELECT * FROM countries WHERE deleted = false AND banned = false";
-    //      $stmt = $db->prepare($query);
-    //      $stmt->execute();
-    //      $countries = $stmt->fetchAll($db::FETCH_ASSOC);
+         $db = DB::connection()->getPdo();
+         $query = "SELECT * FROM countries WHERE deleted = false AND banned = false";
+         $stmt = $db->prepare($query);
+         $stmt->execute();
+         $countries = $stmt->fetchAll($db::FETCH_ASSOC);
  
-    //      // Boucler sur chaque pays et mettre le flag en majuscule
-    //      foreach ($countries as &$country) {
-    //          $country['flag'] = mb_strtolower($country['flag']);
-    //      }
+         // Boucler sur chaque pays et mettre le flag en majuscule
+         foreach ($countries as &$country) {
+             $country['flag'] = mb_strtolower($country['flag']);
+         }
  
-    //      return response()->json([
-    //          'data' => $countries
-    //      ]);
+         return response()->json([
+             'data' => $countries
+         ]);
  
-    //  } catch (Exception $e) {
-    //      return response()->json([
-    //          'error' => $e->getMessage()
-    //      ]);
-    //  }
+     } catch (Exception $e) {
+         return response()->json([
+             'error' => $e->getMessage()
+         ]);
+     }
 
-    try {
-        // Récupérer les données du fichier JSON
-        $countryRaw = $this->getData();
+    // try {
+    //     // Récupérer les données du fichier JSON
+    //     $countryRaw = $this->getData();
 
-        // Retourner directement les données du fichier JSON
-        return response()->json([
-            'data' => $countryRaw,
-            'message' => 'Countries loaded successfully'
-        ]);
+    //     // Retourner directement les données du fichier JSON
+    //     return response()->json([
+    //         'data' => $countryRaw,
+    //         'message' => 'Countries loaded successfully'
+    //     ]);
 
-    } catch (Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
-    }
+    // } catch (Exception $e) {
+    //     return response()->json([
+    //         'error' => $e->getMessage()
+    //     ], 500);
+    // }
  }
  
 

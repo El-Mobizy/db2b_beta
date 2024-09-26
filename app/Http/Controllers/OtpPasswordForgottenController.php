@@ -40,10 +40,7 @@ class OtpPasswordForgottenController extends Controller
         $title= "Recovery your password";
         $body = "$otp_code is your password reset code. You have thirty minutes before this code becomes invalid. ";
 
-        dispatch(new SendEmail(User::where('email',$email)->first()->id,$title,$body,'Email sent successfully !',1));
-
-
-       
+        dispatch(new SendEmail(User::where('email',$email)->first()->id,$title,$body,1));
     }
 
 
@@ -88,7 +85,9 @@ class OtpPasswordForgottenController extends Controller
     public function resendForgottenOtp($uid){
         try {
 
-
+            if((new Service())->isValidUuid($uid)){
+                return (new Service())->isValidUuid($uid);
+            }
 
             $otp_code = (new Service())->generateSixDigitNumber();
 
