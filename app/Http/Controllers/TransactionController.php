@@ -85,7 +85,7 @@ class TransactionController extends Controller
      *     )
      * )
      */
-    public function getUserTransactions($perpage)
+    public function getUserTransactions($perpage=10)
     {
         try {
             $userId = Auth::id();

@@ -41,7 +41,7 @@
                 ],
                 "summary": "Get all ads.",
                 "description": "Get All ads.",
-                "operationId": "b7e0c0d13e9228caecd0aa415d30ae7f",
+                "operationId": "6d7a70fa6a668c6622dfc18b299cdbb8",
                 "responses": {
                     "200": {
                         "description": "Success. Return all ads.",
@@ -171,7 +171,7 @@
             }
         },
         "/api/ad/destroyAd/{uid}": {
-            "delete": {
+            "post": {
                 "tags": [
                     "Ad"
                 ],
@@ -306,46 +306,49 @@
                     "content": {
                         "multipart/form-data": {
                             "schema": {
+                                "required": [
+                                    "title",
+                                    "location_id",
+                                    "value_entered",
+                                    "price",
+                                    "shop_id"
+                                ],
                                 "properties": {
                                     "title": {
-                                        "type": "string",
-                                        "example": "Ad title"
+                                        "description": "Title of the advertisement",
+                                        "type": "string"
                                     },
                                     "location_id": {
-                                        "type": "integer",
-                                        "example": 1
+                                        "description": "ID of the location",
+                                        "type": "integer"
                                     },
                                     "category_id": {
-                                        "type": "integer",
-                                        "example": 1
+                                        "description": "ID of the category",
+                                        "type": "integer"
                                     },
-                                    "shop_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "price": {
-                                        "type": "number",
-                                        "format": "double",
-                                        "example": 1
-                                    },
-                                    "value_entered[]": {
+                                    "value_entered": {
+                                        "description": "Array of entered values for ad attributes",
                                         "type": "array",
                                         "items": {
-                                            "type": "string",
-                                            "example": "value1"
-                                        },
-                                        "example": [
-                                            "value1",
-                                            "value2",
-                                            "value3"
-                                        ]
+                                            "type": "string"
+                                        }
                                     },
-                                    "files[]": {
+                                    "image": {
+                                        "description": "Array of files to upload",
                                         "type": "array",
                                         "items": {
                                             "type": "string",
                                             "format": "binary"
                                         }
+                                    },
+                                    "price": {
+                                        "description": "Price of the item",
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "shop_id": {
+                                        "description": "ID of the shop",
+                                        "type": "integer"
                                     }
                                 },
                                 "type": "object"
@@ -360,9 +363,17 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "Ad added successfully!"
+                                            "example": "ad added successfully !"
                                         }
                                     },
                                     "type": "object"
@@ -370,15 +381,47 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Validation error or bad request",
+                    "404": {
+                        "description": "Not found error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "error": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "message": {
                                             "type": "string",
-                                            "example": "Validation error message"
+                                            "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An internal server error occurred"
                                         }
                                     },
                                     "type": "object"
@@ -473,6 +516,110 @@
                                         "error": {
                                             "type": "string",
                                             "example": "Validation error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ad/checkAdTitle/{title}/{shopId}": {
+            "get": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Check if an ad title already exists for a user in a specific shop",
+                "operationId": "51f8b73092b9fb6cc66a763e6bedc502",
+                "parameters": [
+                    {
+                        "name": "title",
+                        "in": "path",
+                        "description": "The title of the ad to check",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "shopId",
+                        "in": "path",
+                        "description": "The ID of the shop",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ad does not exist",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ad does not exist in the shop"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ad already exists in the shop",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You already added this ad in your shop Shop Title"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred"
                                         }
                                     },
                                     "type": "object"
@@ -1014,6 +1161,133 @@
                                     "properties": {
                                         "message": {
                                             "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ad/updateAdDetail/{adUid}": {
+            "post": {
+                "tags": [
+                    "Ad"
+                ],
+                "summary": "Update AdDetail",
+                "description": "Met à jour la valeur d'un détail d'annonce.",
+                "operationId": "1d7e3d6bccce3fd5ca7663d342dfcecc",
+                "parameters": [
+                    {
+                        "name": "adUid",
+                        "in": "path",
+                        "description": "L'UID du détail d'annonce à mettre à jour.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "newValue": {
+                                        "type": "string",
+                                        "example": "Nouvelle valeur"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Détail d'annonce mis à jour avec succès.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "AdDetail updated successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Mauvaise demande. Vérifiez les données fournies.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid UUID provided."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Détail d'annonce non trouvé.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "AdDetail not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Message d'erreur."
                                         }
                                     },
                                     "type": "object"
@@ -2043,13 +2317,13 @@
                 }
             }
         },
-        "/api/category/getAllSubCategory": {
+        "/api/category/getAllSubSubcategory": {
             "get": {
                 "tags": [
                     "SubCategories"
                 ],
                 "summary": "Get all sub-subcategories",
-                "operationId": "cd22d4375d0b2e10f7deafb041d33c18",
+                "operationId": "0b1ff89facf3d8628af0994c72fc8012",
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -2087,13 +2361,13 @@
                 }
             }
         },
-        "/api/category/getAllPaginateSubCategory/paginate": {
+        "/api/category/getAllPaginateSubSubcategory/paginate": {
             "get": {
                 "tags": [
                     "SubCategories"
                 ],
                 "summary": "Get paginated sub-subcategories",
-                "operationId": "194bf2e702e74738d5b3ebb1b886d3ac",
+                "operationId": "9a048a6033b61e64dd2834c9fff921b9",
                 "parameters": [
                     {
                         "name": "perpage",
@@ -2266,6 +2540,93 @@
                                         "error": {
                                             "type": "string",
                                             "example": "Error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/category/getCategoryAttribute/{uid}": {
+            "get": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Retrieve category attributes by UID",
+                "description": "This endpoint retrieves the attributes of a category using the category UID.",
+                "operationId": "6f388c1064e41612315da44a4b419430",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "Unique identifier (UID) of the category",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of category attributes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "description": "Attribute ID",
+                                                "type": "integer"
+                                            },
+                                            "name": {
+                                                "description": "Attribute name",
+                                                "type": "string"
+                                            },
+                                            "value": {
+                                                "description": "Attribute value",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category or attribute group not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Category not found!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Server error"
                                         }
                                     },
                                     "type": "object"
@@ -9385,7 +9746,7 @@
                                         "description": "Description of the shop, maximum 500 characters.",
                                         "type": "string"
                                     },
-                                    "files[]": {
+                                    "allo[]": {
                                         "description": "Optional files to upload for the shop.",
                                         "type": "array",
                                         "items": {
@@ -9494,7 +9855,7 @@
                                         "type": "string",
                                         "example": "This is a new shop description."
                                     },
-                                    "files": {
+                                    "image": {
                                         "description": "Optional files to upload",
                                         "type": "file",
                                         "example": "file.txt"
@@ -13930,6 +14291,99 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Internal Server Error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/regenerateToken": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Régénère un jeton d'accès pour un utilisateur connecté",
+                "description": "Cette route permet de régénérer un jeton JWT pour un utilisateur existant en fonction de son UID.",
+                "operationId": "regenerateToken",
+                "responses": {
+                    "200": {
+                        "description": "Jeton régénéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "description": "Jeton d'accès régénéré",
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token regénéré pour l'utilisateur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Utilisateur non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur interne du serveur"
                                         }
                                     },
                                     "type": "object"

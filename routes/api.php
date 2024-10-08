@@ -160,10 +160,10 @@ Route::prefix('users')->group(function () {
         Route::get('/user', [UserController::class, 'userAuth']);
         Route::prefix('users')->group(function () {
             Route::post('/new_code/{id}', [UserController::class, 'new_code'])->name('new_code');
+            Route::post('/regenerateToken', [UserController::class, 'regenerateToken'])->name('user.regenerateToken');
         });
 
            //person
-
            Route::prefix('person')->group(function () {
                Route::post('/updatePersonInformation', [PersonController::class, 'updatePersonInformation'])->name('person.updatePersonInformation');
                Route::post('/AddOrUpdateProfileImg', [PersonController::class, 'AddOrUpdateProfileImg'])->name('person.AddOrUpdateProfileImg');
@@ -173,7 +173,8 @@ Route::prefix('users')->group(function () {
         Route::prefix('ad')->group(function () {
            
             Route::get('/marchand/{perpage}', [AdController::class, 'getMarchandAd'])->name('ad.marchand');
-            Route::delete('/destroyAd/{uid}', [AdController::class, 'destroyAd'])->name('ad.destroyAdd');
+            Route::post('/destroyAd/{uid}', [AdController::class, 'destroyAd'])->name('ad.destroyAdd');
+            Route::post('/checkAdTitle/{title}/{shopId}', [AdController::class, 'checkAdTitle'])->name('ad.checkAdTitle');
         });
 
           //Notification
@@ -283,7 +284,7 @@ Route::prefix('users')->group(function () {
             Route::prefix('attributeGroup')->group(function () {
                 Route::post('/store', [AttributeGroupController::class, 'store']);
             });
-        
+
             //escrow
             Route::prefix('escrow')->group(function () {
                 Route::get('/getEscrow/{perpage}', [EscrowController::class, 'getEscrow']);
@@ -299,6 +300,7 @@ Route::prefix('users')->group(function () {
             Route::prefix('file')->group(function () {
                 Route::get('/getFilesByFileCode/{file}/{returnSingleFile}', [FileController::class, 'getFilesByFileCode']);
                 Route::delete('/removeFile/{uid}', [Service::class, 'removeFile'])->name("file.removeFile");
+                
             });
 
 
@@ -400,6 +402,7 @@ Route::prefix('users')->group(function () {
         Route::get('/all/{perPage}', [AdController::class, 'getRecentAdd'])->name('ad.recent');
         Route::get('/all', [AdController::class, 'getAllAd'])->name('ad.all');
         Route::post('/storeAd', [AdController::class, 'storeAd'])->name('ad.storeAd');
+        Route::post('/updateAdDetail/{uid}', [AdController::class, 'updateAdDetail'])->name('ad.updateAdDetail');
         Route::post('/editAd/{uid}', [AdController::class, 'editAd'])->name('ad.editAd');
         Route::post('/uploadAdImage/{adUid}', [Service::class, 'uploadAdImage'])->name('ad.uploadAdImage');
         Route::post('/validateAd/{uid}', [AdController::class, 'validateAd'])->name('ad.validateAd');
@@ -473,16 +476,20 @@ Route::prefix('users')->group(function () {
 
     Route::get('isWithinDeliveryZoneO/{longitude}/{latitude}', [ZoneController::class, 'isWithinDeliveryZoneO'])->name('deliveryAgency.isWithinDeliveryZoneO');
 
-    Route::post('/notifyParty/{orderId}/{longitue}/{latitude}', [OrderController::class, 'notifyParty'])->name('order.notifyParty');  Route::prefix('category')->group(function () {
+    Route::post('/notifyParty/{orderId}/{longitue}/{latitude}', [OrderController::class, 'notifyParty'])->name('order.notifyParty');
+
+    Route::prefix('category')->group(function () {
         Route::post('/add', [CategoryController::class, 'add'])->name('category.add');
         Route::post('/updateCategorie/{id}', [CategoryController::class, 'updateCategorie'])->name('category.updateCategorie');
         Route::get('/detail/{uid}', [CategoryController::class, 'showCategoryDetail'])->name('category.detail');
         Route::get('/all', [CategoryController::class, 'getAllCategories'])->name('category.all');
         Route::get('/search', [CategoryController::class, 'searchCategory'])->name('category.search');
+        Route::get('/getCategoryAttribute/{uid}', [CategoryController::class, 'getCategoryAttribute'])->name('category.getCategoryAttribute');
         Route::get('/all/{paginate}', [CategoryController::class, 'getAllPaginateCategories'])->name('category.getAllPaginateCategories');
         Route::get('/getAllPaginateSubSubcategory/{paginate}', [CategoryController::class, 'getAllPaginateSubSubcategory'])->name('category.getAllPaginateSubSubcategory');
         Route::get('/getAllSubSubcategory', [CategoryController::class, 'getAllSubSubcategory'])->name('category.getAllSubSubcategory');
     });
+
 
         //Country
         Route::prefix('country')->group(function () {
@@ -501,3 +508,5 @@ Route::prefix('users')->group(function () {
 
 
     Route::post('/file/storeImage', [Service::class, 'storeImage'])->name('create.storeImage');
+
+    Route::post('/TestCrypto', [Service::class, 'TestCrypto'])->name("file.TestCrypto");

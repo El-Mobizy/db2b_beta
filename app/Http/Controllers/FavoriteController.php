@@ -74,7 +74,9 @@ class FavoriteController extends Controller
     
             if ($exist) {
                 Favorite::where('user_id', $user_id)->where('ad_id', $adId)->first()->delete();
-                return $this->returnFavoritesList($user_id, 'Product removed from wishlist successfully!');
+                // return $this->returnFavoritesList($user_id, 'Product removed from wishlist successfully!');
+
+                return(new Service())->apiResponse(200,(new AdController())->getAllAd()->original['data'],"Product removed from wishlist successfully!");
             } else {
                 $ulid = Uuid::uuid1();
                 $ulidFavorite = $ulid->toString();
@@ -93,8 +95,12 @@ class FavoriteController extends Controller
                 $statement->bindParam(5, $updated_at);
     
                 $statement->execute();
-    
-                return $this->returnFavoritesList($user_id, 'Product added to wishlist successfully!');
+
+                
+                // return (new AdController())->getAllAd();
+
+                return(new Service())->apiResponse(200,(new AdController())->getAllAd()->original['data'],"Product added to wishlist successfully!");
+                // return $this->returnFavoritesList($user_id, 'Product added to wishlist successfully!');
             }
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()]);
@@ -286,36 +292,37 @@ class FavoriteController extends Controller
             $user_id = Auth::user()->id;
 
             $query = "
-    SELECT 
-        favorites.*, 
-        ads.id AS ad_id, 
-        ads.category_id AS ad_category_id, 
-        ads.owner_id AS ad_owner_id, 
-        ads.location_id AS ad_location_id, 
-        (
-            SELECT location 
-            FROM files 
-            WHERE ads.file_code = files.referencecode 
-            LIMIT 1
-        ) AS image,
-        ads.title AS title, 
-        ads.file_code AS ad_file_code, 
-        ads.final_price AS price, 
-        ads.uid AS ad_uid,
-        categories.title AS category_title
-    FROM 
-        favorites 
-    JOIN 
-        ads ON favorites.ad_id = ads.id 
-    LEFT JOIN 
-        categories ON ads.category_id = categories.id
-    WHERE 
-        favorites.user_id = :user_id 
-        AND ads.deleted = false 
-    ORDER BY 
-        ads.id DESC 
-    LIMIT :limit OFFSET :offset
-";
+    SELECT
+    favorites.*, 
+    ads.id AS ad_id, 
+    ads.category_id AS ad_category_id, 
+    ads.owner_id AS ad_owner_id, 
+    ads.location_id AS ad_location_id, 
+    (
+        SELECT location 
+        FROM files 
+        WHERE ads.file_code = files.referencecode 
+        LIMIT 1
+    ) AS image,
+    ads.title AS title, 
+    ads.file_code AS ad_file_code, 
+    ads.final_price AS price, 
+    ads.uid AS ad_uid,
+    categories.title AS category_title,
+    TRUE AS is_favorite  -- Ajout de la clé 'is_favorite' avec la valeur TRUE
+FROM 
+    favorites 
+JOIN 
+    ads ON favorites.ad_id = ads.id 
+LEFT JOIN 
+    categories ON ads.category_id = categories.id
+WHERE 
+    favorites.user_id = :user_id 
+    AND ads.deleted = false 
+ORDER BY 
+    ads.id DESC 
+LIMIT :limit OFFSET :offset";
+
 
 
         $page = max(1, intval($page));
@@ -419,7 +426,10 @@ class FavoriteController extends Controller
             }
 
          Favorite::where('user_id',$user_id)->where('ad_id',$blur->id)->first()->delete();
-         return $this->returnFavoritesList($user_id, 'ad remove from favorite successfully !');
+
+         return(new Service())->apiResponse(200,(new AdController())->getAllAd(),"Product added to wishlist successfully!");
+
+        //  return $this->returnFavoritesList($user_id, 'ad remove from favorite successfully !');
             // return response()->json([
             //     'message' => 'ad remove from favorite successfully !'
             // ]);

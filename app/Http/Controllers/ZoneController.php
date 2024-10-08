@@ -526,15 +526,14 @@ class ZoneController extends Controller
     foreach($inPolygon as $zoneId){
         (new DeliveryAgencyController)->notifyDeliveryAgentsConcerned(Zone::find($zoneId)->delivery_agency->person->user_id);
     }
-    
-    
+
     if(count($inPolygon) == 0){
         (new DeliveryAgencyController())->notifyDeliveryAgents($orderUid);
     }
-    // return [
-    //     'inPolygon' => $inPolygon,
-    //     'inNotPolygon' => $inNotPolygon
-    // ];
+    return [
+        'inPolygon' => $inPolygon,
+        'inNotPolygon' => $inNotPolygon
+    ];
 }
 
 private function isPointInPolygon($longitude, $latitude, $polygon)

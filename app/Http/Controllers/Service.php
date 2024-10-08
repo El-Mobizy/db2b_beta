@@ -99,19 +99,16 @@ class Service extends Controller
     }
 
     public function uploadFiles(Request $request, $randomString,$location){
-          return $this->storeFileNative($request, $randomString, $location);
-        // return $this->storeFile($request->files, $randomString, $location);
-        // foreach($request->files as $photo){
-        //     $errorUploadFiles = $this->validateFile($photo);
-        //     return $this->storeFile($photo, $randomString, $location);
-        //     // $this->storeFileNative($request, $randomString, $location);
 
-        //     if($errorUploadFiles){
-        //         return $errorUploadFiles;
-        //     }
+      
+         foreach($request->image as $photo){
+            //  $errorUploadFiles = $this->validateFile($photo);
+             $this->storeImage($photo, $randomString, $location);
 
-            // return 1;
-        // }
+            //  if($errorUploadFiles){
+            //      return $errorUploadFiles;
+            //  }
+         }
     }
 
     public function storeSingleFile(Request $request,$randomString,$location){
@@ -122,29 +119,53 @@ class Service extends Controller
 
     }
 
-    public function storeImage(Request $request)
-{
 
-    $image_base64 = $request->input('files')['data'];
+    private function image_extension($mimes){
+
+        $mimeParts = explode('/', $mimes);
+
+        if (count($mimeParts) === 2) {
+            $extension = $mimeParts[1]; 
+        } else {
+            $extension = null;
+        }
+
+        return  $extension;
+
+    }
+
+    public function storeImage($photo,$randomString, $location)
+
+    {
+
+    $image_base64 = $photo['data'];
 
     $image = base64_decode($image_base64);
+
+    $extension = $this->image_extension($photo['mime']);
+
+    if($extension == null){
+        return $this->apiResponse(200, ['extension' => $extension], 'Please check image extension');
+    }
 
     // $image->getClientOriginalExtension();
 
 
-    $fileName = uniqid() . '.png'; 
+    $fileName = uniqid() . ".$extension"; 
 
-    $filePath = public_path('uploads/' . $fileName);
+    $filePath = public_path("image/$location/" . $fileName);
+    $photoUrl = url("/image/$location/" . $fileName);
 
     file_put_contents($filePath, $image);
 
+
     $file = new File();
     $file->filename = $fileName;
-    $file->type = 'a';
-    $file->location ='uploads/' . $fileName;
-    $file->size = 32;
-    $file->referencecode = 'abc';
-    $file->uid = '5b32dd70-356c-11ef-9f05-00ff5210c7f4';
+    $file->type = $extension ;
+    $file->location =$photoUrl;
+    $file->size = $photo['size'];
+    $file->referencecode = $randomString;
+    $file->uid = $this->generateUid($file);
     $file->save();
 
     return response()->json([
@@ -325,52 +346,40 @@ function isValidUuid($uuid) {
            
 
     
-            // Vérifie si c'est une URL ou un chemin local
             if (filter_var($filePath, FILTER_VALIDATE_URL)) {
-                // Récupère le nom et l'extension du fichier depuis l'URL
                 $fileNameFromUrl = basename(parse_url($filePath, PHP_URL_PATH));
                 $localPath = tempnam(sys_get_temp_dir(), 'download_');
 
-                // Télécharge le fichier distant
                 $fileContent = file_get_contents($filePath);
                 if ($fileContent === false) {
                     return response()->json(['error' => 'Erreur lors du téléchargement du fichier distant'], 200);
                 }
-    
-                // Sauvegarde le contenu du fichier dans un fichier temporaire
+
                 F::put($localPath, $fileContent);
-    
-                // Renomme le fichier temporaire avec le vrai nom et l'extension du fichier
+
                 $fileName = time() . '_' . $fileNameFromUrl;
             } else {
-                // Traite un fichier local
                 $localPath = str_replace('file://', '', $filePath);
                 $fileName = time() . '_' . basename($localPath);
             }
-    
-            // Vérifie si le fichier existe localement après le téléchargement ou s'il s'agit d'un fichier local
+
             if (!F::exists($localPath)) {
                 return response()->json(['error' => 'Fichier non trouvé'], 200);
             }
-    
-            // Obtient la taille et le type de fichier
+
             $size = $request['files']['size'];
-            $type = $this->getFileExtension($fileName); // Utilise le nom correct pour obtenir l'extension
-    
-            // Définit le chemin de destination
+            $type = $this->getFileExtension($fileName); 
+
             $destinationPath = public_path("image/$location/" . $fileName);
             $destinationDir = public_path("image/$location");
-    
-            // Crée le répertoire de destination s'il n'existe pas
+
             if (!F::exists($destinationDir)) {
                 F::makeDirectory($destinationDir, 0755, true);
             }
-    
-            // Copie le fichier téléchargé ou local dans le répertoire public
+
             F::copy($localPath, $destinationPath);
             $publicUrl = asset("image/$location/" . $fileName);
-    
-            // Sauvegarde les informations du fichier en base de données
+
             $file = new File();
             $file->filename = $fileName;
             $file->type = $type;
@@ -380,7 +389,6 @@ function isValidUuid($uuid) {
             $file->uid = $uid;
             $file->save();
     
-            // Supprime le fichier temporaire si c'était un fichier téléchargé
             if (filter_var($filePath, FILTER_VALIDATE_URL)) {
                 F::delete($localPath);
             }
@@ -823,6 +831,59 @@ public function apiResponse($status,$data,$message){
         'message' => $message,
     ], 200);
 }
+
+public function encrypt($key, $message)
+    {
+        $key = substr(hash('sha256', $key, true), 0, 32);
+        
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('AES-256-CBC'));
+        
+        $encryptedMessage = openssl_encrypt($message, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+        
+        return base64_encode($iv . $encryptedMessage);
+    }
+
+    public function decrypt($key, $encryptedMessage)
+    {
+        $key = substr(hash('sha256', $key, true), 0, 32);
+        
+        $data = base64_decode($encryptedMessage);
+        
+        $ivLength = openssl_cipher_iv_length('AES-256-CBC');
+        $iv = substr($data, 0, $ivLength);
+        $encryptedData = substr($data, $ivLength);
+        
+        $decryptedMessage = openssl_decrypt($encryptedData, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+        
+        return $decryptedMessage !== false ? $decryptedMessage : null; 
+    }
+
+    public function TestCrypto(Request $request){
+
+        try{
+            $request->validate([
+                'key' => 'required',
+                'message' => 'required'
+            ]);
+            $key =$request->key;
+    
+            $message = $request->message;
+    
+            $encryptedMessage = $this->encrypt($key, $message);
+            echo 'Message chiffré : ' . $encryptedMessage . PHP_EOL;
+    
+            $decryptedMessage = $this->decrypt($key, $encryptedMessage);
+            if ($decryptedMessage !== null) {
+                return 'Message déchiffré : ' . $decryptedMessage . PHP_EOL;
+            } else {
+                return 'Le déchiffrement a échoué.' . PHP_EOL;
+            }
+        }catch(Exception $e){
+            return $e;
+        }
+
+        
+    }
 
 // EscrowDelivery(id, person_id, order_id, delivery_agent_amount, order_amount, status, pickup_date, delivery_date, created_at, updated_at)
 

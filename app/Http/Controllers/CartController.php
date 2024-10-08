@@ -517,6 +517,11 @@ public function actualiseAuthCart(Request $request) {
 
         $AuthCarts =  Cart::where('user_id',Auth::user()->id)->get();
 
+        foreach($AuthCarts as $AuthCart){
+            $AuthCart->ad_title = Ad::whereId($AuthCart->ad_id)->first()->title;
+            $AuthCart->ad_final_price = Ad::whereId($AuthCart->ad_id)->first()->final_price;
+        }
+
         return (new Service())->apiResponse(200,$AuthCarts, 'Actualisation done');
 
     } catch (Exception $e) {

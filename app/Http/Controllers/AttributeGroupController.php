@@ -40,29 +40,27 @@ class AttributeGroupController extends Controller
     {
         try {
                     $request->validate([
-                        'attribute_id' => 'required',
-                        'group_title_id' => 'required'
+                        'attribute_ids' => '',
+                        'group_title_id' => ''
                     ]);
-            $ulid = Uuid::uuid1();
-            $ulidGroup = $ulid->toString();
-            $group = new AttributeGroup();
-            $group->attribute_id = $request->attribute_id;
-            $group->group_title_id = $request->group_title_id;
-            $group->uid = $ulidGroup;
-            $exist = AttributeGroup::where('attribute_id',$request->attribute_id)->where('group_title_id',$request->group_title_id)->exists();
-            if($exist){
-                return (new Service())->apiResponse(200,[],'This association already exist');
-                // return response()->json([
-                //     'message' => 'This association already exist'
-                // ]);
+           
+            foreach($request->attribute_ids as $attribute_id){
+                $ulid = Uuid::uuid1();
+                $ulidGroup = $ulid->toString();
+                $group = new AttributeGroup();
+                $group->attribute_id = $attribute_id;
+                $group->group_title_id = $request->group_title_id;
+                $group->uid = $ulidGroup;
+                $exist = AttributeGroup::where('attribute_id',$request->attribute_id)->where('group_title_id',$request->group_title_id)->exists();
+                if($exist){
+                    return (new Service())->apiResponse(200,[],'This association already exist');
+                }
+                $group->save();
             }
-            $group->save();
+
 
             return (new Service())->apiResponse(200,[],'attribute group created successfuly');
 
-            // return response()->json([
-            //     'message' => "attribute group created successfuly"
-            // ],200);
         } catch (Exception $e) {
            return response()->json([
             'error' => $e->getMessage()

@@ -6,6 +6,7 @@ use App\Jobs\SendEmail;
 use App\Models\Ad;
 use App\Models\AllowTransaction;
 use App\Models\Cart;
+use App\Models\Category;
 use App\Models\Commission;
 use App\Models\CommissionWallet;
 use App\Models\Escrow;
@@ -103,7 +104,8 @@ class OrderController extends Controller
 
 
                         if ($cartItems->isEmpty()) {
-                            return response()->json(['error' => 'Cart is empty'], 400);
+                            return (new Service())->apiResponse(404, [], 'Cart is empty');
+
                          }
                          $request = new Request();
                         $orderId = $this->storeOrder($total);
@@ -122,132 +124,17 @@ class OrderController extends Controller
                     return $orderId;
                 }
 
-                return response()->json(
-                    [
-                        'message' => 'Order created successfully',
-                        'orderId' =>  $orderId
-                ],200);
+                return (new Service())->apiResponse(200, $orderId, 'Order created successfully');
+
 
                 // DB::commit();
     
         }catch(Exception $e){
             // DB::rollBack();
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
-
-//     /**
-//  * @OA\Post(
-//  *     path="/api/order/orderSingleItem/{cartItemId}",
-//  *     tags={"Orders"},
-//  *  security={{"bearerAuth": {}}},
-//  *     summary="Order a single item from the cart",
-//  *     description="Create an order for a single item in the user's cart",
-//  *     @OA\Parameter(
-//  *         name="cartItemId",
-//  *         in="path",
-//  *         description="ID of the cart item to be ordered",
-//  *         required=true,
-//  *         @OA\Schema(type="integer")
-//  *     ),
-//  *     @OA\RequestBody(
-//  *         required=true,
-//  *         @OA\JsonContent(
-//  *             type="object",
-//  *             @OA\Property(
-//  *                 property="someParameter",
-//  *                 type="string",
-//  *                 description="Some parameter that might be required for the request"
-//  *             )
-//  *         )
-//  *     ),
-//  *     @OA\Response(
-//  *         response=200,
-//  *         description="Order created successfully",
-//  *         @OA\JsonContent(
-//  *             type="object",
-//  *             @OA\Property(
-//  *                 property="message",
-//  *                 type="string",
-//  *                 example="Order created successfully"
-//  *             )
-//  *         )
-//  *     ),
-//  *     @OA\Response(
-//  *         response=404,
-//  *         description="Item not found",
-//  *         @OA\JsonContent(
-//  *             type="object",
-//  *             @OA\Property(
-//  *                 property="message",
-//  *                 type="string",
-//  *                 example="Item not found"
-//  *             )
-//  *         )
-//  *     ),
-//  *     @OA\Response(
-//  *         response=500,
-//  *         description="Server error",
-//  *         @OA\JsonContent(
-//  *             type="object",
-//  *             @OA\Property(
-//  *                 property="error",
-//  *                 type="string",
-//  *                 example="An error occurred"
-//  *             )
-//  *         )
-//  *     )
-//  * )
-//  */
-
-//  public function orderSingleItem(Request $request, $cartItemId){
-//     try {
-//         $service = new Service();
-
-//         $checkAuth=$service->checkAuth();
-
-//         if($checkAuth){
-//            return $checkAuth;
-//         }
-        
-//             $user = auth()->user();
-
-//             $cartItem = Cart::where('user_id', $user->id)
-//             ->whereId($cartItemId)
-//             ->first();
-
-//             if(!$cartItem){
-//                 return response()->json(
-//                     ['message' => 'Item not found'
-//                 ],200);
-
-//             }
-
-//                 $ads = $this->getCartAds($cartItem);
-
-//                 $total =  $cartItem->quantity * Ad::whereId($cartItem->ad_id)->first()->final_price;
-
-//                 $orderId = $this->storeOrder($cartItem,$total);
-
-//                 $this->storeOrderDetail($ads,$orderId);
-
-//                 Cart::where('user_id', $user->id)
-//                 ->whereId($cartItemId)->delete();
-
-//                 return response()->json(
-//                     ['message' => 'Order created successffuly'
-//                 ],200);    
-
-
-//     } catch(Exception $e){
-//         return response()->json([
-//             'error' => $e->getMessage()
-//         ]);
-//     }
-// }
 
     /**
  * @OA\Get(
@@ -388,9 +275,7 @@ class OrderController extends Controller
                 ['data' =>$order
             ],200);
         }  catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -450,9 +335,7 @@ class OrderController extends Controller
                 ['data' =>$orders 
             ],200);
         }  catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -605,9 +488,7 @@ class OrderController extends Controller
         ],200);
 
         } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -687,28 +568,21 @@ class OrderController extends Controller
            $startedStatusId = TypeOfType::whereLibelle('started')->first()->id;
 
            if(!$order_detail){
-            return response()->json(
-                ['message' =>'This order detail not found'
-            ],200);
+            return (new Service())->apiResponse(404, [], 'This order detail not found');
            }
 
            if(Order::find($order_detail->order_id)->status == $paidStatusId || Order::find($order_detail->order_id)->status == $validatedStatusId || Order::find($order_detail->order_id)->status == $startedStatusId){
-            return response()->json(
-                ['message' =>'You cannot edit this order detail when the status of order it belong to is already change'
-            ],200);
+           return (new Service())->apiResponse(404, [], 'You cannot edit this order detail when the status of order it belong to is already change');
        }
 
            $order_detail->quantity =  $request->quantity ?? $order_detail->quantity;
            $order_detail->save();
 
-        return response()->json(
-            ['message' =>'Order detail deteted from Order successfuly'
-        ],200);
+        return (new Service())->apiResponse(200, [], 'Order detail deteted from Order successfuly');
+
 
         } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -761,9 +635,7 @@ private function getCartAds($cartItem){
                 }
 
         }  catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -772,33 +644,21 @@ private function getCartAds($cartItem){
             // return $ads;
             $service = new Service();
             $trade = new TradeController();
-            foreach ($ads as $item) {
-                $order_detail = new OrderDetail();
+            $order_detail = new OrderDetail();
                 $order_detail->order_id = $orderId;
                 $order_detail->uid = $service->generateUid($order_detail);
-                $order_detail->ad_id = $item['id_product'];
-                $order_detail->quantity = $item['quantity_product'];
-                $order_detail->price = $item['price_product'];
-                $order_detail->final_price = $item['final_price_product'];
-                $order_detail->shop_id = $item['shop_product'];
-                $order_detail->amount = $item['final_price_product'] *  $item['quantity_product'];
+                $order_detail->ad_id = $ads['id_product'];
+                $order_detail->quantity = $ads['quantity_product'];
+                $order_detail->price = $ads['price_product'];
+                $order_detail->final_price = $ads['final_price_product'];
+                $order_detail->shop_id = $ads['shop_id'];
+                $order_detail->amount = $ads['final_price_product'] *  $ads['quantity_product'];
                 $order_detail->save();
-                // $a[] = $order_detail;
-                $trade->createTrade($order_detail->id,Order::find($orderId)->user_id,Shop::find($item['shop_product'])->client_id,'1000-10-10 10:10:10', $item['final_price_product']);
-
-                // return [
-                //     $order_detail->id,
-                //     Order::find($orderId)->user_id,
-                //     Shop::find($item['shop_product'])->client_id,
-                //     '2024-06-12 12:36:25',
-                //     $item['final_price_product']
-                // ];
-            }
-            // return $ads;
+                $trade->createTrade($order_detail->id,Order::find($orderId)->user_id,Shop::find($ads['shop_id'])->client_id,'1000-10-10 10:10:10', $ads['final_price_product']);
+           
+            return 'done';
         }  catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -891,32 +751,26 @@ private function getCartAds($cartItem){
 
             $user = auth()->user();
             $cartItems=[];
+            $cartIds = $request->cartItemids;
 
-            // $cartItems =  Cart::where('user_id', $user->id)->whereIn('id',$request->cartItemids)->get()  ;
+            foreach($request->cartItemids as $cartItem){
 
-            // return Cart::where('user_id', $user->id)->get();
-            $cartIds = [];
-
-            foreach(Cart::where('user_id', $user->id)->get() as $cartItem){
-                foreach($request->cartItemids as $adId){
-                    if($cartItem->ad_id == $adId){
-                        $cartItems[] = Cart::where('user_id', $user->id)->where('ad_id',$adId)->first();
-                        $cartIds[] = Cart::where('user_id', $user->id)->where('ad_id',$adId)->first()->id;
-                    }
+                if(!Cart::where('user_id', $user->id)->whereId($cartItem)->exists()){
+                    return response()->json(
+                        ['message' => "Cart item not found for id $cartItem"
+                    ],200);
                 }
+
+                $cartItems[] = Cart::where('user_id', $user->id)->whereId($cartItem)->first();
             }
 
-
-
+        //    return $cartItems;
             $ads=[]  ;
 
             foreach ($cartItems as $cartItem) {
                 $ads[] =  [
                     'id_product' =>Ad::whereId($cartItem->ad_id)->first()->id,
-                    'shop_product' =>Ad::whereId($cartItem->ad_id)->first()->shop->id,
-                    'id_product' =>Ad::whereId($cartItem->ad_id)->first()->id,
-                    'id_product' =>Ad::whereId($cartItem->ad_id)->first()->id,
-                    'id_product' =>Ad::whereId($cartItem->ad_id)->first()->id,
+                    'shop_id' =>Ad::whereId($cartItem->ad_id)->first()->shop->id,
                     'quantity_product' => $cartItem->quantity,
                     'price_product' => Ad::whereId($cartItem->ad_id)->first()->price,
                     'final_price_product' =>Ad::whereId($cartItem->ad_id)->first()->final_price,
@@ -930,22 +784,22 @@ private function getCartAds($cartItem){
                         }, $flatAds));
 
                         $cartitemsnumber = count($cartItems);
-                        
+
                         if ($cartitemsnumber== 0) {
                             return response()->json(['error' => 'Cart is empty'], 400);
-                         }
+                        }
 
-                         $request = new Request();
+                        $request = new Request();
 
                         $orderId = $this->storeOrder($total,$request);
 
-                        foreach ($ads as $tab) {
-                            $this->storeOrderDetail($tab,$orderId);
+                        foreach ($ads as $ad) {
+                            $this->storeOrderDetail($ad,$orderId);
                         }
 
-               foreach($cartIds as $cartId){
+                foreach($cartIds as $cartId){
                     Cart::whereId($cartId)->first()->delete();
-               }
+                }
 
                 return response()->json(
                     ['message' => 'Order created successffuly'
@@ -955,9 +809,7 @@ private function getCartAds($cartItem){
     
 
         }  catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -1046,7 +898,6 @@ private function getCartAds($cartItem){
 
     public function payOrder($orderId, Request $request){
         try {
-            // return 1;
 
             $request->validate([
                 'longitude' => 'required',
@@ -1065,12 +916,10 @@ private function getCartAds($cartItem){
             }
 
             $checkIfOrderIsPaid = $this->checkIfOrderIsPending($orderId);
-            
+
             if($checkIfOrderIsPaid){
                 return $checkIfOrderIsPaid;
             }
-            
-            // return 1;
 
             $checkAuth=$service->checkAuth();
 
@@ -1094,13 +943,29 @@ private function getCartAds($cartItem){
 
         (new WalletService())->updateUserWallet($personId,$diff);
 
-          (new EscrowController)->createEscrow($orderId);
+        (new EscrowController)->createEscrow($orderId);
 
         $order->status = TypeOfType::whereLibelle('paid')->first()->id;
 
-       $order->save();
+        $order->save();
 
-    //    return 1;
+        $orderDetails = $this->getOrderAds($order->uid);
+        $ads = $orderDetails->original['data']['ad'];
+
+        foreach ($ads as $ad) {
+            $adUid = $ad['uid'];
+            $quantitySale = $ad['quantity_sale'];
+            $decrementRequest = new Request(['quantity' => $quantitySale]);
+
+            $response = (new AdController())->decrementQuantity($decrementRequest, $adUid);
+
+            if ($response->getStatusCode() !== 200) {
+                return response()->json(['message' => "Failed to decrement quantity for product {$ad['title']}"], 500);
+            }
+
+
+            $a[] = $this->notifyMerchantOnLowStock($ad);
+        }
 
        $this->notifyParty($orderId,$request->longitude,$request->latitude);
 
@@ -1113,11 +978,39 @@ private function getCartAds($cartItem){
             ],200);
 
         } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
+
+    public function notifyMerchantOnLowStock($ad)
+    {
+        $ad = Ad::whereId($ad->id)->first();
+    
+        if (!$ad) {
+            return response()->json(['message' => 'Ad not found'], 404);
+        }
+    
+        $currentQuantity = $ad->quantity;
+        $threshold = $ad->threshold;
+        $merchantId = $ad->owner_id;
+    
+        $title = "";
+        $body = "";
+    
+        if ($currentQuantity == 0) {
+            $title = "Stock Depleted: Your Product '{$ad->title}'";
+            $body = "The stock for your product '{$ad->title}' has reached 0. Please restock your inventory to continue selling this item.";
+        }
+        elseif ($currentQuantity <= $threshold) {
+            $title = "Low Stock Alert: Your Product '{$ad->title}'";
+            $body = "The stock for your product '{$ad->title}' is now {$currentQuantity}, which is equal to or below the threshold of {$threshold} you set. Please consider restocking to maintain availability.";
+        }
+    
+        if (!empty($title) && !empty($body)) {
+            dispatch(new SendEmail($merchantId, $title, $body, 2)); 
+        }
+    }
+    
 
     public function notifyParty($orderId,$longitude,$latitude){
         $order = Order::where('id',$orderId)->first();
@@ -1127,12 +1020,10 @@ private function getCartAds($cartItem){
 
         $orderDetails = OrderDetail::where('order_id',$order->id)->get();
 
-
         foreach($orderDetails as $orderDetail){
             $ad = Ad::whereId($orderDetail->ad_id)->first();
-
             $seller = User::whereId($ad->owner_id)->first();
-             $this->notifySeller($seller->id);
+            $this->notifySeller($seller->id);
         }
 
         // $notification = new DeliveryAgencyController();
@@ -1184,6 +1075,22 @@ private function getCartAds($cartItem){
                 ],200);
             }
 
+            $orderDetails = $this->getOrderAds($order->uid);
+            if ($orderDetails->getStatusCode() !== 200) {
+                return $orderDetails;
+            }
+            
+            $ads = $orderDetails->original['data']['ad'];
+    
+            foreach ($ads as $ad) {
+                if ($ad['quantity'] !== null && $ad['quantity_sale'] > $ad['quantity']) {
+                    return response()->json(
+                        ['message' => "Product {$ad['title']} has only {$ad['quantity']} left in stock."],
+                        200
+                    );
+                }
+            }
+
             $personId = $service->returnPersonIdAuth();
             $typeId = Commission::whereShort('STD')->first()->id;
             $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
@@ -1195,9 +1102,7 @@ private function getCartAds($cartItem){
             }
 
         } catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -1219,9 +1124,7 @@ private function getCartAds($cartItem){
             return $diff;
 
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -1281,9 +1184,7 @@ private function getCartAds($cartItem){
             ],200);
 
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -1341,9 +1242,7 @@ private function getCartAds($cartItem){
             ],200);
 
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -1683,9 +1582,7 @@ private function getCartAds($cartItem){
             'number' => count($orders)
         ]);
     } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
+         return (new Service())->apiResponse(500, [], $e->getMessage());
     }
 }
 
@@ -1926,11 +1823,13 @@ private function getCartAds($cartItem){
             // return $order->order_details;
 
             $ad = [];
+            $order->order_statut =  TypeOfType::whereId($order->status)->first()->libelle;
 
             foreach($order->order_details as $detail){
                 // return $detail;
                 $adItem= Ad::whereDeleted(0)->whereId($detail->ad_id)->first();
                 $adItem->quantity_sale = $detail->quantity;
+                $adItem->shop_title =  Shop::find($adItem->shop_id)->title ;
 
                 $ad[] = $adItem;
             }
@@ -2021,6 +1920,9 @@ private function getCartAds($cartItem){
                 $adElement= Ad::whereDeleted(0)->whereId($detail->ad_id)->whereOwnerId(Auth::user()->id)->first();
                 $adItem = $adElement;
                 $adItem->quantity_sale = $detail->quantity;
+                $adItem->category_name = Category::whereId($adElement->category_id)->first()->title;
+                $adItem->shop_name = Shop::whereId($adElement->shop_id)->first()->title;
+                $adItem->ad_total_amount = $detail->final_price* $detail->quantity;
 
                 if(File::where('referencecode',$adElement->file_code)->exists()){
                     $adItem->image = File::where('referencecode',$adElement->file_code)->first()->location;
@@ -2090,7 +1992,7 @@ private function getCartAds($cartItem){
             $escrowDelivery = EscrowDelivery::where('order_uid', $order->uid)->first();
             
             if ($escrowDelivery) {
-                // Commande affectée à un livreur, ajouter les informations du livreur et de livraison
+
                 $deliveryPerson = Person::where('uid', $escrowDelivery->person_uid)->first();
 
                 $order->Adimage = File::whereReferencecode((new OrderController())->getMerchantOrderAds($order->uid)->original['data'][0]['file_code'])->first()->location;
@@ -2118,9 +2020,7 @@ private function getCartAds($cartItem){
             'data' => $orders
         ]);
     } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
+         return (new Service())->apiResponse(500, [], $e->getMessage());
     }
 }
 

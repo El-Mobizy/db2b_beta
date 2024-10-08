@@ -6,6 +6,7 @@ use App\Models\AttributeGroup;
 use App\Models\Category;
 use App\Models\CategoryAttributes;
 use App\Models\File;
+use Attribute;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -297,7 +298,7 @@ class CategoryController extends Controller
 
  /**
  * @OA\Get(
- *     path="/api/category/getAllSubCategory",
+ *     path="/api/category/getAllSubSubcategory",
  *     summary="Get all sub-subcategories",
  *     tags={"SubCategories"},
  *     @OA\Response(
@@ -342,15 +343,7 @@ class CategoryController extends Controller
                 $subCategory->category_icone = File::where('referencecode', $subCategory->filecode)->first()->location;
             }
 
-            if ($subCategory->attribute_group_id != null) {
-                $attributes[] = $subCategory->attribute_group;
-                // $attributes[] = CategoryAttributes::whereId($subCategory->attribute_group->attributes->id)->first();
-                // foreach (AttributeGroup::where('group_title_id', $subCategory->attribute_group->group_title_id)->get() as $group) {
-                //     $attributes[] = CategoryAttributes::whereId($group->attribute_id)->first();
-                // }
-            }
-
-            $subCategory->attribute = $attributes;
+            $subCategory->attribute = $this->getCategoryAttribute($subCategory->uid)->original['data'];
         }
 
         return response()->json([
@@ -367,7 +360,7 @@ class CategoryController extends Controller
 
 /**
  * @OA\Get(
- *     path="/api/category/getAllPaginateSubCategory/paginate",
+ *     path="/api/category/getAllPaginateSubSubcategory/paginate",
  *     summary="Get paginated sub-subcategories",
  *     tags={"SubCategories"},
  *     @OA\Parameter(
@@ -414,7 +407,7 @@ public function getAllPaginateSubSubcategory($perpage)
             if (File::where('referencecode', $subCategory->filecode)->exists()) {
                 $subCategory->category_icone = File::where('referencecode', $subCategory->filecode)->first()->location;
             }
-           
+            $subCategory->attribute = $this->getCategoryAttribute($subCategory->uid)->original['data'];
         }
 
      
@@ -554,11 +547,101 @@ public function getAllPaginateSubSubcategory($perpage)
     
 
     /**
-     * Remove the specified resource from storage.
-     */
-    public function deleteCategoryFile( $uid)
+ * @OA\Get(
+ *     path="/api/category/getCategoryAttribute/{uid}",
+ *     tags={"Category"},
+ *     summary="Retrieve category attributes by UID",
+ *     description="This endpoint retrieves the attributes of a category using the category UID.",
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="uid",
+ *         in="path",
+ *         description="Unique identifier (UID) of the category",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of category attributes",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="id",
+ *                     type="integer",
+ *                     description="Attribute ID"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="name",
+ *                     type="string",
+ *                     description="Attribute name"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="value",
+ *                     type="string",
+ *                     description="Attribute value"
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Category or attribute group not found",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Category not found!"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Server error"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+    public function getCategoryAttribute($uid,$l=0)
     {
-        
+        try {
+
+            if((new Service())->isValidUuid($uid)){
+                return (new Service())->isValidUuid($uid);
+            }
+
+            $category = Category::whereUid($uid)->first();
+            if(!$category){
+                return (new Service())->apiResponse(404, [], 'Category not found!');
+            }
+ 
+
+            $attributeGroups = AttributeGroup::whereGroupTitleId($category->attribute_group_id)->get();
+            $attributes = [];
+
+            foreach($attributeGroups  as $attributeGroup){
+                $attributes[] = CategoryAttributes::whereId($attributeGroup->attribute_id)->where('is_active', true)->first();
+            }
+
+
+            return (new Service())->apiResponse(200, $attributes, 'list of category attributes');
+
+        }  catch (Exception $e) {
+            return response()->json([
+             'error' => $e->getMessage()
+            ],500);
+         }
     }
 }
-

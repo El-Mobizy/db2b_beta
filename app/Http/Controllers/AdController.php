@@ -24,6 +24,7 @@ use App\Models\Shop;
 use App\Models\TypeOfType;
 use App\Models\User;
 use App\Services\Useful;
+use DateTime;
 use Illuminate\Http\JsonResponse;
 
 class AdController extends Controller
@@ -80,12 +81,12 @@ class AdController extends Controller
  *      )
  * )
  */
-    public function getAllAd()
+    public function getAllAds()
     {
         try {
 
             if(Auth::user()){
-                return $this->getAllAdforAuth();
+                return $this->getAllAd();
             }
             // return Auth::user();
             $data = [];
@@ -95,6 +96,7 @@ class AdController extends Controller
 
             foreach($ads as $ad){
                 $ad->category_title =  Category::find($ad->category_id)->title;
+                $ad->shop_title =  Shop::find($ad->shop_id)->title;
                 $ad->category_parent =  Category::find($ad->category_id)->parent_id;
                 $ad->issynchronized = true ;
 
@@ -113,7 +115,10 @@ class AdController extends Controller
         }
     }
 
-    public function getAllAdforAuth()
+
+
+
+    public function getAllAd()
     {
         try {
 
@@ -133,6 +138,7 @@ class AdController extends Controller
 
                 foreach($ads as $ad){
                     $ad->category_title =  Category::find($ad->category_id)->title ;
+                    $ad->shop_title =  Shop::find($ad->shop_id)->title ;
                     $ad->category_parent =  Category::find($ad->category_id)->parent_id;
                     $ad->issynchronized = true ;
 
@@ -327,7 +333,7 @@ public function getRecentAdd(Request $request,$perpage)
     }
 
     /**
- * @OA\Delete(
+ * @OA\Post(
  *     path="/api/ad/destroyAd/{uid}",
  *     tags={"Ad"},
  *     summary="Delete an ad",
@@ -393,6 +399,10 @@ public function getRecentAdd(Request $request,$perpage)
     {
         try {
 
+            if((new Service())->isValidUuid($uid)){
+                return (new Service())->isValidUuid($uid);
+            }
+
             $ad = Ad::where('uid',$uid)->first();
 
             if (!$ad) {
@@ -421,7 +431,7 @@ public function getRecentAdd(Request $request,$perpage)
 
             foreach($order_details  as $order_detail){
                 if(Order::find($order_detail->order_id)->status != TypeOfType::whereLibelle('validated')->first()->id){
-                    return (new Service())->apiResponse(404,[],'ad list grouped by category');
+                    return (new Service())->apiResponse(404,[],"You can't delete a ad because it belong to a order ");
                     // return response()->json([
                     //     'message' => "You can't delete a ad because it belong to a order "
                     // ],203);
@@ -449,29 +459,79 @@ public function getRecentAdd(Request $request,$perpage)
     }
 
 
-   /**
+//    /**
+//  * @OA\Post(
+//  *     path="/api/ad/storeAd",
+//  *     summary="Create a new ad",
+//  *     security={{"bearerAuth": {}}},
+//  *     tags={"Ad"},
+//  *     @OA\RequestBody(
+//  *         required=true,
+//  *         @OA\MediaType(
+//  *             mediaType="multipart/form-data",
+//  *             @OA\Schema(
+//  *                 @OA\Property(property="title", type="string", example="Ad title"),
+//  *                 @OA\Property(property="location_id", type="integer", example=1),
+//  *                 @OA\Property(property="category_id", type="integer", example=1),
+//  *                 @OA\Property(property="shop_id", type="integer", example=1),
+//  *  @OA\Property(property="price", type="double", example=1),
+//  *            @OA\Property(
+//  *                     property="value_entered[]",
+//  *                     type="array",
+//  *                     @OA\Items(type="string", example="value1"),
+//  *                     example={"value1", "value2", "value3"}
+//  *                 ),
+//  *                 @OA\Property(property="image[]", type="array", @OA\Items(type="string", format="binary"))
+//  *             )
+//  *         )
+//  *     ),
+//  *     @OA\Response(
+//  *         response=200,
+//  *         description="Ad added successfully",
+//  *         @OA\JsonContent(
+//  *             @OA\Property(property="message", type="string", example="Ad added successfully!")
+//  *         )
+//  *     ),
+//  *     @OA\Response(
+//  *         response=400,
+//  *         description="Validation error or bad request",
+//  *         @OA\JsonContent(
+//  *             @OA\Property(property="error", type="string", example="Validation error message")
+//  *         )
+//  *     )
+//  * )
+//  */
+
+ /**
  * @OA\Post(
  *     path="/api/ad/storeAd",
- *     summary="Create a new ad",
- *     security={{"bearerAuth": {}}},
- *     tags={"Ad"},
+  *     summary="Create a new ad",
+  *     security={{"bearerAuth": {}}},
+  *     tags={"Ad"},
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\MediaType(
  *             mediaType="multipart/form-data",
  *             @OA\Schema(
- *                 @OA\Property(property="title", type="string", example="Ad title"),
- *                 @OA\Property(property="location_id", type="integer", example=1),
- *                 @OA\Property(property="category_id", type="integer", example=1),
- *                 @OA\Property(property="shop_id", type="integer", example=1),
- *  @OA\Property(property="price", type="double", example=1),
- *               @OA\Property(
- *                     property="value_entered[]",
+ *                 type="object",
+ *                 @OA\Property(property="title", type="string", description="Title of the advertisement"),
+ *                 @OA\Property(property="location_id", type="integer", description="ID of the location"),
+ *                 @OA\Property(property="category_id", type="integer", description="ID of the category"),
+ *                 @OA\Property(
+ *                     property="value_entered",
  *                     type="array",
- *                     @OA\Items(type="string", example="value1"),
- *                     example={"value1", "value2", "value3"}
+ *                     @OA\Items(type="string"),
+ *                     description="Array of entered values for ad attributes"
  *                 ),
- *                 @OA\Property(property="files[]", type="array", @OA\Items(type="string", format="binary"))
+ *                 @OA\Property(
+ *                     property="image",
+ *                     type="array",
+ *                     @OA\Items(type="string", format="binary"),
+ *                     description="Array of files to upload"
+ *                 ),
+ *                 @OA\Property(property="price", type="number", format="float", description="Price of the item"),
+ *                 @OA\Property(property="shop_id", type="integer", description="ID of the shop"),
+ *                 required={"title", "location_id", "value_entered", "price", "shop_id"}
  *             )
  *         )
  *     ),
@@ -479,23 +539,42 @@ public function getRecentAdd(Request $request,$perpage)
  *         response=200,
  *         description="Ad added successfully",
  *         @OA\JsonContent(
- *             @OA\Property(property="message", type="string", example="Ad added successfully!")
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="data", type="array", @OA\Items()),
+ *             @OA\Property(property="message", type="string", example="ad added successfully !")
  *         )
  *     ),
  *     @OA\Response(
- *         response=400,
- *         description="Validation error or bad request",
+ *         response=404,
+ *         description="Not found error",
  *         @OA\JsonContent(
- *             @OA\Property(property="error", type="string", example="Validation error message")
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=404),
+ *             @OA\Property(property="data", type="array", @OA\Items()),
+ *             @OA\Property(property="message", type="string", example="Resource not found")
  *         )
- *     )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=500),
+ *             @OA\Property(property="data", type="array", @OA\Items()),
+ *             @OA\Property(property="message", type="string", example="An internal server error occurred")
+ *         )
+ *     ),
+ *     security={{"bearerAuth": {}}}
  * )
  */
 
  public function storeAd(Request $request){
     try {
 
+        // return gettype($request->value_entered);
 
+        DB::beginTransaction();
       $service = new Service();
 
       $checkAuth=$service->checkAuth();
@@ -507,10 +586,7 @@ public function getRecentAdd(Request $request,$perpage)
 
         if($checkIfmerchant ==0){
             return (new Service())->apiResponse(200,[],'You are not merchant');
-            // return response()->json([
-            //     'message' => 'You are not merchant'
-            //     ],200);
-                }
+        }
 
         $checkCategoryShop = $this->checkCategoryShop($checkIfmerchant,$request);
         if($checkCategoryShop){
@@ -527,9 +603,6 @@ public function getRecentAdd(Request $request,$perpage)
 
         if ($request->price <= 0) {
             return (new Service())->apiResponse(200,[],'The price must be greater than 0');
-            // return response()->json([
-            //     'message' => 'The price must be greater than 0'
-            //     ],200);
           }
 
      
@@ -546,24 +619,21 @@ public function getRecentAdd(Request $request,$perpage)
 
          if(Category::find($request->category_id)->parent_id == null){
             return (new Service())->apiResponse(404,[],'Ad must be associated with a subcategory.');
-            // return response()->json([
-            //     'message' =>"The product must be associated with a subcategory."
-            // ],200);
         }
 
-        $checkFile = $service->checkFile($request);
-        if($checkFile){
-            return $checkFile;
-         }
+    //     $checkFile = $service->checkFile($request);
+    //     if($checkFile){
+    //         return $checkFile;
+    //      }
 
          
 
-    foreach($request->file('files') as $photo){
-        $errorvalidateFile = $service->validateFile($photo);
-        if($errorvalidateFile){
-            return $errorvalidateFile;
-        }
-    }
+    // foreach($request->file('files') as $photo){
+    //     $errorvalidateFile = $service->validateFile($photo);
+    //     if($errorvalidateFile){
+    //         return $errorvalidateFile;
+    //     }
+    // }
 
     $checkAdAttribute = $service->checkAdAttribute($request,$request->input('category_id'));
     if($checkAdAttribute){
@@ -574,9 +644,6 @@ public function getRecentAdd(Request $request,$perpage)
 
      if($checkNumberProductStore === 0){
         return (new Service())->apiResponse(404,[],"You've reached your limit of products on the store");
-        // return response()->json([
-        //     'message' => "You've reached your limit of products on the store"
-        // ],200);
      }
 
 
@@ -584,9 +651,10 @@ public function getRecentAdd(Request $request,$perpage)
 
         //  return $ad;
 
+        if($request->image){
+            $service->uploadFiles($request, $ad->file_code,'ad');
+        }
 
-
-        $service->uploadFiles($request, $ad->file_code,'ad');
 
         $this->saveAdDetails($request, $ad);
 
@@ -598,6 +666,8 @@ public function getRecentAdd(Request $request,$perpage)
 
         $service->notifyAdmin($titleAdmin,$bodyAdmin);
 
+        DB::commit();
+
 
       dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
 
@@ -605,6 +675,7 @@ public function getRecentAdd(Request $request,$perpage)
 
 
     } catch (Exception $e) {
+        DB::rollBack();
         return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
 }
@@ -618,9 +689,6 @@ public function checkShop($shop_id){
 
         if(!Shop::whereId($shop_id)->where('client_id',$client->id)->exists()){
             return (new Service())->apiResponse(404,[],'Check if this shop is yours');
-            // return response()->json([
-            //     'message' => "Check if this shop is yours"
-            // ]);
         }
     } catch (\Exception $e) {
         return  (new Service())->apiResponse(500,[],$e->getMessage());
@@ -652,11 +720,10 @@ public function checkCategoryShop($ownerId, Request $request){
 
         $exist = ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->exists();
 
+        return ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->first();
+
         if(!$exist){
             return (new Service())->apiResponse(404,[],'You can only add the categories added to your shop');
-            // return response()->json([
-            //     'message' =>'You can only add the categories added to your shop'
-            // ],200);
         }
     } catch (\Exception $e) {
         return  (new Service())->apiResponse(500,[],$e->getMessage());
@@ -806,7 +873,6 @@ public function checkCategoryShop($ownerId, Request $request){
                 'location_id' => 'required',
                 'category_id' => '',
                 'value_entered' => 'required|array',
-                'files' =>'',
                 'price' => 'required',
             ])){
                 $e = new Exception();
@@ -836,13 +902,7 @@ public function checkCategoryShop($ownerId, Request $request){
 
         $service = new Service();
 
-        $existUserAd = Ad::where('title',$title)->where('owner_id',$owner_id)->exists();
-        if($existUserAd){
-            return(new Service())->apiResponse(404,[], "You already added this ad");
-            // return response()->json([
-            //     'message' =>'You already added this ad'
-            // ],200);
-        }
+       
 
 
         $ad = new Ad();
@@ -862,6 +922,102 @@ public function checkCategoryShop($ownerId, Request $request){
         $ad->save();
 
         return $ad;
+    }
+
+    /**
+ * @OA\Get(
+ *     path="/api/ad/checkAdTitle/{title}/{shopId}",
+ *     summary="Check if an ad title already exists for a user in a specific shop",
+ *     tags={"Ad"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="title",
+ *         in="path",
+ *         description="The title of the ad to check",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\Parameter(
+ *         name="shopId",
+ *         in="path",
+ *         description="The ID of the shop",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="integer"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Ad does not exist",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="integer",
+ *                 example=200
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(type="string")
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Ad does not exist in the shop"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Ad already exists in the shop",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status",
+ *                 type="integer",
+ *                 example=404
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(type="string")
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="You already added this ad in your shop Shop Title"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="An error occurred"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+    public function checkAdTitle($title,$shopId){
+        try{
+
+        $existUserAd = Ad::where('title',$title)->where('owner_id',Auth::user()->id)->where('shop_id',$shopId)->exists();
+        if($existUserAd){
+            return(new Service())->apiResponse(404,[], "You already added this ad in your shop ".Shop::whereId($shopId)->first()->title);
+        }
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
     }
 
     private function checkNumberProductStore(Request $request){
@@ -884,17 +1040,105 @@ public function checkCategoryShop($ownerId, Request $request){
         $attributeGroups = AttributeGroup::where('group_title_id',$category->attribute_group_id)->get();
         $values = $request->input('value_entered');
         $a = $request->input('value_entered');
-    
+
         if (is_array($a) && count($a) === 1) {
             $values = explode(",", $a[0]);
             $c = count($values);
-           
         }
-    
-        foreach ($attributeGroups as $index => $value) {
-            foreach(CategoryAttributes::where('id',$value->attribute_id)->get() as $d){
+
+        foreach ($attributeGroups as $index => $attributeGroup) {
+            foreach(CategoryAttributes::where('id', $attributeGroup->attribute_id)->where('is_active', true)->orderBy('id', 'asc')->get() as $d){
+
+                $value = $request->input('value_entered')[$index];
+
                 $ulidAdDetail = Uuid::uuid1()->toString();
                 $cat = CategoryAttributes::find($d->id);
+
+                // return $cat;
+                switch ($cat->fieldtype) {
+
+                    case 'string':
+                        if (!is_string($value)) {
+                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une chaîne de caractères'], 400);
+                        }
+                        break;
+                
+                    case 'number':
+                        if (!is_numeric($value)) {
+                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être un nombre'], 400);
+                        }
+                        break;
+                
+                    // case 'email':
+                    //     if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    //         return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une adresse e-mail valide'], 400);
+                    //     }
+                    //     break;
+                
+                    case 'url':
+                        if (!filter_var($value, FILTER_VALIDATE_URL)) {
+                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une URL valide'], 400);
+                        }
+                        break;
+                
+                    case 'date':
+                        if (!DateTime::createFromFormat('Y-m-d', $value)) {
+                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une date valide au format YYYY-MM-DD'], 400);
+                        }
+                        break;
+                
+                    case 'tel':
+                        if (!preg_match('/^\+?[0-9]{7,15}$/', $value)) {
+                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être un numéro de téléphone valide'], 400);
+                        }
+                        break;
+
+                        case 'text':
+                            if (!is_string($value)) {
+                                return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une chaîne de caractères'], 400);
+                            }
+                            break;
+                
+                    case 'color':
+                        if (!preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value)) {
+                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une couleur valide au format hexadécimal'], 400);
+                        }
+                        break;
+                
+                    case 'range':
+                        if (!is_numeric($value)) {
+                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être un nombre pour un champ de plage'], 400);
+                        }
+                        break;
+                
+                    case 'select':
+                    case 'radio':
+                        $possibleValues = explode(',', $cat->possible_value);
+                        if (!in_array($value, $possibleValues)) {
+                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une des options suivantes : ' . implode(', ', $possibleValues)], 400);
+                        }
+                        break;
+                
+                    case 'checkbox':
+                        $possibleValues = explode(',', $cat->possible_value); 
+                        $selectedValues = explode(',', $value); 
+                        foreach ($selectedValues as $selectedValue) {
+                            if (!in_array($selectedValue, $possibleValues)) {
+                                return response()->json(['message' => 'L\'une des valeurs sélectionnées pour l\'attribut ' . $cat->label . ' n\'est pas valide'], 400);
+                            }
+                        }
+                        break;
+                
+                    // case 'file':
+                    //    //
+                    //     break;
+                
+                    default:
+                        return response()->json(['message' => 'Type d\'attribut inconnu : ' . $cat->fieldtype], 400);
+                }
+
+                
+
                 $ad_detail = new AdDetail();
                 $ad_detail->ad_id = $ad->id;
                 $ad_detail->fieldtype = $cat->fieldtype;
@@ -1484,7 +1728,7 @@ public function getAdDetail($adUid){
 
             if ($request->has('quantity')) {
                 if (!is_int($request->quantity)) {
-                    return (new Service())->apiResponse(200, [], 'Quantity must be an integer');
+                    return (new Service())->apiResponse(404, [], 'Quantity must be an integer');
                 }
 
                 if($request->quantity<=0){
@@ -1558,6 +1802,151 @@ public function getAdDetail($adUid){
         }
     }
     
+    /**
+ * @OA\Post(
+ *     path="/api/ad/updateAdDetail/{adUid}",
+ *     tags={"Ad"},
+ *     security={{"bearerAuth": {}}},
+ *     summary="Update AdDetail",
+ *     description="Met à jour la valeur d'un détail d'annonce.",
+ *     @OA\Parameter(
+ *         name="adUid",
+ *         in="path",
+ *         required=true,
+ *         description="L'UID du détail d'annonce à mettre à jour.",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="newValue", type="string", example="Nouvelle valeur")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Détail d'annonce mis à jour avec succès.",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="string", example="success"),
+ *             @OA\Property(property="data", type="object"),
+ *             @OA\Property(property="message", type="string", example="AdDetail updated successfully.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Mauvaise demande. Vérifiez les données fournies.",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="string", example="error"),
+ *             @OA\Property(property="message", type="string", example="Invalid UUID provided.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Détail d'annonce non trouvé.",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="string", example="error"),
+ *             @OA\Property(property="message", type="string", example="AdDetail not found.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur interne du serveur.",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="string", example="error"),
+ *             @OA\Property(property="message", type="string", example="Message d'erreur.")
+ *         )
+ *     )
+ * )
+ */
+
+
+
+    public function updateAdDetail($AdDetailUid,Request $request){
+        try {
+
+            $request->validate([
+                'newValue' =>'required'
+            ]);
+
+            $value = $request->newValue;
+            // return $value;
+            if((new Service())->isValidUuid($AdDetailUid)){
+                return (new Service())->isValidUuid($AdDetailUid);
+            }
+    
+            $adDetail = AdDetail::where('uid', $AdDetailUid)->first();
+    
+            if (!$adDetail) {
+                return (new Service())->apiResponse(404, [], 'AdDetail not found.');
+            }
+
+            switch ($adDetail->fieldtype) {
+                case 'string':
+                    if (!is_string($value)) {
+                        return response()->json(['message' => 'La valeur pour l\'attribut ' . $adDetail->label . ' doit être une chaîne de caractères'], 400);
+                    }
+                    break;
+    
+                case 'integer':
+                    if (!is_numeric($value)) {
+                        return response()->json(['message' => 'La valeur pour l\'attribut ' . $adDetail->label . ' doit être un nombre entier'], 400);
+                    }
+                    break;
+    
+                case 'boolean':
+                    if (!in_array($value, [0, 1], true)) {
+                        return response()->json(['message' => 'La valeur pour l\'attribut ' . $adDetail->label . ' doit être un booléen (0 ou 1)'], 400);
+                    }
+                    break;
+
+                    case 'text':
+                        if (!is_string($value)) {
+                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $adDetail->label . ' doit être une chaîne de caractères'], 400);
+                        }
+                    break;
+
+                case 'select':
+                case 'radio':
+                    $possibleValues = array_map('trim', explode(',', $adDetail->possible_value));
+                    if (!in_array($value, $possibleValues)) {
+                        return response()->json(['message' => 'La valeur pour l\'attribut ' . $adDetail->label . ' doit être une des options suivantes : ' . implode(', ', $possibleValues)], 400);
+                    }
+                    
+                    break;
+    
+                case 'checkbox':
+                    $possibleValues = explode(',', $adDetail->possible_value); 
+                    $selectedValues = explode(',', $value); 
+                    foreach ($selectedValues as $selectedValue) {
+                        if (!in_array($selectedValue, $possibleValues)) {
+                            return response()->json(['message' => 'L\'une des valeurs sélectionnées pour l\'attribut ' . $adDetail->label . ' n\'est pas valide'], 400);
+                        }
+                    }
+                    break;
+    
+                default:
+                    return response()->json(['message' => 'Type d\'attribut inconnu : ' . $adDetail->fieldtype], 400);
+            }
+
+            // return $adDetail->possible_value;
+    
+            if (!empty($adDetail->possible_value)) {
+                $possibleValues = explode(',', $adDetail->possible_value);
+                if (!in_array($value, array_map('trim', $possibleValues))) {
+                    return (new Service())->apiResponse(400, [], 'Entered value is not valid.');
+                }
+            }
+    
+            $adDetail->value_entered = $value;
+            $adDetail->save();
+    
+            return (new Service())->apiResponse(200, $adDetail, 'AdDetail updated successfully.');
+
+
+    
+        } catch (Exception $e) {
+            return (new Service())->apiResponse(500, [], $e->getMessage());
+        }
+    }
 
 
 }

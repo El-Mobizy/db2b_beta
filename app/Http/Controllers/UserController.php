@@ -1457,6 +1457,68 @@ public function new_code($id) {
     }
 }
 
+/**
+ * @OA\Post(
+ *     path="/api/users/regenerateToken",
+ *     tags={"Authentication"},
+ *     summary="Régénère un jeton d'accès pour un utilisateur connecté",
+ *     description="Cette route permet de régénérer un jeton JWT pour un utilisateur existant en fonction de son UID.",
+ *     operationId="regenerateToken",
+ *     security={{"bearerAuth": {}}},
+ *
+ *
+ *     @OA\Response(
+ *         response=200,
+ *         description="Jeton régénéré avec succès",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="data", type="string", description="Jeton d'accès régénéré"),
+ *             @OA\Property(property="message", type="string", example="Token regénéré pour l'utilisateur")
+ *         )
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=404,
+ *         description="Utilisateur non trouvé",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=404),
+ *             @OA\Property(property="data", type="array", @OA\Items(type="string")),
+ *             @OA\Property(property="message", type="string", example="User not found")
+ *         )
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur interne du serveur",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=500),
+ *             @OA\Property(property="data", type="array", @OA\Items(type="string")),
+ *             @OA\Property(property="message", type="string", example="Erreur interne du serveur")
+ *         )
+ *     )
+ * )
+ */
+
+
+
+public function regenerateToken(){
+    try {
+
+        $user =Auth::user();
+ 
+        if(!$user){
+            return (new Service())->apiResponse(404, [], "User not found");
+        }
+
+        $token = Auth::login($user);
+
+        return (new Service())->apiResponse(200,$token, "Token regénéré pour {$user->person->first_name} {$user->person->last_name} ");
+
+     } catch(Exception $e) {
+         return (new Service())->apiResponse(500, [], $e->getMessage());
+     }
+}
+
 
 
 
@@ -1479,30 +1541,30 @@ public function new_code($id) {
 
 
 // public function enabledUser($uid){
-//     try {
+    // try {
 
-//        $user = User::whereUid($uid)->first();
+    //    $user = User::whereUid($uid)->first();
 
-//        if(!$user){
-//             return response()->json([
-//                 'status_code' => 200,
-//                 'message' => "User not found or already disabled !"
-//             ],200);
-//        }
+    //    if(!$user){
+    //         return response()->json([
+    //             'status_code' => 200,
+    //             'message' => "User not found or already disabled !"
+    //         ],200);
+    //    }
 
-//        $user->enabled = true;
-//        $user->save();
+    //    $user->enabled = true;
+    //    $user->save();
 
-//         return response()->json([
-//             'status_code' => 200,
-//             'message' => "enabled"
-//         ],200);
+    //     return response()->json([
+    //         'status_code' => 200,
+    //         'message' => "enabled"
+    //     ],200);
 
-//     } catch(Exception $e) {
-//         return response()->json([
-//             'error' => $e->getMessage()
-//         ], 500);
-//     }
+    // } catch(Exception $e) {
+    //     return response()->json([
+    //         'error' => $e->getMessage()
+    //     ], 500);
+    // }
 // }
 
 }

@@ -20,7 +20,9 @@ class Shop extends Model
     ];
     public function files()
     {
-        return $this->hasMany(File::class,'referencecode','filecode');
+        return $this->hasMany(File::class,'referencecode','filecode')
+        ->whereDeleted(0)
+        ;
     }
 
     public function ads()

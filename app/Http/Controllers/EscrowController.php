@@ -17,7 +17,7 @@ class EscrowController extends Controller
         try {
             $service = new Service();
             $escrow = new Escrow();
-            
+
             $wallet = CommissionWallet::where('person_id',Person::whereId(
                 (new Service)->returnUserPersonId(
                     User::whereId(
@@ -26,19 +26,18 @@ class EscrowController extends Controller
                     )
                 )->first()->id
             )->first();
-                        // return $wallet;
+
             $order = Order::find($orderId);
             $escrow->order_id = $orderId;
             $escrow->status = 'Secured';
             $escrow->amount =  $order->amount;
             $escrow->uid= $service->generateUid($escrow);
-            
+
             if($escrow->save()){
                 return (new TransactionController)->createTransaction($orderId,$wallet,
                 User::whereId(Order::whereId($orderId)->first()->user_id)->first()->id, null,$order->amount,'credit' );
             }
 
-            // return 'good';
         } catch(\Exception $e){
             return response()->json([
                 'error' => $e->getMessage()

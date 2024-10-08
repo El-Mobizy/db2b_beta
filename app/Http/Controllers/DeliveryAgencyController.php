@@ -465,8 +465,7 @@ class DeliveryAgencyController extends Controller
             dispatch(new SendEmail($item->id,$title,$body,2));
            }
 
-        
-    
+
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -476,8 +475,6 @@ class DeliveryAgencyController extends Controller
         try {
            $title =  "New Order in Your Area: Immediate Action Required";
            $body =  "A new order has just been placed in your area. Please log in to your account to view and accept the delivery. Your timely response is essential. Thank you!";
-           $mail = new MailController();
-        //    $mes = $mail->sendNotification($userId,$title,$body, '');
 
            dispatch(new SendEmail($userId,$title,$body,2));
 
@@ -494,19 +491,17 @@ class DeliveryAgencyController extends Controller
             if((new Service())->isValidUuid($orderUid)){
                 return (new Service())->isValidUuid($orderUid);
             }
-            $deliveryAgents = $this->getDeliveryAgent(1);
-           $userLocation = Person::whereId(Order::whereUid($orderUid)->first()->user_id)->first()->country_id ;
+            $deliveryAgents =$this->getDeliveryAgent(1);
+            $userLocation = Person::whereId(Order::whereUid($orderUid)->first()->user_id)->first()->country_id ;
 
 
-           foreach($deliveryAgents as $deliveryAgent){
+        foreach($deliveryAgents as $deliveryAgent){
             if(Person::whereUserId($deliveryAgent->id)->first()->country_id == $userLocation){
                 $data[] = $deliveryAgent ;
-             }
-           }
+                }
+            }
 
            return $data;
-
-           
 
         } catch (Exception $e) {
             return response()->json([
@@ -552,10 +547,10 @@ class DeliveryAgencyController extends Controller
                 $personId =$service->returnUserPersonId($user->id);
                 $personUid = Person::whereId($personId)->first()->uid;
                 $exist = DeliveryAgency::where('person_id',$personId)->exists();
-     
+
                 if($exist){
-                 $data [] = $user;
-                 }
+                    $data [] = $user;
+                }
              }
 
              if($list == 1){
@@ -563,7 +558,7 @@ class DeliveryAgencyController extends Controller
              }
      
              return response()->json([
-                 'data' => $data
+                'data' => $data
              ], 200);
 
         } catch (Exception $e) {
