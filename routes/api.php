@@ -339,6 +339,10 @@ Route::prefix('users')->group(function () {
                 Route::post('/createShop', [ShopController::class, 'createShop'])->name('shop.createShop');
                 Route::get('/getShopOrderAds/{orderUid}/{shopUid}', [ShopController::class, 'getShopOrderAds'])->name('order.getShopOrderAds');
                 Route::get('/getMerchantStatistic', [ShopController::class, 'getMerchantStatistic'])->name('shop.getMerchantStatistic');
+
+                Route::get('/getCategorySalePercentage/{shopUid}', [ShopController::class, 'getCategorySalePercentage'])->name('shop.getCategorySalePercentage');
+
+                Route::get('/getMonthlyProductSales/{shopUid}/{year}', [ShopController::class, 'getMonthlyProductSales'])->name('shop.getMonthlyProductSales');
                 });
 
                 //TradeStage

@@ -10916,6 +10916,240 @@
                 ]
             }
         },
+        "/api/shop/getCategorySalePercentage/{shopUid}": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Récupère le pourcentage de vente par catégorie pour une boutique donnée",
+                "operationId": "7f4ad023a61c4550c6e4f68a48313876",
+                "parameters": [
+                    {
+                        "name": "shopUid",
+                        "in": "path",
+                        "description": "L'UID de la boutique",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pourcentage de vente par catégorie récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "category": {
+                                                        "type": "string",
+                                                        "example": "Catégorie 1"
+                                                    },
+                                                    "sales_count": {
+                                                        "type": "integer",
+                                                        "example": 10
+                                                    },
+                                                    "sales_percentage": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 25.5
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category sales percentage calculated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Boutique non trouvée ou aucune commande validée trouvée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Shop not found or no validated orders found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shop/getMonthlyProductSales/{shopUid}/{year}": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Récupère les ventes mensuelles de produits pour une boutique spécifique.",
+                "description": "Cette route permet de récupérer le nombre de produits vendus par mois pour une boutique donnée en fonction de son UID et de l'année spécifiée.",
+                "operationId": "getMonthlyProductSales",
+                "parameters": [
+                    {
+                        "name": "shopUid",
+                        "in": "path",
+                        "description": "L'UID unique de la boutique.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "d6b2b94b-e72f-4d0e-a377-1338c8a1f4f2"
+                        }
+                    },
+                    {
+                        "name": "year",
+                        "in": "path",
+                        "description": "L'année pour laquelle les ventes doivent être récupérées.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2024
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ventes mensuelles récupérées avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "month": {
+                                                        "description": "Le nom du mois",
+                                                        "type": "string",
+                                                        "example": "Janvier"
+                                                    },
+                                                    "sales_count": {
+                                                        "description": "Le nombre de produits vendus pour ce mois",
+                                                        "type": "integer",
+                                                        "example": 15
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Monthly product sales calculated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Boutique ou commandes non trouvées",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Shop not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur interne du serveur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/tradeChat/createTradeChat/{tradeId}": {
             "post": {
                 "tags": [

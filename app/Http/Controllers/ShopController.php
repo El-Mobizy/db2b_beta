@@ -1713,6 +1713,292 @@ public function getShopOrderAds($orderUid, $shopUid) {
             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
+
+
+/**
+ * @OA\Get(
+ *     path="/api/shop/getCategorySalePercentage/{shopUid}",
+ *     tags={"Shop"},
+ * security={{"bearerAuth": {}}},
+ *     summary="Récupère le pourcentage de vente par catégorie pour une boutique donnée",
+ *     @OA\Parameter(
+ *         name="shopUid",
+ *         in="path",
+ *         required=true,
+ *         description="L'UID de la boutique",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Pourcentage de vente par catégorie récupéré avec succès",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="data", type="array",
+ *                 @OA\Items(type="object",
+ *                     @OA\Property(property="category", type="string", example="Catégorie 1"),
+ *                     @OA\Property(property="sales_count", type="integer", example=10),
+ *                     @OA\Property(property="sales_percentage", type="number", format="float", example=25.5)
+ *                 )
+ *             ),
+ *             @OA\Property(property="message", type="string", example="Category sales percentage calculated successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Boutique non trouvée ou aucune commande validée trouvée",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=404),
+ *             @OA\Property(property="data", type="array", @OA\Items()),
+ *             @OA\Property(property="message", type="string", example="Shop not found or no validated orders found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur interne du serveur",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="integer", example=500),
+ *             @OA\Property(property="data", type="array", @OA\Items()),
+ *             @OA\Property(property="message", type="string", example="Error message")
+ *         )
+ *     )
+ * )
+ */
+
+    
+ public function getCategorySalePercentage($shopUid)
+{
+    try {
+        // Vérifier si le shopUid est valide
+        if ((new Service())->isValidUuid($shopUid)) {
+            return (new Service())->isValidUuid($shopUid);
+        }
+
+        $shop = Shop::where('uid', $shopUid)->first();
+
+        if (!$shop) {
+            return (new Service())->apiResponse(404, [], 'Shop not found');
+        }
+
+        $validatedOrders = Order::whereHas('order_details.ad', function ($query) use ($shop) {
+            $query->where('shop_id', $shop->id);
+        })
+        ->where('status', 5) // Statut des commandes validées
+        ->get();
+
+        if ($validatedOrders->isEmpty()) {
+            return (new Service())->apiResponse(404, [], 'No validated orders found');
+        }
+
+        $shopCategories = ShopHasCategory::where('shop_id', $shop->id)->get();
+        if ($shopCategories->isEmpty()) {
+            return (new Service())->apiResponse(404, [], 'No categories found for this shop');
+        }
+
+        $categorySales = [];
+        $totalSales = 0;
+
+        foreach ($shopCategories as $shopCategory) {
+            $category = Category::whereId($shopCategory->category_id)->first();
+
+            if ($category) {
+                // Ajouter chaque catégorie dans un tableau
+                $categorySales[] = [
+                    'category_id' => $category->id,
+                    'category_title' => $category->title,
+                    'sales_count' => 0,  
+                ];
+            }
+        }
+
+        // Parcourir les commandes validées et compter les produits par catégorie
+        foreach ($validatedOrders as $order) {
+            foreach ($order->order_details as $detail) {
+                $ad = $detail->ad;
+                $categoryId = $ad->category_id;
+
+                // Rechercher la catégorie correspondante dans le tableau
+                foreach ($categorySales as &$categoryData) {
+                    if ($categoryData['category_id'] == $categoryId) {
+                        $categoryData['sales_count'] += $detail->quantity;  
+                        $totalSales += $detail->quantity;  
+                    }
+                }
+            }
+        }
+
+        // Calculer le pourcentage de vente pour chaque catégorie et arrondir à 2 décimales
+        foreach ($categorySales as &$categoryData) {
+            $categoryData['sales_percentage'] = $totalSales > 0 ? round(($categoryData['sales_count'] / $totalSales) * 100, 2) : 0;
+        }
+
+        return (new Service())->apiResponse(200, $categorySales, 'Category sales percentage calculated successfully');
+
+    } catch (Exception $e) {
+        return (new Service())->apiResponse(500, [], $e->getMessage());
+    }
+}
+
+ 
+/**
+ * @OA\Get(
+ *     path="/api/shop/getMonthlyProductSales/{shopUid}/{year}",
+ * security={{"bearerAuth": {}}},
+ *     summary="Récupère les ventes mensuelles de produits pour une boutique spécifique.",
+ *     description="Cette route permet de récupérer le nombre de produits vendus par mois pour une boutique donnée en fonction de son UID et de l'année spécifiée.",
+ *     operationId="getMonthlyProductSales",
+ *     tags={"Shop"},
+ *     @OA\Parameter(
+ *         name="shopUid",
+ *         in="path",
+ *         required=true,
+ *         description="L'UID unique de la boutique.",
+ *         @OA\Schema(
+ *             type="string",
+ *             format="uuid",
+ *             example="d6b2b94b-e72f-4d0e-a377-1338c8a1f4f2"
+ *         )
+ *     ),
+ *     @OA\Parameter(
+ *         name="year",
+ *         in="path",
+ *         required=true,
+ *         description="L'année pour laquelle les ventes doivent être récupérées.",
+ *         @OA\Schema(
+ *             type="integer",
+ *             example=2024
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Ventes mensuelles récupérées avec succès",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=200
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     @OA\Property(
+ *                         property="month",
+ *                         type="string",
+ *                         description="Le nom du mois",
+ *                         example="Janvier"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="sales_count",
+ *                         type="integer",
+ *                         description="Le nombre de produits vendus pour ce mois",
+ *                         example=15
+ *                     )
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Monthly product sales calculated successfully"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Boutique ou commandes non trouvées",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=404
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Shop not found"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=500
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Erreur interne du serveur"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+public function getMonthlyProductSales($shopUid, $year)
+{
+    try {
+        if ((new Service())->isValidUuid($shopUid)) {
+            return (new Service())->isValidUuid($shopUid);
+        }
+
+        if(!is_int($year)){
+            return (new Service())->apiResponse(404, [], 'Year must be an integer');
+        }
+
+        $shop = Shop::where('uid', $shopUid)->first();
+
+        if (!$shop) {
+            return (new Service())->apiResponse(404, [], 'Shop not found');
+        }
+
+        $validatedOrders = Order::whereHas('order_details.ad', function ($query) use ($shop) {
+            $query->where('shop_id', $shop->id);
+        })
+        ->where('status', 5)
+        ->whereYear('created_at', $year)
+        ->get();
+
+        if ($validatedOrders->isEmpty()) {
+            return (new Service())->apiResponse(404, [], 'No validated orders found for this year');
+        }
+
+        
+        $monthNames = [
+            1 => 'Janvier', 2 => 'Février', 3 => 'Mars', 4 => 'Avril',
+            5 => 'Mai', 6 => 'Juin', 7 => 'Juillet', 8 => 'Août',
+            9 => 'Septembre', 10 => 'Octobre', 11 => 'Novembre', 12 => 'Décembre'
+        ];
+
+        // Initialiser le tableau pour compter les produits par mois
+        $monthlySales = array_fill(1, 12, 0); // 12 mois de l'année
+
+        // Parcourir les commandes et compter les produits par mois
+        foreach ($validatedOrders as $order) {
+            foreach ($order->order_details as $detail) {
+                $month = $order->created_at->month; // Extraire le mois de la commande
+                $monthlySales[$month] += $detail->quantity; // Ajouter la quantité de produits vendus pour ce mois
+            }
+        }
+
+        // Préparer les données de réponse formatées avec noms des mois
+        $response = [];
+        foreach ($monthlySales as $month => $salesCount) {
+            $response[] = [
+                'month' => $monthNames[$month], // Nom du mois
+                'sales_count' => $salesCount,
+            ];
+        }
+
+        return (new Service())->apiResponse(200, $response, 'Monthly product sales calculated successfully');
+
+    } catch (Exception $e) {
+        return (new Service())->apiResponse(500, [], $e->getMessage());
+    }
+}
+
     
 
     
