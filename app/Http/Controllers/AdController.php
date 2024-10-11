@@ -505,9 +505,9 @@ public function getRecentAdd(Request $request,$perpage)
  /**
  * @OA\Post(
  *     path="/api/ad/storeAd",
-  *     summary="Create a new ad",
-  *     security={{"bearerAuth": {}}},
-  *     tags={"Ad"},
+ *     summary="Create a new ad",
+ *     security={{"bearerAuth": {}}}, 
+ *     tags={"Ad"},
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\MediaType(
@@ -520,7 +520,18 @@ public function getRecentAdd(Request $request,$perpage)
  *                 @OA\Property(
  *                     property="value_entered",
  *                     type="array",
- *                     @OA\Items(type="string"),
+ *                     @OA\Items(
+ *                         type="object",
+ *                         @OA\Property(property="id", type="integer", description="ID of the attribute"),
+ *                         @OA\Property(property="value", oneOf={
+ *                             @OA\Schema(type="string", description="Single value for the attribute"),
+ *                             @OA\Schema(
+ *                                 type="array",
+ *                                 description="Multiple values (checkbox type)",
+ *                                 @OA\Items(type="string")
+ *                             )
+ *                         })
+ *                     ),
  *                     description="Array of entered values for ad attributes"
  *                 ),
  *                 @OA\Property(
@@ -569,11 +580,11 @@ public function getRecentAdd(Request $request,$perpage)
  * )
  */
 
+
  public function storeAd(Request $request){
     try {
 
-        // return gettype($request->value_entered);
-
+        // return gettype($request->quantity);
         DB::beginTransaction();
       $service = new Service();
 
@@ -621,19 +632,6 @@ public function getRecentAdd(Request $request,$perpage)
             return (new Service())->apiResponse(404,[],'Ad must be associated with a subcategory.');
         }
 
-    //     $checkFile = $service->checkFile($request);
-    //     if($checkFile){
-    //         return $checkFile;
-    //      }
-
-         
-
-    // foreach($request->file('files') as $photo){
-    //     $errorvalidateFile = $service->validateFile($photo);
-    //     if($errorvalidateFile){
-    //         return $errorvalidateFile;
-    //     }
-    // }
 
     $checkAdAttribute = $service->checkAdAttribute($request,$request->input('category_id'));
     if($checkAdAttribute){
@@ -649,14 +647,25 @@ public function getRecentAdd(Request $request,$perpage)
 
          $ad = $this->createAd($request);
 
-        //  return $ad;
+         $checkAdInventory = $this->addInventoryToAd($request,$ad->uid);
 
-        if($request->image){
-            $service->uploadFiles($request, $ad->file_code,'ad');
+         if(!is_int($checkAdInventory)){
+            return $checkAdInventory;
         }
 
 
-        $this->saveAdDetails($request, $ad);
+         if($request->image){
+
+            // return $request->image[0]['data'];
+             $service->uploadFiles($request, $ad->file_code,'ad');
+            }
+
+            
+            $check = $this->saveAdDetails($request, $ad);
+
+        if(!is_int($check)){
+            return $check;
+        }
 
         $title= "Confirmation of Your Product Shipment";
         $body ="Your product has been registered, please wait while an administrator analyzes it. We'll let you know what happens next. Thank you!";
@@ -925,7 +934,7 @@ public function checkCategoryShop($ownerId, Request $request){
     }
 
     /**
- * @OA\Get(
+ * @OA\Post(
  *     path="/api/ad/checkAdTitle/{title}/{shopId}",
  *     summary="Check if an ad title already exists for a user in a specific shop",
  *     tags={"Ad"},
@@ -1013,10 +1022,9 @@ public function checkCategoryShop($ownerId, Request $request){
         if($existUserAd){
             return(new Service())->apiResponse(404,[], "You already added this ad in your shop ".Shop::whereId($shopId)->first()->title);
         }
+        return(new Service())->apiResponse(200,[], "Title valid");
     } catch (Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
+        return(new Service())->apiResponse(500,[], $e->getMessage());
     }
     }
 
@@ -1035,110 +1043,111 @@ public function checkCategoryShop($ownerId, Request $request){
         }
     }
 
-    private function saveAdDetails(Request $request, Ad $ad){
+    private function saveAdDetails(Request $request, Ad $ad)
+    {
         $category = Category::find($request->input('category_id'));
-        $attributeGroups = AttributeGroup::where('group_title_id',$category->attribute_group_id)->get();
-        $values = $request->input('value_entered');
-        $a = $request->input('value_entered');
-
-        if (is_array($a) && count($a) === 1) {
-            $values = explode(",", $a[0]);
-            $c = count($values);
-        }
-
+        $attributeGroups = AttributeGroup::where('group_title_id', $category->attribute_group_id)->get();
+        $values = $request->input('value_entered'); // Récupérer toutes les valeurs
+    
         foreach ($attributeGroups as $index => $attributeGroup) {
-            foreach(CategoryAttributes::where('id', $attributeGroup->attribute_id)->where('is_active', true)->orderBy('id', 'asc')->get() as $d){
+            foreach (CategoryAttributes::where('id', $attributeGroup->attribute_id)
+                     ->where('is_active', true)
+                     ->orderBy('id', 'asc')
+                     ->get() as $d) {
+    
+                // Trouver la valeur correspondante en utilisant l'ID
+                $valueEntered = collect($values)->firstWhere('id', $d->id);
 
-                $value = $request->input('value_entered')[$index];
-
+                // return $valueEntered;
+    
+                if (!$valueEntered) {
+                    continue;
+                }
+    
+                $value = $valueEntered['value']; // Récupérer la valeur correspondante
+    
                 $ulidAdDetail = Uuid::uuid1()->toString();
                 $cat = CategoryAttributes::find($d->id);
-
-                // return $cat;
+    
+                // Validation des valeurs en fonction du type de champ
                 switch ($cat->fieldtype) {
-
                     case 'string':
                         if (!is_string($value)) {
                             return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une chaîne de caractères'], 400);
                         }
                         break;
-                
+    
                     case 'number':
                         if (!is_numeric($value)) {
                             return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être un nombre'], 400);
                         }
                         break;
-                
-                    // case 'email':
-                    //     if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                    //         return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une adresse e-mail valide'], 400);
-                    //     }
-                    //     break;
-                
+    
                     case 'url':
                         if (!filter_var($value, FILTER_VALIDATE_URL)) {
                             return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une URL valide'], 400);
                         }
                         break;
-                
+    
                     case 'date':
                         if (!DateTime::createFromFormat('Y-m-d', $value)) {
                             return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une date valide au format YYYY-MM-DD'], 400);
                         }
                         break;
-                
+    
                     case 'tel':
                         if (!preg_match('/^\+?[0-9]{7,15}$/', $value)) {
                             return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être un numéro de téléphone valide'], 400);
                         }
                         break;
-
-                        case 'text':
-                            if (!is_string($value)) {
-                                return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une chaîne de caractères'], 400);
-                            }
-                            break;
-                
+    
+                    case 'text':
+                        if (!is_string($value)) {
+                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une chaîne de caractères'], 400);
+                        }
+                        break;
+    
                     case 'color':
                         if (!preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value)) {
                             return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une couleur valide au format hexadécimal'], 400);
                         }
                         break;
-                
+    
                     case 'range':
                         if (!is_numeric($value)) {
                             return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être un nombre pour un champ de plage'], 400);
                         }
                         break;
-                
+    
                     case 'select':
                     case 'radio':
-                        $possibleValues = explode(',', $cat->possible_value);
+                        $possibleValues = array_map('trim', explode(',', $cat->possible_value));
                         if (!in_array($value, $possibleValues)) {
                             return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une des options suivantes : ' . implode(', ', $possibleValues)], 400);
                         }
                         break;
-                
-                    case 'checkbox':
-                        $possibleValues = explode(',', $cat->possible_value); 
-                        $selectedValues = explode(',', $value); 
-                        foreach ($selectedValues as $selectedValue) {
-                            if (!in_array($selectedValue, $possibleValues)) {
-                                return response()->json(['message' => 'L\'une des valeurs sélectionnées pour l\'attribut ' . $cat->label . ' n\'est pas valide'], 400);
+    
+                        case 'checkbox':
+                            $possibleValues = array_map('trim', explode(',', $cat->possible_value));
+                            $selectedValues = $value; // Assurez-vous que $value est un tableau
+                        
+                            // Vérifiez que toutes les valeurs sélectionnées sont valides
+                            foreach ($selectedValues as $selectedValue) {
+                                if (!in_array($selectedValue, $possibleValues)) {
+                                    return response()->json(['message' => 'L\'une des valeurs sélectionnées pour l\'attribut ' . $cat->label . ' n\'est pas valide'], 400);
+                                }
                             }
-                        }
-                        break;
-                
-                    // case 'file':
-                    //    //
-                    //     break;
-                
+                        
+                            
+                            $value = implode(',', $selectedValues);
+                            break;
+                        
+    
                     default:
                         return response()->json(['message' => 'Type d\'attribut inconnu : ' . $cat->fieldtype], 400);
                 }
-
-                
-
+    
+                // Enregistrement de l'attribut dans la base de données
                 $ad_detail = new AdDetail();
                 $ad_detail->ad_id = $ad->id;
                 $ad_detail->fieldtype = $cat->fieldtype;
@@ -1151,19 +1160,16 @@ public function checkCategoryShop($ownerId, Request $request){
                 $ad_detail->is_crypto_price_field = $cat->is_crypto_price_field;
                 $ad_detail->search_criteria = $cat->search_criteria;
                 $ad_detail->is_active = $cat->is_active;
-                $ad_detail->fieldtype = $cat->fieldtype;
                 $ad_detail->uid = $ulidAdDetail;
-                if (is_array($a) && count($a) === 1) {
-                    $values = explode(",", $a[0]);
-                    $ad_detail->value_entered = $values[$index];
-                } else{
-                    $ad_detail->value_entered = $request->input('value_entered')[$index];
-                }
-                $ad_detail->possible_value =$cat->possible_value ?? "null";
+                $ad_detail->value_entered = $value; // Assignation de la valeur correspondante
+                $ad_detail->possible_value = $cat->possible_value ?? "null";
                 $ad_detail->save();
             }
         }
+    
+        return 1; // Retourne une valeur pour indiquer le succès
     }
+    
 
    public function updateAd(Request $request, $existAd){
 
@@ -1483,47 +1489,62 @@ public function checkIfAdIsValidated($adUid){
      * )
      */
 
-public function getAdDetail($adUid){
-    try {
-        $ad =  Ad::where('uid',$adUid)->first() ;
-
-           if(!$ad){
-            return (new Service())->apiResponse(404,[],'Ad not found !');
-            // return response()->json([
-            //     'message' => 'Ad not found !'
-            // ]);
-        }
-
-        $attributes = AdDetail::where('ad_id',$ad->id)->whereDeleted(false)->get();
-
-
-        $data[] = [
-            'ad_id' => $ad->id,
-            'title' => $ad->title,
-            'ad_code' => $ad->ad_code,
-            'final_price' => $ad->final_price,
-            'description' => $ad->description,
-            'image' =>  File::where('referencecode',$ad->file_code)->first()->location,
-            'owner_uid' =>  User::find($ad->owner_id)->uid,
-            'shop_uid' => Shop::find($ad->shop_id)->uid,
-            'shop_title' => Shop::find($ad->shop_id)->title,
-            'files' =>  File::whereReferencecode($ad->file_code)->whereDeleted(0)->get(),
-            'category_uid' =>  Category::find($ad->category_id)->uid,
-            'category_title' =>Category::find($ad->category_id)->title,
-            'attributes' =>  $attributes,
-            'issynchronized' =>true
-        ];
-
+     public function getAdDetail($adUid)
+     {
+         try {
+             $ad = Ad::where('uid', $adUid)->first();
      
+             if (!$ad) {
+                 return (new Service())->apiResponse(404, [], 'Ad not found!');
+             }
 
-        return response()->json([
-            'data' => $data
-        ]);
+             $ad_attributes = [];
+     
+             $attributes = AdDetail::where('ad_id', $ad->id)->whereDeleted(false)->get();
 
-    } catch(Exception $e){
-         return  (new Service())->apiResponse(500,[],$e->getMessage());
-    }
-}
+             foreach($attributes as $attribute){
+                $ad_attributes[] = [
+                    'id' => $attribute->id,
+                    'label' => $attribute->label,
+                    'possible_value' => $attribute->possible_value,
+                    'description' => $attribute->description,
+                    'value' => $attribute->value_entered
+                ];
+             }
+
+             $data = [
+                 'ad_id' => $ad->id,
+                 'title' => $ad->title,
+                 'ad_code' => $ad->ad_code,
+                 'final_price' => $ad->final_price,
+                 'description' => $ad->description,
+                 'quantity' => $ad->quantity,
+                 'created_at' =>$ad->created_at,
+                 'updated_at' =>$ad->updated_at,
+                 'image' => File::where('referencecode', $ad->file_code)->first()->location,
+                 'owner_uid' => User::find($ad->owner_id)->uid,
+                 'shop_uid' => Shop::find($ad->shop_id)->uid,
+                 'shop_title' => Shop::find($ad->shop_id)->title,
+                 'files' => File::whereReferencecode($ad->file_code)->whereDeleted(0)->get(),
+                 'category_uid' => Category::find($ad->category_id)->uid,
+                 'category_title' => Category::find($ad->category_id)->title,
+                 'attributes' => $ad_attributes,
+                 'issynchronized' => true
+             ];
+     
+             if (Auth::user()->id === $ad->owner_id) {
+                 $data['threshold'] = $ad->threshold;
+             }
+     
+             return response()->json([
+                 'data' => $data
+             ]);
+     
+         } catch (Exception $e) {
+             return (new Service())->apiResponse(500, [], $e->getMessage());
+         }
+     }
+     
 /**
  * @OA\Get(
  *     path="/api/ad/getAdBySubCategory/{categoryUid}",
@@ -1713,11 +1734,10 @@ public function getAdDetail($adUid){
                 return (new Service())->apiResponse(404, [], 'Ad not found');
             }
 
-            
             if($ad->owner_id ==! Auth::user()->id){
                 return (new Service())->apiResponse(404, [], "This ad it's not yours");
             }
-            
+
             $requiresQuantity = is_null($ad->quantity);
             $requiresThreshold = is_null($ad->threshold);
 
@@ -1749,6 +1769,7 @@ public function getAdDetail($adUid){
             }
 
             $ad->save();
+            return 1;
             return (new Service())->apiResponse(200, [], 'Inventory updated successfully');
 
         } catch (Exception $e) {
@@ -1764,7 +1785,7 @@ public function getAdDetail($adUid){
     
             $ad = Ad::whereUid($adUid)->first();
             if (!$ad) {
-                return (new Service())->apiResponse(200, [], 'Ad not found');
+                return (new Service())->apiResponse(404, [], 'Ad not found');
             }
     
             $ad->quantity += $request->quantity;
@@ -1785,11 +1806,11 @@ public function getAdDetail($adUid){
     
             $ad = Ad::whereUid($adUid)->first();
             if (!$ad) {
-                return (new Service())->apiResponse(200, [], 'Ad not found');
+                return (new Service())->apiResponse(404, [], 'Ad not found');
             }
     
             if ($ad->quantity < $request->quantity) {
-                return (new Service())->apiResponse(200, [], 'Insufficient quantity in stock');
+                return (new Service())->apiResponse(404, [], 'Insufficient quantity in stock');
             }
     
             $ad->quantity -= $request->quantity;
@@ -1913,15 +1934,17 @@ public function getAdDetail($adUid){
                     
                     break;
     
-                case 'checkbox':
-                    $possibleValues = explode(',', $adDetail->possible_value); 
-                    $selectedValues = explode(',', $value); 
-                    foreach ($selectedValues as $selectedValue) {
-                        if (!in_array($selectedValue, $possibleValues)) {
-                            return response()->json(['message' => 'L\'une des valeurs sélectionnées pour l\'attribut ' . $adDetail->label . ' n\'est pas valide'], 400);
+                    case 'checkbox':
+                        $possibleValues = array_map('trim', explode(',', $adDetail->possible_value));
+
+                        $selectedValues =  $value; 
+
+                        foreach ($selectedValues as $selectedValue) {
+                            if (!in_array($selectedValue, $possibleValues)) {
+                                return response()->json(['message' => 'L\'une des valeurs sélectionnées pour l\'attribut ' . $adDetail->label . ' n\'est pas valide'], 400);
+                            }
                         }
-                    }
-                    break;
+                        break;
     
                 default:
                     return response()->json(['message' => 'Type d\'attribut inconnu : ' . $adDetail->fieldtype], 400);

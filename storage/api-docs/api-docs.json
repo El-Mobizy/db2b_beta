@@ -330,7 +330,28 @@
                                         "description": "Array of entered values for ad attributes",
                                         "type": "array",
                                         "items": {
-                                            "type": "string"
+                                            "properties": {
+                                                "id": {
+                                                    "description": "ID of the attribute",
+                                                    "type": "integer"
+                                                },
+                                                "value": {
+                                                    "oneOf": [
+                                                        {
+                                                            "description": "Single value for the attribute",
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "description": "Multiple values (checkbox type)",
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "image": {
@@ -532,12 +553,12 @@
             }
         },
         "/api/ad/checkAdTitle/{title}/{shopId}": {
-            "get": {
+            "post": {
                 "tags": [
                     "Ad"
                 ],
                 "summary": "Check if an ad title already exists for a user in a specific shop",
-                "operationId": "51f8b73092b9fb6cc66a763e6bedc502",
+                "operationId": "3fdf7cf99eafbf60bf6e5b05db769203",
                 "parameters": [
                     {
                         "name": "title",
@@ -7022,6 +7043,133 @@
                 ]
             }
         },
+        "/api/order/createAndPayManyItem": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Create and pay for multiple items in a single order",
+                "operationId": "c46739fd36619b173d08b10a6b10514f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cartItemids",
+                                    "longitude",
+                                    "latitude"
+                                ],
+                                "properties": {
+                                    "cartItemids": {
+                                        "description": "Array of cart item IDs",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "longitude": {
+                                        "description": "Longitude of the user",
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "latitude": {
+                                        "description": "Latitude of the user",
+                                        "type": "number",
+                                        "format": "float"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Order created and paid successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "order_id": {
+                                                    "type": "integer",
+                                                    "example": 123
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Order created and paid successfully"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An internal server error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/users/resendForgottenOtp/{uid}": {
             "post": {
                 "tags": [
@@ -11032,40 +11180,30 @@
                 ]
             }
         },
-        "/api/shop/getMonthlyProductSales/{shopUid}/{year}": {
+        "/api/shop/getMonthlyProductSales/{shopUid}": {
             "get": {
                 "tags": [
                     "Shop"
                 ],
-                "summary": "Récupère les ventes mensuelles de produits pour une boutique spécifique.",
-                "description": "Cette route permet de récupérer le nombre de produits vendus par mois pour une boutique donnée en fonction de son UID et de l'année spécifiée.",
+                "summary": "Retrieve monthly product sales for a specific shop.",
+                "description": "This route allows you to retrieve the number of products sold per month for a given shop based on its UID.",
                 "operationId": "getMonthlyProductSales",
                 "parameters": [
                     {
                         "name": "shopUid",
                         "in": "path",
-                        "description": "L'UID unique de la boutique.",
+                        "description": "The unique UID of the shop.",
                         "required": true,
                         "schema": {
                             "type": "string",
                             "format": "uuid",
                             "example": "d6b2b94b-e72f-4d0e-a377-1338c8a1f4f2"
                         }
-                    },
-                    {
-                        "name": "year",
-                        "in": "path",
-                        "description": "L'année pour laquelle les ventes doivent être récupérées.",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 2024
-                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Ventes mensuelles récupérées avec succès",
+                        "description": "Monthly sales retrieved successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -11079,12 +11217,12 @@
                                             "items": {
                                                 "properties": {
                                                     "month": {
-                                                        "description": "Le nom du mois",
+                                                        "description": "The name of the month",
                                                         "type": "string",
-                                                        "example": "Janvier"
+                                                        "example": "January"
                                                     },
                                                     "sales_count": {
-                                                        "description": "Le nombre de produits vendus pour ce mois",
+                                                        "description": "The number of products sold for this month",
                                                         "type": "integer",
                                                         "example": 15
                                                     }
@@ -11103,7 +11241,7 @@
                         }
                     },
                     "404": {
-                        "description": "Boutique ou commandes non trouvées",
+                        "description": "Shop or orders not found",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -11123,7 +11261,7 @@
                         }
                     },
                     "500": {
-                        "description": "Erreur serveur",
+                        "description": "Server error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -11134,7 +11272,159 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Erreur interne du serveur"
+                                            "example": "Internal server error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shop/getCategorySalePercentageForallShop": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Retrieve sales percentages by category for all shops.",
+                "description": "This endpoint retrieves sales percentages by category for all shops.",
+                "operationId": "getCategorySalePercentageForallShop",
+                "responses": {
+                    "200": {
+                        "description": "Successful retrieval",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "example": []
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sales percentages by category successfully retrieved"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/shop/getMonthlyProductSalesForAllShop": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Retrieve monthly product sales for all shops owned by the user.",
+                "description": "This endpoint allows a user to retrieve the monthly product sales data for all shops associated with their account.",
+                "operationId": "getMonthlyProductSalesForAllShops",
+                "responses": {
+                    "200": {
+                        "description": "Monthly product sales retrieved successfully for all shops.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "shop_uid": {
+                                                        "description": "The unique UID of the shop.",
+                                                        "type": "string",
+                                                        "example": "d6b2b94b-e72f-4d0e-a377-1338c8a1f4f2"
+                                                    },
+                                                    "monthly_sales": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "month": {
+                                                                    "description": "The name of the month",
+                                                                    "type": "string",
+                                                                    "example": "January"
+                                                                },
+                                                                "sales_count": {
+                                                                    "description": "The number of products sold for this month",
+                                                                    "type": "integer",
+                                                                    "example": 15
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Retrieve monthly product sales for a specific shop."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred while retrieving monthly product sales."
                                         }
                                     },
                                     "type": "object"

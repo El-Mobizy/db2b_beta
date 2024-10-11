@@ -1648,7 +1648,9 @@ public function getShopOrderAds($orderUid, $shopUid) {
                 'total_orders' => count((new OrderController())->getMerchantOrder()->original['data']),
                 'total_customers' => count($clients),
                 'total_earning' => $totalEarning,
-                'total_shop' =>count( (new ShopController())->userShop()->original['data'])
+                'total_shop' =>count( (new ShopController())->userShop()->original['data']),
+                'diagram_circulaire' =>$this->getCategorySalePercentageForallShop()->original['data'],
+                'diagram_baton' =>$this->getMonthlyProductSalesForallShop()->original['data']
                 // 'merchant_earning_per_order' =>$this->getMerchantEarningsPerOrder()
             ];
 
@@ -1785,14 +1787,14 @@ public function getShopOrderAds($orderUid, $shopUid) {
         ->where('status', 5) // Statut des commandes validées
         ->get();
 
-        if ($validatedOrders->isEmpty()) {
-            return (new Service())->apiResponse(404, [], 'No validated orders found');
-        }
+        // if ($validatedOrders->isEmpty()) {
+        //     return (new Service())->apiResponse(404, [], 'No validated orders found');
+        // }
 
         $shopCategories = ShopHasCategory::where('shop_id', $shop->id)->get();
-        if ($shopCategories->isEmpty()) {
-            return (new Service())->apiResponse(404, [], 'No categories found for this shop');
-        }
+        // if ($shopCategories->isEmpty()) {
+        //     return (new Service())->apiResponse(404, [], 'No categories found for this shop');
+        // }
 
         $categorySales = [];
         $totalSales = 0;
@@ -1801,7 +1803,6 @@ public function getShopOrderAds($orderUid, $shopUid) {
             $category = Category::whereId($shopCategory->category_id)->first();
 
             if ($category) {
-                // Ajouter chaque catégorie dans un tableau
                 $categorySales[] = [
                     'category_id' => $category->id,
                     'category_title' => $category->title,
@@ -1810,7 +1811,6 @@ public function getShopOrderAds($orderUid, $shopUid) {
             }
         }
 
-        // Parcourir les commandes validées et compter les produits par catégorie
         foreach ($validatedOrders as $order) {
             foreach ($order->order_details as $detail) {
                 $ad = $detail->ad;
@@ -1826,51 +1826,69 @@ public function getShopOrderAds($orderUid, $shopUid) {
             }
         }
 
-        // Calculer le pourcentage de vente pour chaque catégorie et arrondir à 2 décimales
+        $colors = [];
         foreach ($categorySales as &$categoryData) {
             $categoryData['sales_percentage'] = $totalSales > 0 ? round(($categoryData['sales_count'] / $totalSales) * 100, 2) : 0;
+            
+            $colors[] = 'processColor(\'#' . substr(md5(rand()), 0, 6) . '\')';
         }
 
-        return (new Service())->apiResponse(200, $categorySales, 'Category sales percentage calculated successfully');
+        $formattedData = [
+            'id' => $shop->id,
+            'data' => [
+                'dataSets' => [
+                    [
+                        'values' => array_map(function ($category) {
+                            return [
+                                'value' => $category['sales_percentage'],
+                                'label' => $category['category_title']
+                            ];
+                        }, $categorySales),
+                        'label' => 'Category sales percentage calculated successfully',
+                        'config' => [
+                            'colors' => $colors,
+                            'valueTextSize' => 16,
+                            'valueTextColor' => "processColor('#000000')",
+                            'sliceSpace' => 5,
+                            'selectionShift' => 15,
+
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        return (new Service())->apiResponse(200, $formattedData, 'Category sales percentage calculated successfully');
 
     } catch (Exception $e) {
         return (new Service())->apiResponse(500, [], $e->getMessage());
     }
 }
 
+
  
 /**
  * @OA\Get(
- *     path="/api/shop/getMonthlyProductSales/{shopUid}/{year}",
- * security={{"bearerAuth": {}}},
- *     summary="Récupère les ventes mensuelles de produits pour une boutique spécifique.",
- *     description="Cette route permet de récupérer le nombre de produits vendus par mois pour une boutique donnée en fonction de son UID et de l'année spécifiée.",
+ *     path="/api/shop/getMonthlyProductSales/{shopUid}",
+ *     security={{"bearerAuth": {}}},
+ *     summary="Retrieve monthly product sales for a specific shop.",
+ *     description="This route allows you to retrieve the number of products sold per month for a given shop based on its UID.",
  *     operationId="getMonthlyProductSales",
  *     tags={"Shop"},
  *     @OA\Parameter(
  *         name="shopUid",
  *         in="path",
  *         required=true,
- *         description="L'UID unique de la boutique.",
+ *         description="The unique UID of the shop.",
  *         @OA\Schema(
  *             type="string",
  *             format="uuid",
  *             example="d6b2b94b-e72f-4d0e-a377-1338c8a1f4f2"
  *         )
  *     ),
- *     @OA\Parameter(
- *         name="year",
- *         in="path",
- *         required=true,
- *         description="L'année pour laquelle les ventes doivent être récupérées.",
- *         @OA\Schema(
- *             type="integer",
- *             example=2024
- *         )
- *     ),
  *     @OA\Response(
  *         response=200,
- *         description="Ventes mensuelles récupérées avec succès",
+ *         description="Monthly sales retrieved successfully",
  *         @OA\JsonContent(
  *             type="object",
  *             @OA\Property(
@@ -1885,13 +1903,13 @@ public function getShopOrderAds($orderUid, $shopUid) {
  *                     @OA\Property(
  *                         property="month",
  *                         type="string",
- *                         description="Le nom du mois",
- *                         example="Janvier"
+ *                         description="The name of the month",
+ *                         example="January"
  *                     ),
  *                     @OA\Property(
  *                         property="sales_count",
  *                         type="integer",
- *                         description="Le nombre de produits vendus pour ce mois",
+ *                         description="The number of products sold for this month",
  *                         example=15
  *                     )
  *                 )
@@ -1905,7 +1923,7 @@ public function getShopOrderAds($orderUid, $shopUid) {
  *     ),
  *     @OA\Response(
  *         response=404,
- *         description="Boutique ou commandes non trouvées",
+ *         description="Shop or orders not found",
  *         @OA\JsonContent(
  *             @OA\Property(
  *                 property="status_code",
@@ -1921,7 +1939,7 @@ public function getShopOrderAds($orderUid, $shopUid) {
  *     ),
  *     @OA\Response(
  *         response=500,
- *         description="Erreur serveur",
+ *         description="Server error",
  *         @OA\JsonContent(
  *             @OA\Property(
  *                 property="status_code",
@@ -1931,66 +1949,107 @@ public function getShopOrderAds($orderUid, $shopUid) {
  *             @OA\Property(
  *                 property="message",
  *                 type="string",
- *                 example="Erreur interne du serveur"
+ *                 example="Internal server error"
  *             )
  *         )
  *     )
  * )
  */
-public function getMonthlyProductSales($shopUid, $year)
+
+public function getMonthlyProductSales($shopUid)
 {
     try {
         if ((new Service())->isValidUuid($shopUid)) {
             return (new Service())->isValidUuid($shopUid);
         }
 
-        if(!is_int($year)){
-            return (new Service())->apiResponse(404, [], 'Year must be an integer');
-        }
-
+        // Récupération de la boutique
         $shop = Shop::where('uid', $shopUid)->first();
 
         if (!$shop) {
             return (new Service())->apiResponse(404, [], 'Shop not found');
         }
 
-        $validatedOrders = Order::whereHas('order_details.ad', function ($query) use ($shop) {
-            $query->where('shop_id', $shop->id);
-        })
-        ->where('status', 5)
-        ->whereYear('created_at', $year)
-        ->get();
+        // Définir l'année de départ (2023) et l'année actuelle
+        $startYear = 2023;
+        $currentYear = now()->year;
 
-        if ($validatedOrders->isEmpty()) {
-            return (new Service())->apiResponse(404, [], 'No validated orders found for this year');
-        }
+        // Noms des mois pour le retour de la réponse
+        $monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-        
-        $monthNames = [
-            1 => 'Janvier', 2 => 'Février', 3 => 'Mars', 4 => 'Avril',
-            5 => 'Mai', 6 => 'Juin', 7 => 'Juillet', 8 => 'Août',
-            9 => 'Septembre', 10 => 'Octobre', 11 => 'Novembre', 12 => 'Décembre'
-        ];
+        // Préparation des dataSets pour chaque année
+        $dataSets = [];
 
-        // Initialiser le tableau pour compter les produits par mois
-        $monthlySales = array_fill(1, 12, 0); // 12 mois de l'année
+        // Parcourir les années à partir de 2023 jusqu'à l'année actuelle
+        for ($year = $startYear; $year <= $currentYear; $year++) {
+            // Initialiser les ventes mensuelles pour l'année en cours
+            $monthlySales = array_fill(1, 12, 0); // 12 mois
 
-        // Parcourir les commandes et compter les produits par mois
-        foreach ($validatedOrders as $order) {
-            foreach ($order->order_details as $detail) {
-                $month = $order->created_at->month; // Extraire le mois de la commande
-                $monthlySales[$month] += $detail->quantity; // Ajouter la quantité de produits vendus pour ce mois
+            // Récupérer les commandes validées pour l'année courante
+            $validatedOrders = Order::whereHas('order_details.ad', function ($query) use ($shop) {
+                $query->where('shop_id', $shop->id);
+            })
+            ->where('status', 5) // Commandes validées
+            ->whereYear('created_at', $year) // Filtre sur l'année en cours
+            ->get();
+
+            foreach ($validatedOrders as $order) {
+                foreach ($order->order_details as $detail) {
+                    $month = $order->created_at->month; 
+                    $monthlySales[$month] += $detail->quantity;
+                }
             }
-        }
 
-        // Préparer les données de réponse formatées avec noms des mois
-        $response = [];
-        foreach ($monthlySales as $month => $salesCount) {
-            $response[] = [
-                'month' => $monthNames[$month], // Nom du mois
-                'sales_count' => $salesCount,
+            $config = [
+                'color' => $year === 2023 ?  'processColor(\'#' . substr(md5(rand()), 0, 6) . '\')' :  'processColor(\'#' . substr(md5(rand()), 0, 6) . '\')',
+                'highlightColor' => $year === 2023 ?'processColor(\'' . $this->getRandomColorName() . '\')' :  'processColor(\'' . $this->getRandomColorName() . '\')',
+                'barShadowColor' => "processColor('lightgrey')",
+                'highlightAlpha' => 90,
+
+            ];
+
+            $dataSets[] = [
+                'values' => array_values($monthlySales),
+                'label' => (string) $year, 
+                'config' => $config,
             ];
         }
+
+        $response = [
+            'id' => $shop->id, 
+            'data' => [
+                'dataSets' => $dataSets, 
+                'config' => [
+                    'barWidth' => 0.3,
+                    'group' => [
+                        'fromX' => 0,
+                        'groupSpace' => 0.3,
+                        'barSpace' => 0.1
+                    ],
+
+                ],
+                'xAxis' => [
+                    'valueFormatter' => $monthNames, 
+                    'granularityEnabled' => true,
+                    'granularity' => 1,
+                    'axisMaximum' => 7,
+                    'axisMinimum' => 0,
+                    'centerAxisLabels' => true,
+                    'drawGridLines' => false,
+                    'position' => 'BOTTOM',
+
+                ],
+                'yAxis' => [
+                    'left' => [
+                        'drawGridLines' => true,
+                        'axisMaximum' => 100
+                    ],
+                    'right' => [
+                        'enabled' => false,
+                    ],
+                ],
+            ],
+        ];
 
         return (new Service())->apiResponse(200, $response, 'Monthly product sales calculated successfully');
 
@@ -1999,8 +2058,218 @@ public function getMonthlyProductSales($shopUid, $year)
     }
 }
 
-    
 
+
+
+/**
+ * @OA\Get(
+ *     path="/api/shop/getCategorySalePercentageForallShop",
+ *     summary="Retrieve sales percentages by category for all shops.",
+ *     description="This endpoint retrieves sales percentages by category for all shops.",
+ *     operationId="getCategorySalePercentageForallShop",
+ *     tags={"Shop"},
+ *  security={{"bearerAuth": {}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successful retrieval",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=200
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     example={}
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Sales percentages by category successfully retrieved"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=500
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Internal server error"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+
+    public function getCategorySalePercentageForallShop(){
+        try {
+            $userShops = $this->userShop()->original['data'];
+
+            $data = [];
+
+            foreach($userShops as $shop){
+                $data[] = $this->getCategorySalePercentage($shop->uid)->original['data'];
+            }
+
+            return (new Service())->apiResponse(200, $data, 'Retrieve sales percentages by category for all shops');
+
+        } catch (Exception $e) {
+            return (new Service())->apiResponse(500, [], $e->getMessage());
+        }
+    }
+
+
+    /**
+ * @OA\Get(
+ *     path="/api/shop/getMonthlyProductSalesForAllShop",
+ *     security={{"bearerAuth": {}}},
+ *     summary="Retrieve monthly product sales for all shops owned by the user.",
+ *     description="This endpoint allows a user to retrieve the monthly product sales data for all shops associated with their account.",
+ *     operationId="getMonthlyProductSalesForAllShops",
+ *     tags={"Shop"},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Monthly product sales retrieved successfully for all shops.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=200
+ *             ),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(
+ *                         property="shop_uid",
+ *                         type="string",
+ *                         description="The unique UID of the shop.",
+ *                         example="d6b2b94b-e72f-4d0e-a377-1338c8a1f4f2"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="monthly_sales",
+ *                         type="array",
+ *                         @OA\Items(
+ *                             type="object",
+ *                             @OA\Property(
+ *                                 property="month",
+ *                                 type="string",
+ *                                 description="The name of the month",
+ *                                 example="January"
+ *                             ),
+ *                             @OA\Property(
+ *                                 property="sales_count",
+ *                                 type="integer",
+ *                                 description="The number of products sold for this month",
+ *                                 example=15
+ *                             )
+ *                         )
+ *                     )
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="Retrieve monthly product sales for a specific shop."
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="status_code",
+ *                 type="integer",
+ *                 example=500
+ *             ),
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="An error occurred while retrieving monthly product sales."
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+    public function getMonthlyProductSalesForallShop(){
+        try {
+            $userShops = $this->userShop()->original['data'];
+
+            $data = [];
+
+            foreach($userShops as $shop){
+                $data[] = $this->getMonthlyProductSales($shop->uid)->original['data'];
+            }
+
+            return (new Service())->apiResponse(200, $data, 'Retrieve monthly product sales for a specific shop.');
+
+        } catch (Exception $e) {
+            return (new Service())->apiResponse(500, [], $e->getMessage());
+        }
+    }
+
+
+
+    function getRandomColorName() {
+        $colorNames = [
+            'Red',
+            'Green',
+            'Blue',
+            'Yellow',
+            'Cyan',
+            'Magenta',
+            'Black',
+            'White',
+            'Gray',
+            'Light Gray',
+            'Dark Gray',
+            'Orange',
+            'Purple',
+            'Brown',
+            'Pink',
+            'Lime',
+            'Olive',
+            'Navy',
+            'Teal',
+            'Coral',
+            'Salmon',
+            'Gold',
+            'Indigo',
+            'Violet',
+            'Mint Green',
+            'Wheat',
+            'Lavender',
+            'Chocolate',
+            'Tomato',
+            'Khaki',
+            'Plum',
+        ];
+        
+        $randomIndex = array_rand($colorNames);
+        
+        return $colorNames[$randomIndex];
+    }
+    
+    // Exemple d'utilisation
+    
     
 
 

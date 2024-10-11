@@ -756,9 +756,7 @@ private function getCartAds($cartItem){
             foreach($request->cartItemids as $cartItem){
 
                 if(!Cart::where('user_id', $user->id)->whereId($cartItem)->exists()){
-                    return response()->json(
-                        ['message' => "Cart item not found for id $cartItem"
-                    ],200);
+                    return (new Service())->apiResponse(404, [],"Cart item not found for id $cartItem");
                 }
 
                 $cartItems[] = Cart::where('user_id', $user->id)->whereId($cartItem)->first();
@@ -786,7 +784,7 @@ private function getCartAds($cartItem){
                         $cartitemsnumber = count($cartItems);
 
                         if ($cartitemsnumber== 0) {
-                            return response()->json(['error' => 'Cart is empty'], 400);
+                            return (new Service())->apiResponse(404, [], 'Cart is empty');
                         }
 
                         $request = new Request();
@@ -801,9 +799,9 @@ private function getCartAds($cartItem){
                     Cart::whereId($cartId)->first()->delete();
                 }
 
-                return response()->json(
-                    ['message' => 'Order created successffuly'
-                ],200);
+                // return $orderId;
+
+                return (new Service())->apiResponse(200,$orderId, 'Order created successffuly');
 
                 // DB::commit();
     
@@ -910,9 +908,7 @@ private function getCartAds($cartItem){
             $order = Order::find($orderId);
 
             if(!$order){
-                return response()->json(
-                    ['message' => 'Order not found'
-                ],200);
+                return (new Service())->apiResponse(404, [],"Order not found");
             }
 
             $checkIfOrderIsPaid = $this->checkIfOrderIsPending($orderId);
@@ -936,9 +932,7 @@ private function getCartAds($cartItem){
         $diff = $this->checkSolde($orderId);
 
         if($diff < 0){
-            return response()->json(
-                ['message' => 'insufficient balance'
-            ],200);
+            return (new Service())->apiResponse(404, [],'insufficient balance');
         }
 
         (new WalletService())->updateUserWallet($personId,$diff);
@@ -960,7 +954,7 @@ private function getCartAds($cartItem){
             $response = (new AdController())->decrementQuantity($decrementRequest, $adUid);
 
             if ($response->getStatusCode() !== 200) {
-                return response()->json(['message' => "Failed to decrement quantity for product {$ad['title']}"], 500);
+                return (new Service())->apiResponse(404, [],"Failed to decrement quantity for product {$ad['title']}");
             }
 
 
@@ -973,9 +967,7 @@ private function getCartAds($cartItem){
 
 
 //Secured
-            return response()->json(
-                ['message' => 'Payement done Successfully'
-            ],200);
+            return (new Service())->apiResponse(200, [], 'Payement done Successfully');
 
         } catch(Exception $e){
              return (new Service())->apiResponse(500, [], $e->getMessage());
@@ -1064,15 +1056,11 @@ private function getCartAds($cartItem){
             // return [ Auth::user()->id, $order->user_id ];
 
             if(!$order){
-                return response()->json(
-                    ['message' => 'Order not found'
-                ],200);
+                return (new Service())->apiResponse(404, [], 'Order not found');
             }
 
             if($user->id != $order->user_id){
-                return response()->json(
-                    ['message' => 'This order it is not yours'
-                ],200);
+                return (new Service())->apiResponse(404, [], 'This order it is not yours');
             }
 
             $orderDetails = $this->getOrderAds($order->uid);
@@ -1084,10 +1072,7 @@ private function getCartAds($cartItem){
     
             foreach ($ads as $ad) {
                 if ($ad['quantity'] !== null && $ad['quantity_sale'] > $ad['quantity']) {
-                    return response()->json(
-                        ['message' => "Product {$ad['title']} has only {$ad['quantity']} left in stock."],
-                        200
-                    );
+                    return (new Service())->apiResponse(404, [],  "Product {$ad['title']} has only {$ad['quantity']} left in stock.");
                 }
             }
 
@@ -1096,9 +1081,7 @@ private function getCartAds($cartItem){
             $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
 
             if(!$wallet){
-                return response()->json(
-                    ['message' => 'Fund your account'
-                ],200);
+                return (new Service())->apiResponse(404, [],   'Fund your account');
             }
 
         } catch(Exception $e){
@@ -1688,7 +1671,6 @@ private function getCartAds($cartItem){
 
             $PayOrder = $this->PayOrder($orderId, $request);
 
-            $PayOrder;
             if ($PayOrder) {
                 $response = [];
 
@@ -1955,14 +1937,13 @@ private function getCartAds($cartItem){
 
         $checkIfmerchant = (new AdController())->checkMerchant();
         if ($checkIfmerchant == 0) {
-            return response()->json([
-                'message' => 'You are not merchant'
-            ], 200);
+            return (new Service())->apiResponse(404, [], 'You are not merchant');
+           
         }
 
         $userShops = (new ShopController())->anUserShop(Auth::user()->id)->pluck('id')->toArray();
         if (empty($userShops)) {
-            return (new Service())->apiResponse(404, 0, 'detail');
+            return (new Service())->apiResponse(404, [], 'detail');
         }
 
         $orderDetails = OrderDetail::whereIn('shop_id', $userShops)
@@ -2023,6 +2004,102 @@ private function getCartAds($cartItem){
          return (new Service())->apiResponse(500, [], $e->getMessage());
     }
 }
+
+/**
+ * @OA\Post(
+ *     path="/api/order/createAndPayManyItem",
+ *     summary="Create and pay for multiple items in a single order",
+ *     security={{"bearerAuth": {}}},
+ *     tags={"Orders"},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/json",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="cartItemids",
+ *                     type="array",
+ *                     description="Array of cart item IDs",
+ *                     @OA\Items(type="integer")
+ *                 ),
+ *                 @OA\Property(
+ *                     property="longitude",
+ *                     type="number",
+ *                     format="float",
+ *                     description="Longitude of the user"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="latitude",
+ *                     type="number",
+ *                     format="float",
+ *                     description="Latitude of the user"
+ *                 ),
+ *                 required={"cartItemids", "longitude", "latitude"}
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Order created and paid successfully",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="data", type="object", 
+ *                 @OA\Property(property="order_id", type="integer", example=123),
+ *                 @OA\Property(property="message", type="string", example="Order created and paid successfully")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Not found error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=404),
+ *             @OA\Property(property="data", type="array", @OA\Items()),
+ *             @OA\Property(property="message", type="string", example="Resource not found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=500),
+ *             @OA\Property(property="data", type="array", @OA\Items()),
+ *             @OA\Property(property="message", type="string", example="An internal server error occurred")
+ *         )
+ *     ),
+ *     security={{"bearerAuth": {}}}
+ * )
+ */
+public function createAndPayManyItem(Request $request)
+{
+    try {
+        $orderCreationResponse = $this->orderManyItem($request)->original;
+
+
+        if ($orderCreationResponse['status_code'] !== 200) {
+            return $orderCreationResponse; 
+        }
+
+        $orderId = $orderCreationResponse['data'];
+
+
+        $paymentResponse = $this->payOrder($orderId,$request)->original;
+
+        if ($paymentResponse['status_code'] !== 200) {
+            return $paymentResponse; 
+        }
+
+        return $paymentResponse;
+
+    } catch (Exception $e) {
+        return (new Service())->apiResponse(500, [], $e->getMessage());
+    }
+}
+
 
 
 }

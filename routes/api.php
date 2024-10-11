@@ -153,6 +153,7 @@ Route::prefix('users')->group(function () {
             Route::get('/getMerchantOrder', [OrderController::class, 'getMerchantOrder'])->name('order.getMerchantOrder');
             Route::get('/getMerchantOrderWithDelivery', [OrderController::class, 'getMerchantOrderWithDelivery'])->name('order.getMerchantOrderWithDelivery');
             Route::post('/CreateAndPayOrder', [OrderController::class, 'CreateAndPayOrder'])->name('order.CreateAndPayOrder');
+            Route::post('/createAndPayManyItem', [OrderController::class, 'createAndPayManyItem'])->name('order.createAndPayManyItem');
         });
 
 
@@ -342,7 +343,11 @@ Route::prefix('users')->group(function () {
 
                 Route::get('/getCategorySalePercentage/{shopUid}', [ShopController::class, 'getCategorySalePercentage'])->name('shop.getCategorySalePercentage');
 
-                Route::get('/getMonthlyProductSales/{shopUid}/{year}', [ShopController::class, 'getMonthlyProductSales'])->name('shop.getMonthlyProductSales');
+                Route::get('/getCategorySalePercentageForallShop', [ShopController::class, 'getCategorySalePercentageForallShop'])->name('shop.getCategorySalePercentageForallShop');
+
+                Route::get('/getMonthlyProductSalesForAllShop', [ShopController::class, 'getMonthlyProductSalesForAllShop'])->name('shop.getMonthlyProductSalesForAllShop');
+
+                Route::get('/getMonthlyProductSalesForAllShops/{shopUid}', [ShopController::class, 'getMonthlyProductSalesForAllShops'])->name('shop.getMonthlyProductSalesForAllShops');
                 });
 
                 //TradeStage
