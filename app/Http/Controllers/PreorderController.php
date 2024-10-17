@@ -21,6 +21,7 @@ use App\Models\Category;
 use App\Models\Review;
 use Ramsey\Uuid\Type\Integer;
 use Ramsey\Uuid\Uuid;
+use App\Models\File;
 
 class PreorderController extends Controller
 {
@@ -74,9 +75,7 @@ class PreorderController extends Controller
             $exist = Preorder::where('user_id',Auth::user()->id)->whereTitle($request->title)->exists();
 
             if($exist){
-                return response()->json([
-                    'message' => 'Preorder already exists'
-                ],200);
+                return (new Service())->apiResponse(404, [], 'Preorder already exists');
             }
 
             $validateLocation=$service->validateLocation($request->location_id);
@@ -90,9 +89,7 @@ class PreorderController extends Controller
             }
 
             if($request->input('maximumbudget') < $request->input('minimumbudget')){
-                return response()->json([
-                    'message' => 'Make sure the minimum budget does not exceed the maximum budget'
-                ],200);
+                return (new Service())->apiResponse(404, [], 'Make sure the minimum budget does not exceed the maximum budget');
             }
 
             $preorder = new Preorder();
@@ -111,12 +108,10 @@ class PreorderController extends Controller
             $preorder->filecode = $randomString;
             $preorder->statut =  TypeOfType::whereLibelle('pending')->first()->id;
 
-            if ($request->hasFile('files')) {
-                $errorUploadFile = $service->uploadFiles($request,$randomString,"preorder");
+            $errorUploadFile = $service->uploadFiles($request,$randomString,"preorder");
 
-                if($errorUploadFile){
-                    return $errorUploadFile;
-                }
+            if($errorUploadFile){
+                return $errorUploadFile;
             }
 
             $preorder->save();
@@ -130,13 +125,10 @@ class PreorderController extends Controller
                 $bodyAdmin = "A new preorder has just been added to the system. Please log in to your account to review and validate the preorder. Your prompt attention is required. Thank you!";
 
 
-              $message = new MailController();
 
               //notify buyer
 
               dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
-
-              return (new Service())->apiResponse(200,[],'preorder created successfully !');
 
                //notify admin
                $service->notifyAdmin($titleAdmin,$bodyAdmin);
@@ -144,17 +136,10 @@ class PreorderController extends Controller
 
 
 
-
-              if($mes){
-                return response()->json([
-                      'message' =>$mes->original['message']
-                ]);
-              }
+              return (new Service())->apiResponse(200,[],'preorder created successfully !');
 
         } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ],500);
+            return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -255,13 +240,11 @@ class PreorderController extends Controller
             $preorder_answer->parent_id = $request->input('parent_id');
         }
 
-        if ($request->hasFile('files')) {
             $errorUploadFile = $service->uploadFiles($request,$randomString,"preorder_answers");
 
             if($errorUploadFile){
                 return $errorUploadFile;
             }
-        }
 
         // return($preorder_answer->preorder->user->email);
         $preorder_answer ->save();
@@ -1327,9 +1310,9 @@ public function getAuthPreorderValidated($perpage){
     $validatedStatusId = TypeOfType::where('libelle', 'validated')->value('id');
 
     $preorders = Preorder::where('deleted', false)
-     ->with('file')
-                         ->where('user_id', Auth::user()->id)
-                         ->paginate($perpage);
+    // ->with('file')
+    ->where('user_id', Auth::user()->id)
+    ->paginate($perpage);
 
 
     if(count($preorders) == 0){
@@ -1339,6 +1322,7 @@ public function getAuthPreorderValidated($perpage){
     }
 
     foreach($preorders as $preorder){
+        $preorder->file = File::where('referencecode',$preorder->filecode)->whereDeleted(0)->exists()?File::where('referencecode',$preorder->filecode)->whereDeleted(0)->get():[];
         $preorder->country = Country::whereId($preorder->location_id)->first()->fullname;
         $preorder->statut_name =  TypeOfType::whereId($preorder->statut)->first()->libelle;
     }
@@ -1877,6 +1861,64 @@ public function answerReviewsPaginate($preorderAnswerUid,$perpage){
 }
 
 
+/**
+ * @OA\Post(
+ *     path="/api/preorder/updatePreorder/{uid}",
+ *     summary="Mettre à jour un Preorder",
+ *     tags={"Preorder"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="uid",
+ *         in="path",
+ *         required=true,
+ *         description="UID du Preorder",
+ *         @OA\Schema(
+ *             type="string",
+ *             example="abc123"
+ *         )
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="title", type="string", example="Titre du Preorder"),
+ *             @OA\Property(property="description", type="string", example="Description du Preorder"),
+ *             @OA\Property(property="maximumbudget", type="number", example=5000),
+ *             @OA\Property(property="minimumbudget", type="number", example=1000),
+ *             @OA\Property(property="address", type="string", example="123 rue Exemplar, Ville"),
+ *             @OA\Property(property="location_id", type="integer", example=1),
+ *             @OA\Property(property="category_id", type="integer", example=2)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Preorder mis à jour avec succès",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=200),
+ *             @OA\Property(property="data", type="string", example="[]"),
+ *             @OA\Property(property="message", type="string", example="Preorder updated successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Preorder non trouvé ou statut incorrect",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=404),
+ *             @OA\Property(property="data", type="string", example="[]"),
+ *             @OA\Property(property="message", type="string", example="Preorder not found / Statut of preorder answer must be pending")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=500),
+ *             @OA\Property(property="error", type="string", example="Message d'erreur")
+ *         )
+ *     )
+ * )
+ */
+
+
 public function updatePreorder(Request $request,$uid){
     try {
 
@@ -1884,28 +1926,42 @@ public function updatePreorder(Request $request,$uid){
             return (new Service())->apiResponse(404, [], 'nothing to update');
         }
 
-        $preorder_answer = PreorderAnswers::where('uid',$uid)->first();
-    if(!$preorder_answer){
-        return (new Service())->apiResponse(404, [], ' Preorder  not found');
-    }
+        $preorder = Preorder::where('uid',$uid)->first();
+        if(!$preorder){
+            return (new Service())->apiResponse(404, [], ' Preorder  not found');
+        }
 
-    if($preorder_answer->statut != TypeOfType::whereLibelle('pending')->first()->id){
-        return (new Service())->apiResponse(404, [], 'Statut of preorder answer must be pending. Please, check it !');
-    }
+        if(Auth::user()->id != $preorder->user_id){
+            return (new Service())->apiResponse(404, [], 'This preorder it\'s not yours  !');
+        }
 
-    $preorder = new Preorder();
-    $preorder->title = $request->input('title')??$preorder->title;
-    $preorder->description = $request->input('description')??$preorder->description;
-    $preorder->maximumbudget = $request->input('maximumbudget')??$preorder->maximumbudget;
-    $preorder->minimumbudget = $request->input('minimumbudget')??$preorder->minimumbudget;
-    
-    $preorder->address = $request->input('address')??$preorder->address;
-    $preorder->location_id = $request->input('location_id')??$preorder->location_id;
-    $preorder->category_id = $request->input('category_id')??$preorder->category_id;
+        if($preorder->statut != TypeOfType::whereLibelle('pending')->first()->id){
+            return (new Service())->apiResponse(404, [], 'Statut of preorder answer must be pending. Please, check it !');
+        }
 
-    $preorder->save();
 
-    return (new Service())->apiResponse(200, [], 'Preorder updated successfully');
+        $preorder->title = $request->input('title')??$preorder->title;
+        $preorder->description = $request->input('description')??$preorder->description;
+        $preorder->maximumbudget = $request->input('maximumbudget')??$preorder->maximumbudget;
+        $preorder->minimumbudget = $request->input('minimumbudget')??$preorder->minimumbudget;
+        
+        $preorder->address = $request->input('address')??$preorder->address;
+        $preorder->location_id = $request->input('location_id')??$preorder->location_id;
+        $preorder->category_id = $request->input('category_id')??$preorder->category_id;
+
+        if($request->image[0] != null){
+            File::where('referencecode',$preorder->filecode)->update(['deleted' => true]);
+            $errorUploadFile =  (new Service())->uploadFiles($request,$preorder->filecode,"preorder");
+
+            if($errorUploadFile){
+                return $errorUploadFile;
+            }
+        }
+
+
+        $preorder->save();
+
+        return (new Service())->apiResponse(200, [], 'Preorder updated successfully');
 
     } catch (\Exception $e) {
         return response()->json([
@@ -1915,25 +1971,83 @@ public function updatePreorder(Request $request,$uid){
 }
 
 
+/**
+ * @OA\Post(
+ *     path="/api/preorder/deletePreorder/{uid}",
+ *     summary="Supprimer un Preorder",
+ *     tags={"Preorder"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="uid",
+ *         in="path",
+ *         required=true,
+ *         description="UID du Preorder",
+ *         @OA\Schema(
+ *             type="string",
+ *             example="abc123"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Preorder supprimé avec succès",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=200),
+ *             @OA\Property(property="message", type="string", example="Preorder deleted successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Preorder non trouvé",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=404),
+ *             @OA\Property(property="message", type="string", example="Preorder not found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="Le statut du Preorder ne permet pas la suppression",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=403),
+ *             @OA\Property(property="message", type="string", example="Statut of preorder must be different of validated. Please, check it!")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status_code", type="integer", example=500),
+ *             @OA\Property(property="error", type="string", example="Message d'erreur")
+ *         )
+ *     )
+ * )
+ */
+
 public function deletePreorder($uid){
     try {
 
         $preorder = Preorder::where('uid',$uid)->first();
         if(!$preorder){
-            return response()->json([
-                'message' => ' Preorder not found'
-            ],404);
+            return (new Service())->apiResponse(404, [], ' Preorder not found');
+        }
+
+
+        if(Auth::user()->id != $preorder->user_id){
+            return (new Service())->apiResponse(404, [], 'This preorder it\'s not yours  !');
         }
 
         if($preorder->statut == TypeOfType::whereLibelle('validated')->first()->id){
-            return response()->json([
-                'message' => 'Statut of preorder must be different of  validated. Please, check it !'
-            ]);
+            return (new Service())->apiResponse(404, [], 'Statut of preorder must be different of  validated. Please, check it !');
+        }
+
+        if($preorder->deleted == 1){
+            return (new Service())->apiResponse(404, [], 'Already deleted');
         }
 
         $preorder->deleted = 1;
 
         $preorder->save();
+
+        return (new Service())->apiResponse(200, [], 'Preorder deleted successfully');
 
         } catch (\Exception $e) {
             return response()->json([
@@ -1941,5 +2055,173 @@ public function deletePreorder($uid){
             ],500);
         }
     }
+
+
+
+    /**
+     * @OA\Post(
+     *     path="/api/preorder_answer/updatePreorderAnswer/{uid}",
+     *     summary="Mettre à jour une réponse à un Preorder",
+     *     tags={"PreorderAnswers"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="uid",
+     *         in="path",
+     *         required=true,
+     *         description="UID de la réponse au Preorder",
+     *         @OA\Schema(
+     *             type="string",
+     *             example="abc123"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="content", type="string", example="Contenu de la réponse"),
+     *             @OA\Property(property="price", type="number", example=1500),
+     *             @OA\Property(property="delivery_time", type="string", example="7 jours")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Réponse au Preorder mise à jour avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status_code", type="integer", example=200),
+     *             @OA\Property(property="data", type="string", example="[]"),
+     *             @OA\Property(property="message", type="string", example="Preorder answer updated successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Réponse au Preorder non trouvée ou statut incorrect",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status_code", type="integer", example=404),
+     *             @OA\Property(property="data", type="string", example="[]"),
+     *             @OA\Property(property="message", type="string", example="Preorder not found / This preorder it's not yours / Statut of preorder answer must be pending")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur serveur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status_code", type="integer", example=500),
+     *             @OA\Property(property="error", type="string", example="Message d'erreur")
+     *         )
+     *     )
+     * )
+     */
+
+    public function updatePreorderAnswer(Request $request,$uid){
+        try {
+
+            if (empty($request->all())) {
+                return (new Service())->apiResponse(404, [], 'nothing to update');
+            }
+
+            $preorder_answer = PreorderAnswers::where('uid',$uid)->first();
+            if(!$preorder_answer){
+                return (new Service())->apiResponse(404, [], ' Preorder  not found');
+            }
+
+            if(Auth::user()->id != $preorder_answer->user_id){
+                return (new Service())->apiResponse(404, [], 'This preorder it\'s not yours  !');
+            }
+
+            if($preorder_answer->statut != TypeOfType::whereLibelle('pending')->first()->id){
+                return (new Service())->apiResponse(404, [], 'Statut of preorder answer must be pending. Please, check it !');
+            }
+
+            $preorder_answer->content = $request->input('content')??$preorder_answer->content;
+            $preorder_answer->price = $request->input('price')??$preorder_answer->price;
+            $preorder_answer->delivery_time = $request->input('delivery_time')??$preorder_answer->delivery_time;
+            $preorder_answer->save();
+
+            return (new Service())->apiResponse(200, [], 'Preorder answer updated successfully');
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ],500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/preorder_answer/deletePreorderAnswer/{uid}",
+     *     summary="Supprimer une réponse à un Preorder",
+     *     tags={"PreorderAnswers"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="uid",
+     *         in="path",
+     *         required=true,
+     *         description="UID de la réponse au Preorder",
+     *         @OA\Schema(
+     *             type="string",
+     *             example="abc123"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Réponse au Preorder supprimée avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status_code", type="integer", example=200),
+     *             @OA\Property(property="data", type="string", example="[]"),
+     *             @OA\Property(property="message", type="string", example="Preorder deleted successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Réponse au Preorder non trouvée ou déjà supprimée",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status_code", type="integer", example=404),
+     *             @OA\Property(property="data", type="string", example="[]"),
+     *             @OA\Property(property="message", type="string", example="Preorder not found / This preorder it's not yours / Already deleted / Statut of preorder must be different of validated")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur serveur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status_code", type="integer", example=500),
+     *             @OA\Property(property="error", type="string", example="Message d'erreur")
+     *         )
+     *     )
+     * )
+     */
+
+    public function deletePreorderAnswer($uid){
+        try {
+    
+            $preorder = Preorder::where('uid',$uid)->first();
+            if(!$preorder){
+                return (new Service())->apiResponse(404, [], ' Preorder not found');
+            }
+    
+    
+            if(Auth::user()->id != $preorder->user_id){
+                return (new Service())->apiResponse(404, [], 'This preorder it\'s not yours  !');
+            }
+    
+            if($preorder->statut == TypeOfType::whereLibelle('validated')->first()->id){
+                return (new Service())->apiResponse(404, [], 'Statut of preorder must be different of  validated. Please, check it !');
+            }
+    
+            if($preorder->deleted == 1){
+                return (new Service())->apiResponse(404, [], 'Already deleted');
+            }
+    
+            $preorder->deleted = 1;
+    
+            $preorder->save();
+    
+            return (new Service())->apiResponse(200, [], 'Preorder deleted successfully');
+    
+            } catch (\Exception $e) {
+                return response()->json([
+                    'error' => $e->getMessage()
+                ],500);
+            }
+        }
 
 }

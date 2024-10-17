@@ -207,6 +207,8 @@ Route::prefix('users')->group(function () {
             Route::post('/createPreorderAnswer/{preorderId}', [PreorderController::class, 'createPreorderAnswer'])->name('preorder.createPreorderAnswer');
             Route::post('/validatePreorderAnswer/{uid}', [PreorderController::class, 'validatePreorderAnswer'])->name('preorder.validatePreorderAnswer');
             Route::post('/rejectPreorderAnswer/{uid}', [PreorderController::class, 'rejectPreorderAnswer'])->name('preorder.rejectPreorderAnswer');
+            Route::post('/updatePreorderAnswer/{uid}', [PreorderController::class, 'updatePreorderAnswer'])->name('preorder.updatePreorderAnswer');
+            Route::post('/deletePreorderAnswer/{uid}', [PreorderController::class, 'deletePreorderAnswer'])->name('preorder.deletePreorderAnswer');
         });
 
         //Review

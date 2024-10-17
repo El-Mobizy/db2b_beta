@@ -9600,6 +9600,250 @@
                 ]
             }
         },
+        "/api/preorder/updatePreorder/{uid}": {
+            "post": {
+                "tags": [
+                    "Preorder"
+                ],
+                "summary": "Mettre à jour un Preorder",
+                "operationId": "fa5ee0d307e48af6971153a18e03c35e",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "UID du Preorder",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "abc123"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Titre du Preorder"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Description du Preorder"
+                                    },
+                                    "maximumbudget": {
+                                        "type": "number",
+                                        "example": 5000
+                                    },
+                                    "minimumbudget": {
+                                        "type": "number",
+                                        "example": 1000
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "123 rue Exemplar, Ville"
+                                    },
+                                    "location_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Preorder mis à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": "[]"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Preorder non trouvé ou statut incorrect",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": "[]"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder not found / Statut of preorder answer must be pending"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Message d'erreur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/preorder/deletePreorder/{uid}": {
+            "post": {
+                "tags": [
+                    "Preorder"
+                ],
+                "summary": "Supprimer un Preorder",
+                "operationId": "4072e9751423643ecb52be1b62018c1e",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "UID du Preorder",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "abc123"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Preorder supprimé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Preorder non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Le statut du Preorder ne permet pas la suppression",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 403
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Statut of preorder must be different of validated. Please, check it!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Message d'erreur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/role/index": {
             "get": {
                 "tags": [
