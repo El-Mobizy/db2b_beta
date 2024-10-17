@@ -222,12 +222,6 @@ class PersonController extends Controller
     public function AddOrUpdateProfileImg(Request $request){
         try {
 
-            // return $request->all();
-
-            $request->validate([
-                'files' => 'required|array',
-                'files.*' => 'file|mimes:jpeg,jpg,png,gif|max:2048'
-            ]);
             $data = [];
 
 
@@ -237,6 +231,7 @@ class PersonController extends Controller
 
             if(!$person){
                 return(new Service())->apiResponse(404,$data, 'Person not found');
+                
             }
 
             if(File::where('referencecode',$person->profile_img_code)->exists()){
@@ -248,7 +243,6 @@ class PersonController extends Controller
               return(new Service())->apiResponse(200,$data, 'Picture add successfully');
 
           } catch (Exception $e) {
-              // $error = 'An error occured';
               $error = $e->getMessage();
               return(new Service())->apiResponse(500,[],$error);
           }

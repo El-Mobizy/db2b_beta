@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Address;
 use App\Models\Zone;
 use Exception;
 use Illuminate\Http\Request;
@@ -486,11 +487,19 @@ class ZoneController extends Controller
     }
 
 
-    public function isWithinDeliveryZone($longitude, $latitude, $orderUid = 0)
+    public function isWithinDeliveryZone($addressId, $orderUid = 0)
 {
     if((new Service())->isValidUuid($orderUid)){
         return (new Service())->isValidUuid($orderUid);
     }
+
+    $adresse = Address::whereId($addressId)->first();
+
+    if(!$adresse){
+        return (new Service())->apiResponse(404, [],"Address not found");
+    }
+
+
     $zones = DB::table('zones')
         ->join('delivery_agent_zones', 'zones.id', '=', 'delivery_agent_zones.zone_id')
         ->select('zones.id as zone_id', 'zones.delivery_agency_id', 'delivery_agent_zones.latitude', 'delivery_agent_zones.longitude', 'delivery_agent_zones.id')
@@ -515,7 +524,7 @@ class ZoneController extends Controller
 
     foreach ($polygons as $zoneId => $polygon) {
         // return $polygon;
-        if ($this->isPointInPolygon($longitude, $latitude, $polygon)) {
+        if ($this->isPointInPolygon($adresse->longitude, $adresse->latitude, $polygon)) {
             $inPolygon[] = $zoneId;
         } else {
             $inNotPolygon[] = $zoneId;

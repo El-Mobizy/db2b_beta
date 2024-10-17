@@ -6398,12 +6398,8 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "longitude": {
-                                        "description": "Longitude of the user's location",
-                                        "type": "number"
-                                    },
-                                    "latitude": {
-                                        "description": "Latitude of the user's location",
+                                    "address_id": {
+                                        "description": "address of delivery",
                                         "type": "number"
                                     }
                                 },
@@ -6808,12 +6804,8 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "longitude": {
-                                        "description": "Longitude of the user's location",
-                                        "type": "number"
-                                    },
-                                    "latitude": {
-                                        "description": "Latitude of the user's location",
+                                    "address_id": {
+                                        "description": "address of delivery",
                                         "type": "number"
                                     }
                                 },
@@ -7057,8 +7049,7 @@
                             "schema": {
                                 "required": [
                                     "cartItemids",
-                                    "longitude",
-                                    "latitude"
+                                    "address_id"
                                 ],
                                 "properties": {
                                     "cartItemids": {
@@ -7068,13 +7059,8 @@
                                             "type": "integer"
                                         }
                                     },
-                                    "longitude": {
-                                        "description": "Longitude of the user",
-                                        "type": "number",
-                                        "format": "float"
-                                    },
-                                    "latitude": {
-                                        "description": "Latitude of the user",
+                                    "address_id": {
+                                        "description": "address of delivery",
                                         "type": "number",
                                         "format": "float"
                                     }
@@ -7155,6 +7141,176 @@
                                         "message": {
                                             "type": "string",
                                             "example": "An internal server error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/deliveryplace/updateDeliveryPlaceAddress/{uuid}": {
+            "post": {
+                "tags": [
+                    "Order Delivery Place"
+                ],
+                "summary": "Update the address of a specific delivery place",
+                "description": "This endpoint allows a user to update the address associated with a specific delivery place.",
+                "operationId": "31de94f0bb2cdfb8917317877b014822",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "description": "The UUID of the delivery place",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "address_id": {
+                                        "description": "ID of the new address",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Delivery place updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Delivery place updated successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Delivery place or address not found or unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Delivery place not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/deliveryplace/getUserDeliveryPlaces": {
+            "get": {
+                "tags": [
+                    "Order Delivery Place"
+                ],
+                "summary": "Get all delivery places of the connected user",
+                "description": "This endpoint retrieves all delivery places associated with the connected user.",
+                "operationId": "e5c49bc2e1c2f4655867e500d0392f26",
+                "responses": {
+                    "200": {
+                        "description": "User delivery places retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User delivery order place list."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred."
                                         }
                                     },
                                     "type": "object"

@@ -21,6 +21,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OngingTradeStageController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderDeliveryPlaceController;
 use App\Http\Controllers\OtpPasswordForgottenController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PersonController;
@@ -192,6 +193,8 @@ Route::prefix('users')->group(function () {
             Route::post('/createPreorder', [PreorderController::class, 'createPreorder'])->name('preorder.createPreorder');
             Route::post('/validatePreorder/{uid}', [PreorderController::class, 'validatePreorder'])->name('preorder.validatePreorder');
             Route::post('/rejectPreorder/{uid}', [PreorderController::class, 'rejectPreorder'])->name('preorder.rejectPreorder');
+            Route::post('/updatePreorder/{uid}', [PreorderController::class, 'updatePreorder'])->name('preorder.updatePreorder');
+            Route::post('/deletePreorder/{uid}', [PreorderController::class, 'deletePreorder'])->name('preorder.deletePreorder');
             Route::get('/merchantAffectedByPreorder/{perPage}', [PreorderController::class, 'merchantAffectedByPreorder'])->name('preorder.merchantAffectedByPreorder');
             Route::get('/getValidatedPreordersWithAnswers/{preorderUid}/{perPage}', [PreorderController::class, 'getValidatedPreordersWithAnswers'])->name('preorder.getValidatedPreordersWithAnswers');
             Route::get('/getPreordersAnswerSortedByPrice/{preorderUid}/{perPage}', [PreorderController::class, 'getPreordersAnswerSortedByPrice'])->name('preorder.getPreordersAnswerSortedByPrice');
@@ -397,7 +400,14 @@ Route::prefix('users')->group(function () {
                     Route::get('/getActiveService', [AddressController::class, 'getActiveService'])->name('address.getActiveService');
                     Route::get('/getUserActiveService/{userUid}', [AddressController::class, 'getUserActiveService'])->name('address.getUserActiveService');
                 });
-                
+
+                //Order delivery place
+                Route::prefix('deliveryplace')->group(function () {
+                    Route::post('/createDeliveryPlace/{orderId}/{addressId}', [OrderDeliveryPlaceController::class, 'createDeliveryPlace'])->name('deliveryplace.createDeliveryPlace');
+                    Route::post('/updateDeliveryPlaceAddress/{dliveryPlaceUuid}', [OrderDeliveryPlaceController::class, 'updateDeliveryPlaceAddress'])->name('deliveryplace.updateDeliveryPlaceAddress');
+                    Route::get('/getUserDeliveryPlaces', [OrderDeliveryPlaceController::class, 'getUserDeliveryPlaces'])->name('deliveryplace.getUserDeliveryPlaces');
+                });
+
 
     });
 

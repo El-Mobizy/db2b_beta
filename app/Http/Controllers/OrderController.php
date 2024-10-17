@@ -15,6 +15,7 @@ use App\Models\File;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Person;
+use App\Models\Address;
 use App\Models\Shop;
 use App\Models\Trade;
 use App\Models\User;
@@ -832,14 +833,9 @@ private function getCartAds($cartItem){
  *         @OA\JsonContent(
  *             type="object",
  *             @OA\Property(
- *                 property="longitude",
+ *                 property="address_id",
  *                 type="number",
- *                 description="Longitude of the user's location"
- *             ),
- *             @OA\Property(
- *                 property="latitude",
- *                 type="number",
- *                 description="Latitude of the user's location"
+ *                 description="address of delivery"
  *             )
  *         )
  *     ),
@@ -898,8 +894,7 @@ private function getCartAds($cartItem){
         try {
 
             $request->validate([
-                'longitude' => 'required',
-                'latitude' => 'required'
+                'address_id' => 'required',
             ]);
 
             $service = new Service();
@@ -909,6 +904,10 @@ private function getCartAds($cartItem){
 
             if(!$order){
                 return (new Service())->apiResponse(404, [],"Order not found");
+            }
+
+            if(!Address::whereId($request->address_id)->first()){
+                return (new Service())->apiResponse(404, [],"Address not found");
             }
 
             $checkIfOrderIsPaid = $this->checkIfOrderIsPending($orderId);
@@ -961,9 +960,9 @@ private function getCartAds($cartItem){
             $a[] = $this->notifyMerchantOnLowStock($ad);
         }
 
-       $this->notifyParty($orderId,$request->longitude,$request->latitude);
+       $this->notifyParty($orderId,$request->address_id);
 
-        (new UserDetailController())->generateUserDetail($request->longitude,$request->latitude,$order->user_id);
+         (new OrderDeliveryPlaceController())->createDeliveryPlace($orderId,$request->address_id);
 
 
 //Secured
@@ -1004,7 +1003,7 @@ private function getCartAds($cartItem){
     }
     
 
-    public function notifyParty($orderId,$longitude,$latitude){
+    public function notifyParty($orderId,$addressId){
         $order = Order::where('id',$orderId)->first();
 
         $this->notifyBuyer(Order::where('id',$orderId)->first()->uid);
@@ -1021,7 +1020,7 @@ private function getCartAds($cartItem){
         // $notification = new DeliveryAgencyController();
         // $notification->notifyDeliveryAgents($orderUid);
 
-        (new ZoneController())->isWithinDeliveryZone($longitude, $latitude, Order::where('id',$orderId)->first()->uid);
+        (new ZoneController())->isWithinDeliveryZone($addressId, Order::where('id',$orderId)->first()->uid);
 
         return 'sent';
 
@@ -1483,6 +1482,14 @@ private function getCartAds($cartItem){
             $orders = Order::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')->paginate($perpage);
 
+            foreach ($orders as $order) {
+                $shopUid = Shop::find($order->order_details->first()->shop_id)->uid;
+                $order->ad_image = File::whereReferencecode((new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'][0]->file_code)->first()->location;
+                $order->statut =  TypeOfType::whereId($order->status)->first()->libelle;
+                $order->ads_number = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['number'];
+                $order->ads = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'];
+            }
+
             return response()->json([
                 'data' => $orders
             ]);
@@ -1550,14 +1557,14 @@ private function getCartAds($cartItem){
 
         $orderIds = $orderDetails->pluck('order_id')->unique();
 
-        $orders = Order::whereIn('id', $orderIds)->get();
+        $orders = Order::whereIn('id', $orderIds)->where('status','!=',TypeOfType::whereLibelle('pending')->first()->id)->get();
 
         foreach ($orders as $order) {
             $shopUid = Shop::find($order->order_details->first()->shop_id)->uid;
-            $order->ads = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'];
-            $order->ads_number = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['number'];
             $order->ad_image = File::whereReferencecode((new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'][0]->file_code)->first()->location;
             $order->statut =  TypeOfType::whereId($order->status)->first()->libelle;
+            $order->ads_number = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['number'];
+            $order->ads = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'];
         }
 
         return response()->json([
@@ -1583,14 +1590,9 @@ private function getCartAds($cartItem){
  *         @OA\JsonContent(
  *             type="object",
  *             @OA\Property(
- *                 property="longitude",
+ *                 property="address_id",
  *                 type="number",
- *                 description="Longitude of the user's location"
- *             ),
- *             @OA\Property(
- *                 property="latitude",
- *                 type="number",
- *                 description="Latitude of the user's location"
+ *                 description="address of delivery"
  *             )
  *         )
  *     ),
@@ -1648,8 +1650,7 @@ private function getCartAds($cartItem){
         try{
 
             $request->validate([
-                'longitude' => 'required',
-                'latitude' => 'required'
+                'address_id' => 'required',
             ]);
 
             $service = new Service();
@@ -2024,18 +2025,12 @@ private function getCartAds($cartItem){
  *                     @OA\Items(type="integer")
  *                 ),
  *                 @OA\Property(
- *                     property="longitude",
+ *                     property="address_id",
  *                     type="number",
  *                     format="float",
- *                     description="Longitude of the user"
+ *                     description="address of delivery"
  *                 ),
- *                 @OA\Property(
- *                     property="latitude",
- *                     type="number",
- *                     format="float",
- *                     description="Latitude of the user"
- *                 ),
- *                 required={"cartItemids", "longitude", "latitude"}
+ *                 required={"cartItemids", "address_id"}
  *             )
  *         )
  *     ),

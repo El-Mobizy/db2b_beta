@@ -35,4 +35,10 @@ class Order extends Model
     {
         return $this->belongsTo(TypeOfType::class, 'status');
     }
+
+    public function deliveryPlace()
+    {
+        return $this->hasOne(OrderDeliveryPlace::class);
+    }
+
 }

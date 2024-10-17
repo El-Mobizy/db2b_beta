@@ -1326,8 +1326,8 @@ public function getAuthPreorderValidated($perpage){
 
     $validatedStatusId = TypeOfType::where('libelle', 'validated')->value('id');
 
-    $preorders = Preorder::where('statut', $validatedStatusId)
-                         ->where('deleted', false)
+    $preorders = Preorder::where('deleted', false)
+     ->with('file')
                          ->where('user_id', Auth::user()->id)
                          ->paginate($perpage);
 
@@ -1336,6 +1336,11 @@ public function getAuthPreorderValidated($perpage){
         return response()->json([
             'message' => 'No data found'
         ]);
+    }
+
+    foreach($preorders as $preorder){
+        $preorder->country = Country::whereId($preorder->location_id)->first()->fullname;
+        $preorder->statut_name =  TypeOfType::whereId($preorder->statut)->first()->libelle;
     }
 
         return response()->json([
@@ -1872,5 +1877,69 @@ public function answerReviewsPaginate($preorderAnswerUid,$perpage){
 }
 
 
+public function updatePreorder(Request $request,$uid){
+    try {
+
+        if (empty($request->all())) {
+            return (new Service())->apiResponse(404, [], 'nothing to update');
+        }
+
+        $preorder_answer = PreorderAnswers::where('uid',$uid)->first();
+    if(!$preorder_answer){
+        return (new Service())->apiResponse(404, [], ' Preorder  not found');
+    }
+
+    if($preorder_answer->statut != TypeOfType::whereLibelle('pending')->first()->id){
+        return (new Service())->apiResponse(404, [], 'Statut of preorder answer must be pending. Please, check it !');
+    }
+
+    $preorder = new Preorder();
+    $preorder->title = $request->input('title')??$preorder->title;
+    $preorder->description = $request->input('description')??$preorder->description;
+    $preorder->maximumbudget = $request->input('maximumbudget')??$preorder->maximumbudget;
+    $preorder->minimumbudget = $request->input('minimumbudget')??$preorder->minimumbudget;
+    
+    $preorder->address = $request->input('address')??$preorder->address;
+    $preorder->location_id = $request->input('location_id')??$preorder->location_id;
+    $preorder->category_id = $request->input('category_id')??$preorder->category_id;
+
+    $preorder->save();
+
+    return (new Service())->apiResponse(200, [], 'Preorder updated successfully');
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ],500);
+    }
+}
+
+
+public function deletePreorder($uid){
+    try {
+
+        $preorder = Preorder::where('uid',$uid)->first();
+        if(!$preorder){
+            return response()->json([
+                'message' => ' Preorder not found'
+            ],404);
+        }
+
+        if($preorder->statut == TypeOfType::whereLibelle('validated')->first()->id){
+            return response()->json([
+                'message' => 'Statut of preorder must be different of  validated. Please, check it !'
+            ]);
+        }
+
+        $preorder->deleted = 1;
+
+        $preorder->save();
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ],500);
+        }
+    }
 
 }
