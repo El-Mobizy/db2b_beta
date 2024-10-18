@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\SendEmail;
 use App\Models\Client;
 use App\Models\DeliveryAgency;
+use App\Models\Notification;
 use App\Models\OtpPasswordForgotten;
 use App\Models\Person;
 use App\Models\Restricted;
@@ -744,6 +745,7 @@ class UserController extends Controller
  
          $data = [
              'User_details' => $user,
+             'notification' =>Notification::wherePerson((new Service())->returnPersonIdAuth())->where('isRead',false)->count(),
              'Person_detail' => $person->file,
              'client_detail' => $client,
              'delivery_agency_detail' => $deliveryAgency,

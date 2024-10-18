@@ -16,6 +16,7 @@ use App\Interfaces\Interfaces\FileRepositoryInterface;
 use App\Jobs\SendEmail;
 use App\Models\Client;
 use App\Models\Country;
+use App\Models\Favorite;
 use App\Models\File;
 use App\Models\Order;
 use App\Models\OrderDetail;
@@ -1529,6 +1530,7 @@ public function checkIfAdIsValidated($adUid){
                  'category_uid' => Category::find($ad->category_id)->uid,
                  'category_title' => Category::find($ad->category_id)->title,
                  'attributes' => $ad_attributes,
+                 'is_favorite' =>Favorite::whereAdId($ad->id)->whereUserId(Auth::user()->id)->exists(),
                  'issynchronized' => true
              ];
      
