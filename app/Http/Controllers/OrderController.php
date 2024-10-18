@@ -1488,6 +1488,8 @@ private function getCartAds($cartItem){
                 $order->statut =  TypeOfType::whereId($order->status)->first()->libelle;
                 $order->ads_number = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['number'];
                 $order->ads = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'];
+
+                // $order->commun = ($preorder->statut == );
             }
 
             return response()->json([
