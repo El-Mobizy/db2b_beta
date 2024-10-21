@@ -167,7 +167,8 @@ class DeliveryAgencyController extends Controller
 
      //notify delivery agent
 
-     dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
+    (new MailController())->sendNotification(Auth::user()->id,$title,$body, 2);
+    //  dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
 
       //notify admin
       $service->notifyAdmin($titleAdmin,$bodyAdmin);
@@ -459,10 +460,9 @@ class DeliveryAgencyController extends Controller
            $body =  "A new order has just been placed in your area. Please log in to your account to view and accept the delivery. Your timely response is essential. Thank you!";
 
            foreach($data as $item){
-            // $mail = new MailController();
-            // $mes = $mail->sendNotification($item->id,$title,$body, 'Payement done Successfully !');
 
-            dispatch(new SendEmail($item->id,$title,$body,2));
+            (new MailController())->sendNotification($item->id,$title,$body, 2);
+            // dispatch(new SendEmail($item->id,$title,$body,2));
            }
 
 
@@ -476,7 +476,8 @@ class DeliveryAgencyController extends Controller
            $title =  "New Order in Your Area: Immediate Action Required";
            $body =  "A new order has just been placed in your area. Please log in to your account to view and accept the delivery. Your timely response is essential. Thank you!";
 
-           dispatch(new SendEmail($userId,$title,$body,2));
+           (new MailController())->sendNotification($userId,$title,$body, 2);
+        //    dispatch(new SendEmail($userId,$title,$body,2));
 
     
         } catch (Exception $e) {

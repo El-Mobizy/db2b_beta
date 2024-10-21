@@ -40,7 +40,8 @@ class OtpPasswordForgottenController extends Controller
         $title= "Recovery your password";
         $body = "$otp_code is your password reset code. You have thirty minutes before this code becomes invalid. ";
 
-        dispatch(new SendEmail(User::where('email',$email)->first()->id,$title,$body,1));
+        // dispatch(new SendEmail(User::where('email',$email)->first()->id,$title,$body,1));
+        (new MailController())->sendNotification(User::where('email',$email)->first()->id,$title,$body, 2);
     }
 
 

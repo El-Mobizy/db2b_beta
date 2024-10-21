@@ -27,7 +27,7 @@ class PersonController extends Controller
             $user_id = $user->id;
             $connected = 0;
             $sex = 1;
-            $dateofbirth =  date('Y-m-d');
+            $dateofbirth =  '';
             $profile_img_code= $service->generateRandomAlphaNumeric(7,(new Person()),'profile_img_code');
             $first_login =  1;
             $phonenumber =  $phone;
@@ -145,6 +145,8 @@ class PersonController extends Controller
           if(!$person){
               return(new Service())->apiResponse(404,$data, 'Person not found');
           }
+
+        //   return ($request->dateofbirth);
 
           $person->first_name = $request->first_name ?? $person->first_name;
           $person->last_name = $request->last_name ?? $person->last_name;

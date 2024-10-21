@@ -115,7 +115,8 @@ class ClientController extends Controller
            $merchants = $this->getMerchantCOncernedByPreorder($preorderUid);
     
            foreach($merchants as $user){
-            dispatch(new SendEmail($user->id,$title,$body,2));
+            (new MailController)->sendNotification($user->id,$title,$body, 2);
+            // dispatch(new SendEmail($user->id,$title,$body,2));
            }
     
         } catch (\Exception $e) {

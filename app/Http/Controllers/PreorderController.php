@@ -128,7 +128,8 @@ class PreorderController extends Controller
 
               //notify buyer
 
-              dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
+            //   dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
+              (new MailController())->sendNotification(Auth::user()->id,$title,$body, 2);
 
                //notify admin
                $service->notifyAdmin($titleAdmin,$bodyAdmin);
@@ -261,18 +262,20 @@ class PreorderController extends Controller
 
       //notify buyer
 
-      dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
+    //   dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
 
-      return (new Service())->apiResponse(200,[],'preorder answers created successfully !');
+      (new MailController())->sendNotification(Auth::user()->id,$title,$body, 2);
 
-       //notify admin
-       $service->notifyAdmin($titleAdmin,$bodyAdmin);
-
-        if($mes){
-            return response()->json([
-                  'message' =>$mes->original['message']
-            ]);
-          }
+      
+      //notify admin
+      $service->notifyAdmin($titleAdmin,$bodyAdmin);
+      
+    //   if($mes){
+    //       return response()->json([
+    //           'message' =>$mes->original['message']
+    //         ]);
+    //     }
+        return (new Service())->apiResponse(200,[],'preorder answers created successfully !');
 
         } catch (Exception $e) {
             return response()->json([
@@ -444,7 +447,8 @@ public function getPreorderPending(){
         $title = "Confirmation of your pre-order";
         $body = "Your pre-order has just been validated by the admin, and you will shortly be receiving proposals from merchants. We'll keep you informed if there's a proposal.";
 
-        dispatch(new SendEmail($preorder->user_id,$title,$body,2));
+        // dispatch(new SendEmail($preorder->user_id,$title,$body,2));
+        (new MailController())->sendNotification($preorder->user_id,$title,$body, 2);
 
       return (new Service())->apiResponse(200,[],'preorder answers validated successfully !');
 
@@ -1440,13 +1444,11 @@ public function write(Request $request, $PreordersAnswerUid){
 
         $receiver_id= $r->user->id;
 
-    dispatch(new SendEmail($receiver_id,$title,$body,2));
+    // dispatch(new SendEmail($receiver_id,$title,$body,2));
+    (new MailController())->sendNotification($receiver_id,$title,$body, 2);
 
     return (new Service())->apiResponse(200,[],'comment submited successfully !');
 
-    // return response()->json([
-    //     'message' => 'comment submited successfully !'
-    //     ],200);
 
     }catch(Exception $e){
         return response()->json([

@@ -803,7 +803,8 @@ public function notifyAdmin($title,$body){
        $admins = $this->adminUserAccount();
 
        foreach($admins as $user){
-            dispatch(new SendEmail($user->id,$title,$body,2));
+            (new MailController())->sendNotification($user->id,$title,$body, 2);
+            // dispatch(new SendEmail($user->id,$title,$body,2));
        }
 
     } catch (Exception $e) {

@@ -595,7 +595,8 @@ class UserController extends Controller
           $user = User::Where('email',$email)->first();
   
 
-          dispatch(new SendEmail($user->id,$title,$body,2));
+        //   dispatch(new SendEmail($user->id,$title,$body,2));
+        (new MailController())->sendNotification($user->id,$title,$body, 2);
 
           return (new Service())->apiResponse(200,[],'User created successfully!');
 
@@ -738,11 +739,11 @@ class UserController extends Controller
          if ($client && $client->is_merchant) {
              $roles[] = 'merchant';
          }
- 
+
          if ($deliveryAgency) {
              $roles[] = 'delivery_agent';
          }
- 
+
          $data = [
              'User_details' => $user,
              'notification' =>Notification::wherePerson((new Service())->returnPersonIdAuth())->where('isRead',false)->count(),

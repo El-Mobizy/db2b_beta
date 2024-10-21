@@ -998,7 +998,8 @@ private function getCartAds($cartItem){
         }
     
         if (!empty($title) && !empty($body)) {
-            dispatch(new SendEmail($merchantId, $title, $body, 2)); 
+            // dispatch(new SendEmail($merchantId, $title, $body, 2));
+            (new MailController())->sendNotification($merchantId,$title,$body, 2);
         }
     }
     
@@ -1718,8 +1719,8 @@ private function getCartAds($cartItem){
             $body = "Your order has been placed successfully. Your wallet has been debited, and your new balance is $balance XOF. Thank you for your purchase!";
 
 
-
-            dispatch(new SendEmail($user->id,$title,$body,2));
+            (new MailController())->sendNotification($user->id,$title,$body, 2);
+            // dispatch(new SendEmail($user->id,$title,$body,2));
 
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -1732,7 +1733,9 @@ private function getCartAds($cartItem){
             $title = "New Order Placed: Action Required";
             $body = "One of your products has just been ordered. Please start the necessary steps to complete the transaction. Thank you!";
 
-            dispatch(new SendEmail($userId,$title,$body,2));
+            // dispatch(new SendEmail($userId,$title,$body,2));
+
+            (new MailController())->sendNotification($userId,$title,$body, 2);
 
     
         } catch (Exception $e) {

@@ -678,11 +678,12 @@ public function getRecentAdd(Request $request,$perpage)
 
         DB::commit();
 
+        (new MailController())->sendNotification(Auth::user()->id,$title,$body,2);
 
-      dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
+
+    //   dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
 
       return (new Service())->apiResponse(200,[],'ad added successfully !');
-
 
     } catch (Exception $e) {
         DB::rollBack();
