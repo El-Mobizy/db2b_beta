@@ -245,11 +245,18 @@ class CategoryController extends Controller
  *      summary="Récupérer toutes les catégories.",
  *   tags={"Category"},
  *  @OA\Parameter(
- *          in="query",
+ *          in="path",
  *          name="perpage",
  *          required=true,
  *          description="Number of element perpage",
  *          @OA\Schema(type="string")
+ *      ),
+ * @OA\Parameter(
+ *          in="query",
+ *          name="page",
+ *          required=true,
+ *          description="number of  page.",
+ *          @OA\Schema(type="integer")
  *      ),
  *      @OA\Response(
  *          response=200,
@@ -360,16 +367,25 @@ class CategoryController extends Controller
 
 /**
  * @OA\Get(
- *     path="/api/category/getAllPaginateSubSubcategory/paginate",
+ *     path="/api/category/getAllPaginateSubSubcategory/{perpage}",
  *     summary="Get paginated sub-subcategories",
  *     tags={"SubCategories"},
  *     @OA\Parameter(
  *         name="perpage",
- *         in="query",
+ *         in="path",
  *         required=true,
  *         @OA\Schema(
  *             type="integer",
  *             example=10
+ *         )
+ *     ),
+ * @OA\Parameter(
+ *         name="page",
+ *         in="query",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="integer",
+ *             example=1
  *         )
  *     ),
  *     @OA\Response(

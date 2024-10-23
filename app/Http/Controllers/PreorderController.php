@@ -1277,6 +1277,13 @@ public function rejectPreorderAnswer($uid, Request $request){
 *         description="number of elements perpage",
 *         @OA\Schema(type="integer")
 *     ),
+*@OA\Parameter(
+*         name="page",
+*         in="query",
+*         required=true,
+*         description="number of page",
+*         @OA\Schema(type="integer")
+*     ),
  *     @OA\Response(
  *         response=200,
  *         description="Successful operation",
@@ -1471,6 +1478,13 @@ public function write(Request $request, $PreordersAnswerUid){
 *         description="number of elements perpage",
 *         @OA\Schema(type="integer")
 *     ),
+*@OA\Parameter(
+*         name="page",
+*         in="query",
+*         required=true,
+*         description="number of page",
+*         @OA\Schema(type="integer")
+*     ),
 *     @OA\Response(
 *         response=200,
 *         description="OK",
@@ -1554,7 +1568,14 @@ public function merchantAffectedByPreorder($perPage){
 *         name="perPage",
 *         in="path",
 *         required=true,
-*         description="ID of the merchant or related entity",
+*         description="number of element per page",
+*         @OA\Schema(type="integer")
+*     ),
+    *       @OA\Parameter(
+*         name="page",
+*         in="query",
+*         required=true,
+*         description="number of page",
 *         @OA\Schema(type="integer")
 *     ),
  *     @OA\Response(
@@ -1582,11 +1603,24 @@ public function getValidatedPreordersWithAnswers($preorderUid,$perPage)
 
             $validatedStatus = TypeOfType::where('libelle', 'validated')->first()->id;
 
-            $preorders = Preorder::where('user_id', $user->id)
-                                 ->where('statut', $validatedStatus)
-                                 ->whereDeleted(0)
-                                 ->where('uid', $preorderUid)
-                                 ->get();
+            $preorders = Preorder::whereUid($preorderUid)
+                                 ->first();
+
+            if(!$preorders){
+                return (new Service())->apiResponse(404,[],'preorder not found');
+            }
+
+            if($preorders->deleted == 1){
+                return (new Service())->apiResponse(404,[],'preorder already deleted');
+            }
+
+            if($preorders->statut != $validatedStatus){
+                return (new Service())->apiResponse(404,[],'preorder don\'t be validated');
+            }
+            
+                // if($preorders->user_id != $user->id){
+                //     return (new Service())->apiResponse(404,[],'this preorder it\'s not yours');
+                // }
 
             $preorderAnswers = PreorderAnswers::whereIn('preorder_id', $preorders->pluck('id'))
                 ->whereDeleted(0)
@@ -1624,7 +1658,14 @@ public function getValidatedPreordersWithAnswers($preorderUid,$perPage)
 *         name="perPage",
 *         in="path",
 *         required=true,
-*         description="ID of the merchant or related entity",
+*         description="number of element per page",
+*         @OA\Schema(type="integer")
+*     ),
+*@OA\Parameter(
+*         name="page",
+*         in="query",
+*         required=true,
+*         description="number of page",
 *         @OA\Schema(type="integer")
 *     ),
  *     @OA\Response(
@@ -1687,13 +1728,20 @@ public function getValidatedPreordersWithAnswers($preorderUid,$perPage)
  *         description="UID of the preorder",
  *         @OA\Schema(type="string")
  *     ),
- *     @OA\Parameter(
- *         name="perPage",
- *         in="path",
- *         required=true,
- *         description="Number of results per page",
- *         @OA\Schema(type="integer")
- *     ),
+ *    @OA\Parameter(
+*         name="perPage",
+*         in="path",
+*         required=true,
+*         description="number of element per page",
+*         @OA\Schema(type="integer")
+*     ),
+*@OA\Parameter(
+*         name="page",
+*         in="query",
+*         required=true,
+*         description="number of page",
+*         @OA\Schema(type="integer")
+*     ),
  *     @OA\Response(
  *         response=200,
  *         description="OK",

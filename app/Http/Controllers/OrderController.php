@@ -287,6 +287,13 @@ class OrderController extends Controller
  *     security={{"bearerAuth": {}}},
  * @OA\Parameter(
      *         name="perpage",
+     *         in="path",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     * @OA\Parameter(
+     *         name="page",
      *         in="query",
      *         description="Page number",
      *         required=false,
@@ -1332,10 +1339,28 @@ private function getCartAds($cartItem){
 
     /**
  * @OA\Get(
- *     path="/api/order/getAllFinalizedOrders",
+ *     path="/api/order/getAllFinalizedOrders/{perpage}",
  *     summary="Get all finalized orders",
  *     description="Retrieve all orders that have OrderDetails with Trades having the status 'endtrade' or 'canceltrade'.",
  *     tags={"Orders"},
+ * @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         description="number of element per page",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="integer"
+ *         )
+ *     ),
+ * @OA\Parameter(
+ *         name="page",
+ *         in="query",
+ *         description="number of page",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="integer"
+ *         )
+ *     ),
  *  security={{"bearerAuth":{}}},
  *     @OA\Response(
  *         response=200,
@@ -1380,7 +1405,7 @@ private function getCartAds($cartItem){
  *     )
  * )
  */
-    public function getAllFinalizedOrders(){
+    public function getAllFinalizedOrders($perpage){
         try {
             $endTradeStatusId = TypeOfType::whereLibelle('endtrade')->first()->id;
             $cancelTradeStatusId = TypeOfType::whereLibelle('canceltrade')->first()->id;
@@ -1394,7 +1419,7 @@ private function getCartAds($cartItem){
             $finalizedOrders = [];
     
             // Retrieve all orders
-            $orders = Order::all();
+            $orders = Order::paginate($perpage);
     
             foreach ($orders as $order) {
                 $orderDetails = OrderDetail::where('order_id', $order->id)->get();
@@ -1448,6 +1473,13 @@ private function getCartAds($cartItem){
  *         description="number of elements per page",
  *         @OA\Schema(type="integer")
  *     ),
+ *    @OA\Parameter(
+ *         name="page",
+ *         in="query",
+ *         required=true,
+ *         description="number of  page",
+ *         @OA\Schema(type="integer")
+ *     ),
      *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
@@ -1487,15 +1519,15 @@ private function getCartAds($cartItem){
                 $shopUid = Shop::find($order->order_details->first()->shop_id)->uid;
                 $order->ad_image = File::whereReferencecode((new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'][0]->file_code)->first()->location;
                 $order->statut =  TypeOfType::whereId($order->status)->first()->libelle;
+                $order->commun = ($order->status == TypeOftype::whereLibelle('pending')->first()->id || $order->status == TypeOftype::whereLibelle('rejected')->first()->id)?"oui":"non";
                 $order->ads_number = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['number'];
                 $order->ads = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'];
 
-                // $order->commun = ($preorder->statut == );
             }
-
+            unset($order->order_details);
             return response()->json([
                 'data' => $orders
-            ]);
+            ],200);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
@@ -1507,12 +1539,26 @@ private function getCartAds($cartItem){
 
      /**
      * @OA\Get(
-     *     path="/api/order/getMerchantOrder",
+     *     path="/api/order/getMerchantOrder/{perpage}",
      *     summary="Get all orders of the merchant",
      *     description="Returns a list of all orders placed by the merchant",
      *     tags={"Orders"},
 
      *     security={{"bearerAuth":{}}},
+     *  @OA\Parameter(
+ *         name="perpage",
+ *         in="path",
+ *         required=true,
+ *         description="number of elements per page",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *    @OA\Parameter(
+ *         name="page",
+ *         in="query",
+ *         required=true,
+ *         description="number of elements per page",
+ *         @OA\Schema(type="integer")
+ *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
@@ -1531,7 +1577,7 @@ private function getCartAds($cartItem){
      *     )
      * )
      */
-    public function getMerchantOrder()
+    public function getMerchantOrder($perpage)
 {
     try {
         $service = new Service();
@@ -1560,7 +1606,12 @@ private function getCartAds($cartItem){
 
         $orderIds = $orderDetails->pluck('order_id')->unique();
 
-        $orders = Order::whereIn('id', $orderIds)->where('status','!=',TypeOfType::whereLibelle('pending')->first()->id)->get();
+        if($perpage == 0){
+            $orders = Order::whereIn('id', $orderIds)->where('status','!=',TypeOfType::whereLibelle('pending')->first()->id)->get();
+        }else{
+            $orders = Order::whereIn('id', $orderIds)->where('status','!=',TypeOfType::whereLibelle('pending')->first()->id)->paginate($perpage);
+        }
+
 
         foreach ($orders as $order) {
             $shopUid = Shop::find($order->order_details->first()->shop_id)->uid;
@@ -1573,7 +1624,7 @@ private function getCartAds($cartItem){
         return response()->json([
             'data' => $orders,
             'number' => count($orders)
-        ]);
+        ],200);
     } catch (\Exception $e) {
          return (new Service())->apiResponse(500, [], $e->getMessage());
     }
@@ -1760,6 +1811,7 @@ private function getCartAds($cartItem){
  *             format="uuid"
  *         )
  *     ),
+
  *     @OA\Response(
  *         response=200,
  *         description="Liste des produits dans la commande",
@@ -1817,10 +1869,17 @@ private function getCartAds($cartItem){
                 // return $detail;
                 $adItem= Ad::whereDeleted(0)->whereId($detail->ad_id)->first();
                 $adItem->quantity_sale = $detail->quantity;
-                $adItem->shop_title =  Shop::find($adItem->shop_id)->title ;
+                $adItem->category_name = Category::whereId($adItem->category_id)->first()->title;
+                $adItem->shop_name = Shop::whereId($adItem->shop_id)->first()->title;
+                $adItem->ad_total_amount = $detail->final_price* $detail->quantity;
+
+                if(File::where('referencecode',$adItem->file_code)->exists()){
+                    $adItem->image = File::where('referencecode',$adItem->file_code)->first()->location;
+                }
 
                 $ad[] = $adItem;
             }
+            $order->adNumber = count($ad);
             $order->ad = $ad;
             $order->order_statut =  TypeOfType::whereId($order->status)->first()->libelle;
 
@@ -1932,7 +1991,68 @@ private function getCartAds($cartItem){
     }
 
 
-    public function getMerchantOrderWithDelivery()
+   /**
+ * @OA\Get(
+ *     path="/api/order/getMerchantOrderWithDelivery/{perPage}",
+ *     tags={"Orders"},
+ *     summary="Récupérer les commandes du marchand avec livraison",
+ *     description="Cette fonction renvoie les commandes avec livraison pour un marchand authentifié avec une pagination.",
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="perPage",
+ *         in="path",
+ *         description="Nombre d'éléments par page",
+ *         required=false,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Parameter(
+ *         name="page",
+ *         in="query",
+ *         description="Numéro de la page",
+ *         required=false,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Liste des commandes avec livraison",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="data", type="array", @OA\Items(
+ *                 @OA\Property(property="id", type="integer"),
+ *                 @OA\Property(property="uid", type="string"),
+ *                 @OA\Property(property="Adimage", type="string"),
+ *                 @OA\Property(property="Adnumber", type="integer"),
+ *                 @OA\Property(property="delivery_person", type="object",
+ *                     @OA\Property(property="name", type="string"),
+ *                     @OA\Property(property="email", type="string"),
+ *                     @OA\Property(property="phone", type="string"),
+ *                     @OA\Property(property="image", type="string")
+ *                 ),
+ *                 @OA\Property(property="delivery_info", type="object",
+ *                     @OA\Property(property="delivery_agent_amount", type="number", format="float")
+ *                 )
+ *             ))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Aucune commande trouvée ou vous n'êtes pas marchand",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string", example="You are not merchant")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur interne",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string", example="Internal server error")
+ *         )
+ *     )
+ * )
+ */
+public function getMerchantOrderWithDelivery($perPage)
 {
     try {
         $service = new Service();
@@ -1944,12 +2064,11 @@ private function getCartAds($cartItem){
         $checkIfmerchant = (new AdController())->checkMerchant();
         if ($checkIfmerchant == 0) {
             return (new Service())->apiResponse(404, [], 'You are not merchant');
-           
         }
 
         $userShops = (new ShopController())->anUserShop(Auth::user()->id)->pluck('id')->toArray();
         if (empty($userShops)) {
-            return (new Service())->apiResponse(404, [], 'detail');
+            return (new Service())->apiResponse(404, [], 'No shops found');
         }
 
         $orderDetails = OrderDetail::whereIn('shop_id', $userShops)
@@ -1969,34 +2088,36 @@ private function getCartAds($cartItem){
 
         $orders = [];
 
-        foreach ($orderswithdelivery as $orderId) {
+        // Pagination setup
+        // $perPage = request()->get('perpage', 15);
+        $page = request()->get('page', 1);
+        $totalOrders = count($orderswithdelivery);
+        $lastPage = ceil($totalOrders / $perPage);
 
+        $paginatedOrderIds = collect($orderswithdelivery)->forPage($page, $perPage);
+
+        foreach ($paginatedOrderIds as $orderId) {
             $order = Order::whereId($orderId)->first();
-            if(!$order){
+            if (!$order) {
                 return (new Service())->apiResponse(404, [], 'Order not found');
             }
 
             $escrowDelivery = EscrowDelivery::where('order_uid', $order->uid)->first();
-            
-            if ($escrowDelivery) {
 
+            if ($escrowDelivery) {
                 $deliveryPerson = Person::where('uid', $escrowDelivery->person_uid)->first();
 
-                $order->Adimage = File::whereReferencecode((new OrderController())->getMerchantOrderAds($order->uid)->original['data'][0]['file_code'])->first()->location;
-                $order->Adnumber =  count((new OrderController())->getOrderAds($order->uid)->original['data']);
-                // $order->ad= (new OrderController())->getOrderAds($order->uid)->original['data'];
+                $order->Adimage = $this->getMerchantOrderAds($order->uid)->original['data']['adItems'][0]['image'];
+                $order->Adnumber = count($this->getMerchantOrderAds($order->uid)->original['data']['adItems']);
 
                 $order->delivery_person = [
-                    'name' => $deliveryPerson->first_name ?? 'N/A',
-                    'email' => User::whereId($deliveryPerson->user_id)->first()->email ,
-                    'phone' =>User::whereId($deliveryPerson->user_id)->first()->phone ?? 'N/A',
-                    'image' => User::whereId($deliveryPerson->user_id)->first()->person->file!=null?  User::whereId($deliveryPerson->user_id)->first()->person->file->location:null ?? 'N/A',
+                    'name' => $deliveryPerson->first_name ?? 'null',
+                    'email' => User::whereId($deliveryPerson->user_id)->first()->email,
+                    'phone' => User::whereId($deliveryPerson->user_id)->first()->phone ?? 'N/A',
+                    'image' => User::whereId($deliveryPerson->user_id)->first()->person->file != null ? User::whereId($deliveryPerson->user_id)->first()->person->file->location : 'null',
                 ];
                 $order->delivery_info = [
-                    // 'pickup_date' => $escrowDelivery->pickup_date,
-                    // 'delivery_date' => $escrowDelivery->delivery_date,
                     'delivery_agent_amount' => $escrowDelivery->delivery_agent_amount,
-                  
                 ];
             }
 
@@ -2004,12 +2125,19 @@ private function getCartAds($cartItem){
         }
 
         return response()->json([
-            'data' => $orders
+            'data' => $orders,
+            'pagination' => [
+                'current_page' => intval($page),
+                'per_page' => intval($perPage),
+                'total' => count($orderswithdelivery),
+                'last_page' => $lastPage
+            ]
         ]);
     } catch (\Exception $e) {
-         return (new Service())->apiResponse(500, [], $e->getMessage());
+        return (new Service())->apiResponse(500, [], $e->getMessage());
     }
 }
+
 
 /**
  * @OA\Post(

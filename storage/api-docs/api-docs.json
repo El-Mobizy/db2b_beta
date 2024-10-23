@@ -89,6 +89,15 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "number of  page.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
                     }
                 ],
                 "responses": {
@@ -137,6 +146,15 @@
                         "required": true,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "number of  page.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
                 ],
@@ -980,14 +998,14 @@
                 ]
             }
         },
-        "/api/ad/getAdBySubCategory/{categoryUid}": {
+        "/api/ad/getAdBySubCategory/{categoryUid}/{perPage}": {
             "get": {
                 "tags": [
                     "Ad"
                 ],
                 "summary": "Get ads by subcategory",
                 "description": "Retrieve a list of ads grouped by category",
-                "operationId": "adaa351c09719ef8d4de84934c550df2",
+                "operationId": "1c2020c77c38e4e49f529afe12c3fe75",
                 "parameters": [
                     {
                         "name": "categoryUid",
@@ -999,6 +1017,14 @@
                     },
                     {
                         "name": "perPage",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
                         "in": "query",
                         "required": true,
                         "schema": {
@@ -1930,7 +1956,7 @@
                 ]
             }
         },
-        "/api/cart/getUserCart/{page}/{perPage}": {
+        "/api/cart/getUserCart/{perPage}": {
             "get": {
                 "tags": [
                     "Cart"
@@ -1951,7 +1977,7 @@
                     },
                     {
                         "name": "perPage",
-                        "in": "query",
+                        "in": "path",
                         "description": "Number of items per page",
                         "required": false,
                         "schema": {
@@ -2305,11 +2331,20 @@
                 "parameters": [
                     {
                         "name": "perpage",
-                        "in": "query",
+                        "in": "path",
                         "description": "Number of element perpage",
                         "required": true,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "number of  page.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
                 ],
@@ -2382,21 +2417,30 @@
                 }
             }
         },
-        "/api/category/getAllPaginateSubSubcategory/paginate": {
+        "/api/category/getAllPaginateSubSubcategory/{perpage}": {
             "get": {
                 "tags": [
                     "SubCategories"
                 ],
                 "summary": "Get paginated sub-subcategories",
-                "operationId": "9a048a6033b61e64dd2834c9fff921b9",
+                "operationId": "a5379be6ac552c753ca70844ab06c3c3",
                 "parameters": [
                     {
                         "name": "perpage",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "integer",
                             "example": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -4751,7 +4795,7 @@
                 ]
             }
         },
-        "/api/favorite/GetFavoritesAd/{page}/{perPage}": {
+        "/api/favorite/GetFavoritesAd/{perPage}": {
             "get": {
                 "tags": [
                     "Favorite"
@@ -4771,7 +4815,7 @@
                     },
                     {
                         "name": "perPage",
-                        "in": "query",
+                        "in": "path",
                         "description": "Number of items per page",
                         "required": false,
                         "schema": {
@@ -5087,19 +5131,24 @@
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/api/notifications/{notificationUid}": {
+        "/api/notification/makeAsReadOrUnRead/{notificationId}": {
             "post": {
                 "tags": [
                     "Notifications"
                 ],
                 "summary": "Mark notification as read or unread",
-                "operationId": "855d10d3d57d00a8106148ccd51a84c6",
+                "operationId": "eae09c3ce2ea1b8e082fe6305c2f7e57",
                 "parameters": [
                     {
-                        "name": "notificationUid",
+                        "name": "notificationId",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -5147,7 +5196,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/notification/createGeneralNotification": {
@@ -5233,7 +5287,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/notification/getNotifications/{perpage}": {
@@ -5402,7 +5461,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/ongingtradeStage/makeCompleteTradeStage/{ongingtradeStageId}": {
@@ -6032,6 +6096,15 @@
                 "parameters": [
                     {
                         "name": "perpage",
+                        "in": "path",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
                         "in": "query",
                         "description": "Page number",
                         "required": false,
@@ -6637,14 +6710,34 @@
                 ]
             }
         },
-        "/api/order/getAllFinalizedOrders": {
+        "/api/order/getAllFinalizedOrders/{perpage}": {
             "get": {
                 "tags": [
                     "Orders"
                 ],
                 "summary": "Get all finalized orders",
                 "description": "Retrieve all orders that have OrderDetails with Trades having the status 'endtrade' or 'canceltrade'.",
-                "operationId": "c9056c517afafea3df16736f0c58e3e7",
+                "operationId": "9de457703eab19466e50306324f5e869",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "number of element per page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "number of page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "List of finalized orders",
@@ -6725,6 +6818,15 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "number of  page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
                     }
                 ],
                 "responses": {
@@ -6755,14 +6857,34 @@
                 ]
             }
         },
-        "/api/order/getMerchantOrder": {
+        "/api/order/getMerchantOrder/{perpage}": {
             "get": {
                 "tags": [
                     "Orders"
                 ],
                 "summary": "Get all orders of the merchant",
                 "description": "Returns a list of all orders placed by the merchant",
-                "operationId": "d890bfb5fcee8a3d18a7e8bc02620e1b",
+                "operationId": "6fc214863beeb0dfc5621c282833824e",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "number of elements per page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "number of elements per page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation",
@@ -7020,6 +7142,133 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Erreur interne du serveur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/order/getMerchantOrderWithDelivery/{perPage}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Récupérer les commandes du marchand avec livraison",
+                "description": "Cette fonction renvoie les commandes avec livraison pour un marchand authentifié avec une pagination.",
+                "operationId": "6d9f2ae59f0f138219f882012ee80a82",
+                "parameters": [
+                    {
+                        "name": "perPage",
+                        "in": "path",
+                        "description": "Nombre d'éléments par page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Numéro de la page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des commandes avec livraison",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "uid": {
+                                                        "type": "string"
+                                                    },
+                                                    "Adimage": {
+                                                        "type": "string"
+                                                    },
+                                                    "Adnumber": {
+                                                        "type": "integer"
+                                                    },
+                                                    "delivery_person": {
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            },
+                                                            "phone": {
+                                                                "type": "string"
+                                                            },
+                                                            "image": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "delivery_info": {
+                                                        "properties": {
+                                                            "delivery_agent_amount": {
+                                                                "type": "number",
+                                                                "format": "float"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Aucune commande trouvée ou vous n'êtes pas marchand",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You are not merchant"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
                                         }
                                     },
                                     "type": "object"
@@ -9018,6 +9267,15 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "number of page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
                     }
                 ],
                 "responses": {
@@ -9187,6 +9445,15 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "number of page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
                     }
                 ],
                 "responses": {
@@ -9254,7 +9521,16 @@
                     {
                         "name": "perPage",
                         "in": "path",
-                        "description": "ID of the merchant or related entity",
+                        "description": "number of element per page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "number of page",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -9323,7 +9599,16 @@
                     {
                         "name": "perPage",
                         "in": "path",
-                        "description": "ID of the merchant or related entity",
+                        "description": "number of element per page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "number of page",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -9392,7 +9677,16 @@
                     {
                         "name": "perPage",
                         "in": "path",
-                        "description": "Number of results per page",
+                        "description": "number of element per page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "number of page",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -9809,6 +10103,222 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Statut of preorder must be different of validated. Please, check it!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Message d'erreur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/preorder_answer/updatePreorderAnswer/{uid}": {
+            "post": {
+                "tags": [
+                    "PreorderAnswers"
+                ],
+                "summary": "Mettre à jour une réponse à un Preorder",
+                "operationId": "a12d78517dbc60c8c33047024ffd6038",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "UID de la réponse au Preorder",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "abc123"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "content": {
+                                        "type": "string",
+                                        "example": "Contenu de la réponse"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "example": 1500
+                                    },
+                                    "delivery_time": {
+                                        "type": "string",
+                                        "example": "7 jours"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Réponse au Preorder mise à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": "[]"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder answer updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Réponse au Preorder non trouvée ou statut incorrect",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": "[]"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder not found / This preorder it's not yours / Statut of preorder answer must be pending"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Message d'erreur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/preorder_answer/deletePreorderAnswer/{uid}": {
+            "post": {
+                "tags": [
+                    "PreorderAnswers"
+                ],
+                "summary": "Supprimer une réponse à un Preorder",
+                "operationId": "27cc2ce0c1a4539e802cda8124c8f05f",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "UID de la réponse au Preorder",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "abc123"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Réponse au Preorder supprimée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": "[]"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Réponse au Preorder non trouvée ou déjà supprimée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": "[]"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Preorder not found / This preorder it's not yours / Already deleted / Statut of preorder must be different of validated"
                                         }
                                     },
                                     "type": "object"
@@ -11068,6 +11578,15 @@
                         "name": "perpage",
                         "in": "path",
                         "description": "number of element perpage",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "path",
+                        "description": "number of page",
                         "required": true,
                         "schema": {
                             "type": "string"

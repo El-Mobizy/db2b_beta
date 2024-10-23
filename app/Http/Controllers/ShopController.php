@@ -1164,6 +1164,15 @@ class ShopController extends Controller
  *             type="string"
  *         )
  *     ),
+ * @OA\Parameter(
+ *         name="page",
+ *         in="path",
+ *         required=true,
+ *         description="number of page",
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
  *     @OA\Response(
  *         response=200,
  *         description="Successful response",
@@ -1645,7 +1654,7 @@ public function getShopOrderAds($orderUid, $shopUid) {
             }
 
             $data = [
-                'total_orders' => count((new OrderController())->getMerchantOrder()->original['data']),
+                'total_orders' => count((new OrderController())->getMerchantOrder(0)->original['data']),
                 'total_customers' => count($clients),
                 'total_earning' => $totalEarning,
                 'total_shop' =>count( (new ShopController())->userShop()->original['data']),

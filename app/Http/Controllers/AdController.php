@@ -217,6 +217,13 @@ class AdController extends Controller
  *          description="number of ad per page.",
  *          @OA\Schema(type="integer")
  *      ),
+ * @OA\Parameter(
+ *          in="query",
+ *          name="page",
+ *          required=true,
+ *          description="number of  page.",
+ *          @OA\Schema(type="integer")
+ *      ),
  *      @OA\Response(
  *          response=200,
  *          description="Success. Return all recent ads.",
@@ -284,6 +291,13 @@ public function getRecentAdd(Request $request,$perpage)
  *             type="string"
  *         )
  *     ),
+ *  @OA\Parameter(
+ *          in="query",
+ *          name="page",
+ *          required=true,
+ *          description="number of  page.",
+ *          @OA\Schema(type="integer")
+ *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success. Return all seller ads.",
@@ -1550,7 +1564,7 @@ public function checkIfAdIsValidated($adUid){
      
 /**
  * @OA\Get(
- *     path="/api/ad/getAdBySubCategory/{categoryUid}",
+ *     path="/api/ad/getAdBySubCategory/{categoryUid}/{perPage}",
  *     tags={"Ad"},
  *     summary="Get ads by subcategory",
  *     description="Retrieve a list of ads grouped by category",
@@ -1564,6 +1578,14 @@ public function checkIfAdIsValidated($adUid){
  *     ),
  *     @OA\Parameter(
  *         name="perPage",
+ *         in="path",
+ *         required=true,
+ *         @OA\Schema(
+ *             type="integer"
+ *         )
+ *     ),
+ *  @OA\Parameter(
+ *         name="page",
  *         in="query",
  *         required=true,
  *         @OA\Schema(

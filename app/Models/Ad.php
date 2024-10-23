@@ -44,7 +44,14 @@ class Ad extends Model
     public function shop(){
         return $this->belongsTo(Shop::class);
     }
+
+    public function ad()
+    {
+        return $this->belongsTo(Ad::class, 'ad_id');
+    }
 }
+
+
 
 // "id": 23,
 //             "title": "Productsjk",

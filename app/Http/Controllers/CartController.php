@@ -182,7 +182,7 @@ class CartController extends Controller
 
  /**
  * @OA\Get(
- *     path="/api/cart/getUserCart/{page}/{perPage}",
+ *     path="/api/cart/getUserCart/{perPage}",
  * security={{"bearerAuth": {}}},
  *     summary="Get User Cart",
  *     description="Retrieve the cart items for the authenticated user with pagination.",
@@ -200,7 +200,7 @@ class CartController extends Controller
  *     ),
  *     @OA\Parameter(
  *         name="perPage",
- *         in="query",
+ *         in="path",
  *         description="Number of items per page",
  *         required=false,
  *         @OA\Schema(
@@ -249,7 +249,7 @@ class CartController extends Controller
  * )
  */
 
-    public function getUserCart(Request $request,$page = 1,$perPage=5){
+    public function getUserCart(Request $request,$perPage=5){
         try {
             // $page = $request->input('page', 1);
             // $perPage = $request->input('per_page',5);
@@ -297,11 +297,11 @@ class CartController extends Controller
                 carts.id DESC
             LIMIT ? OFFSET ?
         ";
-        
+
 
     // Calculer l'offset
     
-    $page = max(1, intval($page));
+    $page = max(1, intval($request->query('page')));
     $perPage = intval($perPage);
     $offset = $perPage * ($page - 1);
     // Exécuter la requête

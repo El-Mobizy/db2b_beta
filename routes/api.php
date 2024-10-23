@@ -100,7 +100,7 @@ Route::prefix('users')->group(function () {
             Route::post('/actualiseAuthCart', [CartController::class, 'actualiseAuthCart'])->name('cart.actualiseAuthCart');
             Route::post('/addToCart/{ad_id}', [CartController::class, 'addToCart'])->name('cart.addToCart');
             Route::delete('/removeToCart/{adId}', [CartController::class, 'removeToCart'])->name('cart.removeToCart');
-            Route::get('/getUserCart/{page}/{perPage}', [CartController::class, 'getUserCart'])->name('cart.getUserCart');
+            Route::get('/getUserCart/{perPage}', [CartController::class, 'getUserCart'])->name('cart.getUserCart');
             Route::post('/incrementQuantity', [CartController::class, 'incrementQuantity'])->name('cart.incrementQuantity');
             Route::post('/decrementQuantity', [CartController::class, 'decrementQuantity'])->name('cart.decrementQuantity');
             // Route::get('/getCartItem/{ad_id}', [CartController::class, 'getCartItem'])->name('cart.getCartItem');
@@ -145,14 +145,14 @@ Route::prefix('users')->group(function () {
             Route::get('/orderValidatedTrade/{orderId}', [OrderController::class, 'orderValidatedTrade'])->name('order.orderValidatedTrade');
             Route::get('/getOrderEndTrade/{orderId}', [OrderController::class, 'getOrderEndTrade'])->name('order.getOrderEndTrade');
             Route::get('/getOrderCanceledTrade/{orderId}', [OrderController::class, 'getOrderCanceledTrade'])->name('order.getOrderCanceledTrade');
-            Route::get('/getAllFinalizedOrders', [OrderController::class, 'getAllFinalizedOrders'])->name('order.getAllFinalizedOrders');
+            Route::get('/getAllFinalizedOrders/{perpage}', [OrderController::class, 'getAllFinalizedOrders'])->name('order.getAllFinalizedOrders');
             Route::get('/getOrderAds/{orderUid}', [OrderController::class, 'getOrderAds'])->name('order.getOrderAds');
 
             Route::get('/getMerchantOrderAds/{orderUid}', [OrderController::class, 'getMerchantOrderAds'])->name('order.getMerchantOrderAds');
             
             Route::get('/userOrders/{perpage}', [OrderController::class, 'userOrders'])->name('order.userOrders');
-            Route::get('/getMerchantOrder', [OrderController::class, 'getMerchantOrder'])->name('order.getMerchantOrder');
-            Route::get('/getMerchantOrderWithDelivery', [OrderController::class, 'getMerchantOrderWithDelivery'])->name('order.getMerchantOrderWithDelivery');
+            Route::get('/getMerchantOrder/{perpage}', [OrderController::class, 'getMerchantOrder'])->name('order.getMerchantOrder');
+            Route::get('/getMerchantOrderWithDelivery/{perpage}', [OrderController::class, 'getMerchantOrderWithDelivery'])->name('order.getMerchantOrderWithDelivery');
             Route::post('/CreateAndPayOrder', [OrderController::class, 'CreateAndPayOrder'])->name('order.CreateAndPayOrder');
             Route::post('/createAndPayManyItem', [OrderController::class, 'createAndPayManyItem'])->name('order.createAndPayManyItem');
         });
@@ -183,7 +183,7 @@ Route::prefix('users')->group(function () {
           Route::prefix('notification')->group(function () {
             Route::get('/getNotifications/{perpage}', [NotificationController::class, 'getNotifications'])->name('notification.getNotifications');
             Route::post('/create', [NotificationController::class, 'create'])->name('notification.create');
-            Route::post('/makeAsReadOrUnRead', [NotificationController::class, 'makeAsReadOrUnRead'])->name('notification.makeAsReadOrUnRead');
+            Route::post('/makeAsReadOrUnRead/{notificationId}', [NotificationController::class, 'makeAsReadOrUnRead'])->name('notification.makeAsReadOrUnRead');
             Route::post('/createGeneralNotification', [NotificationController::class, 'createGeneralNotification'])->name('notification.createGeneralNotification');
             Route::get('/deleteNotification/{perpage}', [NotificationController::class, 'deleteNotification'])->name('notification.deleteNotification');
         });
@@ -273,7 +273,7 @@ Route::prefix('users')->group(function () {
             //Favorite
             Route::prefix('favorite')->group(function () {
                 Route::post('/addAdToFavorite/{adId}', [FavoriteController::class, 'addAdToFavorite'])->name('favorite.addAdToFavorite');
-                Route::get('/GetFavoritesAd/{page}/{perPage}', [FavoriteController::class, 'GetFavoritesAd'])->name('favorite.GetFavoritesAd');
+                Route::get('/GetFavoritesAd/{perPage}', [FavoriteController::class, 'GetFavoritesAd'])->name('favorite.GetFavoritesAd');
                 Route::delete('/RemoveAdFromFavoriteList/{id}', [FavoriteController::class, 'RemoveAdFromFavoriteList'])->name('favorite.RemoveAdFromFavoriteList');
                 Route::get('/all', [FavoriteController::class, 'all'])->name('favorite.all');
             });
@@ -432,7 +432,7 @@ Route::prefix('users')->group(function () {
         Route::get('/getAdDetail/{uid}', [AdController::class, 'getAdDetail'])->name('ad.getAdDetail');
         Route::get('/checkIfAdIsRejected/{uid}', [AdController::class, 'checkIfAdIsRejected'])->name('ad.checkIfAdIsRejected');
         Route::get('/checkIfAdIsValidated/{uid}', [AdController::class, 'checkIfAdIsValidated'])->name('ad.checkIfAdIsValidated');
-        Route::get('/getAdBySubCategory/{catagoryUid}', [AdController::class, 'getAdBySubCategory'])->name('ad.getAdBySubCategory');
+        Route::get('/getAdBySubCategory/{catagoryUid}/{perpage}', [AdController::class, 'getAdBySubCategory'])->name('ad.getAdBySubCategory');
         Route::post('/addInventoryToAd/{adUid}', [AdController::class, 'addInventoryToAd'])->name('ad.addInventoryToAd');
         Route::get('/ads', [AdController::class, 'allAds'])->name('ad.allAds');
         Route::post('/editAd/{uid}', [AdController::class, 'editAd'])->name('ad.editAd');

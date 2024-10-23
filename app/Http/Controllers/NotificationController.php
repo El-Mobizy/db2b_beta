@@ -35,6 +35,7 @@ class NotificationController extends Controller
  * @OA\Post(
  *     path="/api/notification/create",
  *     tags={"Notifications"},
+ * security={{"bearerAuth":{}}},
  *     summary="Create a notification",
  *     description="Creates a notification for multiple persons",
  *     @OA\RequestBody(
@@ -113,11 +114,12 @@ class NotificationController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/notifications/{notificationUid}",
+     *     path="/api/notification/makeAsReadOrUnRead/{notificationId}",
      *     summary="Mark notification as read or unread",
      *     tags={"Notifications"},
+     * security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="notificationUid",
+     *         name="notificationId",
      *         in="path",
      *         required=true,
      *         @OA\Schema(type="string")
@@ -141,16 +143,14 @@ class NotificationController extends Controller
      * )
      */
 
-    public function makeAsReadOrUnRead($notificationUid){
+    public function makeAsReadOrUnRead($notificationId){
          try {
-            if((new Service())->isValidUuid($notificationUid)){
-                return (new Service())->isValidUuid($notificationUid);
-            }
-            $notification = Notification::whereUid($notificationUid)->first();
+           
+            $notification = Notification::whereId($notificationId)->first();
 
             if(!$notification){
                 return response()->json([
-                    'status_code' => 400,
+                    'status_code' => 404,
                     'data' =>[],
                     'message' => 'notification not found'
                 ]);
@@ -173,7 +173,11 @@ class NotificationController extends Controller
                 'message' => 'notification read successfully'
             ]);
          }catch(Exception $e) {
-            return response()->json($e->getMessage());
+            return response()->json([
+                'status_code' => 500,
+                'data' =>[],
+                'message' =>$e->getMessage()
+            ]);
         }
     }
 
@@ -183,6 +187,7 @@ class NotificationController extends Controller
      *     path="/api/notification/createGeneralNotification",
      *     summary="Create general notification",
      *     tags={"Notifications"},
+     * security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -259,7 +264,7 @@ class NotificationController extends Controller
      *     path="/api/notification/getNotifications/{perpage}",
      *     summary="Get notifications for a user",
      *     tags={"Notifications"},
-     *    security={{"bearerAuth":{}}},
+     * security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="perpage",
      *         in="query",
@@ -325,6 +330,7 @@ class NotificationController extends Controller
      *     path="/api/notification/deleteNotification/{notificationUid}",
      *     summary="Delete a notification",
      *     tags={"Notifications"},
+     * security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="notificationUid",
      *         in="path",

@@ -229,7 +229,7 @@ class FavoriteController extends Controller
 
    /**
      * @OA\Get(
-     *     path="/api/favorite/GetFavoritesAd/{page}/{perPage}",
+     *     path="/api/favorite/GetFavoritesAd/{perPage}",
      *     summary="Get user's favorite ads",
      *     description="Retrieve a paginated list of the user's favorite ads.",
      *     operationId="getFavoritesAd",
@@ -244,7 +244,7 @@ class FavoriteController extends Controller
      *     ),
      *     @OA\Parameter(
      *         name="perPage",
-     *         in="query",
+     *         in="path",
      *         required=false,
      *         @OA\Schema(type="integer"),
      *         description="Number of items per page"
@@ -272,7 +272,7 @@ class FavoriteController extends Controller
      * )
      */
 
-    public function GetFavoritesAd(Request $request,$page = 1,$perPage=5)
+    public function GetFavoritesAd(Request $request,$perPage=5)
     {
         try {
 
@@ -309,7 +309,7 @@ class FavoriteController extends Controller
     ads.final_price AS price, 
     ads.uid AS ad_uid,
     categories.title AS category_title,
-    TRUE AS is_favorite  -- Ajout de la clé 'is_favorite' avec la valeur TRUE
+    TRUE AS is_favorite 
 FROM 
     favorites 
 JOIN 
@@ -325,7 +325,7 @@ LIMIT :limit OFFSET :offset";
 
 
 
-        $page = max(1, intval($page));
+$page = max(1, intval($request->query('page')));
         $perPage = intval($perPage);
         $offset = $perPage * ($page - 1);
 
@@ -344,7 +344,7 @@ LIMIT :limit OFFSET :offset";
                 'path' => request()->url(),
                 'query' => request()->query(),
             ]);
-        
+    
             return response()->json(['data' => $paginator]);
 
 
