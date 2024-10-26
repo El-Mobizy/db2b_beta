@@ -368,7 +368,7 @@ function isValidUuid($uuid) {
             }
 
             $size = $request['files']['size'];
-            $type = $this->getFileExtension($fileName); 
+            $type = $this->getFileExtension($fileName);
 
             $destinationPath = public_path("image/$location/" . $fileName);
             $destinationDir = public_path("image/$location");
