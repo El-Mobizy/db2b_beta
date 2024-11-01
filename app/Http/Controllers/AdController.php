@@ -188,7 +188,8 @@ class AdController extends Controller
                 $ad->issynchronized = true ;
                 $ad->category_title =  Category::find($ad->category_id)->title ;
                 $ad->category_parent =  Category::find($ad->category_id)->parent_id;
-                $ad->image = File::where('referencecode',$ad->file_code)->first()->location;
+                $ad->image = File::where('referencecode',$ad->file_code)->exists()?File::where('referencecode',$ad->file_code)->first()->location:null;
+                 $ad->shop_title =  Shop::find($ad->shop_id)->title ;
             }
     
             return response()->json([
@@ -600,7 +601,7 @@ public function getRecentAdd(Request $request,$perpage)
     try {
 
         // return gettype($request->quantity);
-        DB::beginTransaction();
+        // DB::beginTransaction();
       $service = new Service();
 
       $checkAuth=$service->checkAuth();
@@ -670,7 +671,6 @@ public function getRecentAdd(Request $request,$perpage)
 
 
          if($request->image){
-
             // return $request->image[0]['data'];
              $service->uploadFiles($request, $ad->file_code,'ad');
             }
@@ -690,9 +690,11 @@ public function getRecentAdd(Request $request,$perpage)
 
         $service->notifyAdmin($titleAdmin,$bodyAdmin);
 
-        DB::commit();
+        
 
         (new MailController())->sendNotification(Auth::user()->id,$title,$body,2);
+
+        // DB::commit();
 
 
     //   dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
@@ -700,7 +702,7 @@ public function getRecentAdd(Request $request,$perpage)
       return (new Service())->apiResponse(200,[],'ad added successfully !');
 
     } catch (Exception $e) {
-        DB::rollBack();
+        // DB::rollBack();
         return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
 }

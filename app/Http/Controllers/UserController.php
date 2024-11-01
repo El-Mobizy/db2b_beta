@@ -523,6 +523,10 @@ class UserController extends Controller
         try
         {
 
+            DB::beginTransaction();
+
+            // return $request;
+
             $validator = Validator::make($request->all(), [
                 'phone' =>  ['required', 'regex:/^\+?[0-9]+$/',  'unique:users'],
                 'email' => 'required|email|unique:users',
@@ -585,6 +589,7 @@ class UserController extends Controller
           $user = User::Where('email',$email)->update(['enabled' => true]);
 
           $createPerson = (new PersonController())->createPerson($country_id, $email, $phone,$request);
+
           if($createPerson){
             return (new Service())->apiResponse(200, [], $createPerson->original['message']);
           }
@@ -595,14 +600,17 @@ class UserController extends Controller
           $user = User::Where('email',$email)->first();
   
 
-        //   dispatch(new SendEmail($user->id,$title,$body,2));
         (new MailController())->sendNotification($user->id,$title,$body, 2);
+        DB::commit();
 
           return (new Service())->apiResponse(200,[],'User created successfully!');
+
 
         }
         catch (Exception $e)
         {
+            
+            DB::rollback();
              return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
@@ -747,7 +755,7 @@ class UserController extends Controller
          $data = [
              'User_details' => $user,
              'notification' =>Notification::wherePerson((new Service())->returnPersonIdAuth())->where('isRead',false)->count(),
-             'Person_detail' => $person->file,
+             'Person_detail' => $person,
              'client_detail' => $client,
              'delivery_agency_detail' => $deliveryAgency,
              'role' => $roles,

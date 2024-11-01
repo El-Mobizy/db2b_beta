@@ -113,6 +113,7 @@ class ShopController extends Controller
 
     public function becomeMerchant( Request $request){
         try{
+            DB::beginTransaction();
 
             $service = new Service();
             $checkAuth = $service->checkAuth();
@@ -130,18 +131,21 @@ class ShopController extends Controller
                 return (new Service())->apiResponse(404, [], 'You already is merchant');
 
             }
+
             $createShop = $this->createShop($request);
-            if($createShop){
-                return (new Service())->apiResponse(404,$createShop, $createShop->original['message']);
+            if($createShop->original['status_code'] =! 200){
+                return (new Service())->apiResponse(404,[], $createShop->original['message']);
 
             }
             $client->update(['is_merchant' => 1]);
 
             $client->is_merchant = 1;
             $client->save();
+            DB::commit();
 
             return (new Service())->apiResponse(200, [], 'Shop created successfully');
         }catch(Exception $e){
+            DB::rollback();
             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
@@ -253,9 +257,7 @@ class ShopController extends Controller
             $shop->client_id = $client->id;
             $randomString = $service->generateRandomAlphaNumeric(7,$shop,'filecode');
             $shop->filecode = $randomString;
-            if($request->files){
-                 $service->uploadFiles($request,$randomString,"shop");
-            }
+            $service->uploadFiles($request,$randomString,"shop");
      
 
             $shop->save();
@@ -1305,7 +1307,7 @@ class ShopController extends Controller
                 ];
 
             }
-            return (new Service())->apiResponse(404, $data,'Get categories of specific shop');
+            return (new Service())->apiResponse(200, $data,'Get categories of specific shop');
             // return response()->json([
             //     'data'  => $data,
             // ]);

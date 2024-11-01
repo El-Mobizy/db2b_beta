@@ -18,6 +18,7 @@ use App\Http\Controllers\DeliveryAgentZoneController;
 use App\Http\Controllers\EscrowController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\FileTypeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OngingTradeStageController;
 use App\Http\Controllers\OrderController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\OrderDeliveryPlaceController;
 use App\Http\Controllers\OtpPasswordForgottenController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\PersonFileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\RightController;
@@ -381,6 +383,23 @@ Route::prefix('users')->group(function () {
                     Route::post('/destroy/{uid}', [ZoneController::class, 'destroy'])->name('zone.destroy');
                     Route::post('/makeZoneActiveOrNot/{uid}', [ZoneController::class, 'makeZoneActiveOrNot'])->name('zone.makeZoneActiveOrNot');
                     Route::post('/update/{uid}', [ZoneController::class, 'update'])->name('zone.update');
+                });
+
+
+                //FileType
+                Route::prefix('fileType')->group(function () {
+                    Route::get('/index/{typePerson}', [FileTypeController::class, 'index'])->name('fileType.index');
+                    Route::get('/show/{id}', [FileTypeController::class, 'show'])->name('fileType.show');
+                    Route::post('/store', [FileTypeController::class, 'store'])->name('fileType.store');
+                    Route::post('/update/{id}', [FileTypeController::class, 'update'])->name('fileType.update');
+                    Route::post('/destroy/{id}', [FileTypeController::class, 'destroy'])->name('fileType.destroy');
+                });
+
+
+                //PersonFile
+                Route::prefix('personFile')->group(function () {
+                    Route::get('/show/{id}', [PersonFileController::class, 'show'])->name('personFile.show');
+                    Route::post('/store', [PersonFileController::class, 'store'])->name('personFile.store');
                 });
 
                   //deliveryzone

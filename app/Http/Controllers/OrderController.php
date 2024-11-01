@@ -586,7 +586,7 @@ class OrderController extends Controller
            $order_detail->quantity =  $request->quantity ?? $order_detail->quantity;
            $order_detail->save();
 
-        return (new Service())->apiResponse(200, [], 'Order detail deteted from Order successfuly');
+        return (new Service())->apiResponse(200, [], 'Order detail updated from Order successfuly');
 
 
         } catch(Exception $e){
@@ -1513,7 +1513,7 @@ private function getCartAds($cartItem){
             $user = Auth::user();
 
             $orders = Order::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')->paginate($perpage);
+            ->orderBy('created_at', 'desc')->whereDeleted(0)->paginate($perpage);
 
             foreach ($orders as $order) {
                 $shopUid = Shop::find($order->order_details->first()->shop_id)->uid;

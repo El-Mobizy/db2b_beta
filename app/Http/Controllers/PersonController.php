@@ -27,7 +27,7 @@ class PersonController extends Controller
             $user_id = $user->id;
             $connected = 0;
             $sex = 1;
-            $dateofbirth =  '';
+            $dateofbirth =  null;
             $profile_img_code= $service->generateRandomAlphaNumeric(7,(new Person()),'profile_img_code');
             $first_login =  1;
             $phonenumber =  $phone;

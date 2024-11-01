@@ -5038,6 +5038,277 @@
                 }
             }
         },
+        "/api/fileType/index/{typePerson}": {
+            "get": {
+                "tags": [
+                    "File Type"
+                ],
+                "summary": "Liste des fichiers actifs disponibles pour un type de personne",
+                "operationId": "61603364cd2a681f1db34a8360cf6395",
+                "parameters": [
+                    {
+                        "name": "typePerson",
+                        "in": "path",
+                        "description": "Type de personne (Merchant, Client, DeliveryAgent)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des fichiers actifs",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/fileType/show/{id}": {
+            "get": {
+                "tags": [
+                    "File Type"
+                ],
+                "summary": "Détail d'un type de fichier",
+                "operationId": "f2f155f03c00640de5f1b78b44cab258",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du type de fichier",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détail du type de fichier",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": ""
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Type de fichier non trouvé ou déjà supprimé"
+                    },
+                    "500": {
+                        "description": "Erreur serveur"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/fileType/store": {
+            "post": {
+                "tags": [
+                    "File Type"
+                ],
+                "summary": "Création d'un type de fichier",
+                "operationId": "c1334d3befd296169298f626d8a184e1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "format",
+                                    "type_person"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Identity Card"
+                                    },
+                                    "type_person": {
+                                        "type": "string",
+                                        "example": "Client"
+                                    },
+                                    "is_actif": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Document créé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": ""
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Nom déjà existant"
+                    },
+                    "500": {
+                        "description": "Erreur serveur"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/fileType/update/{id}": {
+            "post": {
+                "tags": [
+                    "File Type"
+                ],
+                "summary": "Mise à jour d'un type de fichier",
+                "operationId": "457f7a0f9a35c450294cb0fc940843d8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du type de fichier",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "type_person"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Identity Card"
+                                    },
+                                    "type_person": {
+                                        "type": "string",
+                                        "example": "Client"
+                                    },
+                                    "format": {
+                                        "type": "string",
+                                        "example": "[gagaqssds]"
+                                    },
+                                    "is_actif": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Document mis à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": ""
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Type de fichier non trouvé"
+                    },
+                    "500": {
+                        "description": "Erreur serveur"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/fileType/destroy/{id}": {
+            "post": {
+                "tags": [
+                    "File Type"
+                ],
+                "summary": "Suppression logique d'un type de fichier",
+                "operationId": "6d1cd473ac0b37c0259023f708509f42",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du type de fichier",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document supprimé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Document supprimé avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Enregistrement non trouvé"
+                    },
+                    "500": {
+                        "description": "Erreur serveur"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/notification/create": {
             "post": {
                 "tags": [
