@@ -334,8 +334,7 @@ class UserController extends Controller
                         // return $mail->sendLoginConfirmationNotification(Auth::user()->id, $title, $body, 'code sent successfully !');
 
                         if ( $mail->sendLoginConfirmationNotification(Auth::user()->id, $title, $body, 'code sent successfully !')) {
-                            Log::info('Login confirmation email sent to user ID: ' . Auth::user()->id);
-                            $n = $n + 1;
+                            // $n = $n + 1;
                         }
 
 
