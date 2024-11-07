@@ -1499,7 +1499,7 @@ private function getCartAds($cartItem){
      *     )
      * )
      */
-    public function userOrders($perpage)
+    public function userOrders($perpage=50)
     {
         try {
 
@@ -1513,24 +1513,42 @@ private function getCartAds($cartItem){
             $user = Auth::user();
 
             $orders = Order::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')->whereDeleted(0)->paginate($perpage);
-
+            ->orderBy('created_at', 'desc')->whereDeleted(0)
+            // ->paginate($perpage);
+            ->paginate(50);
+            
             foreach ($orders as $order) {
+                
+                if($order->status == TypeOftype::whereLibelle('pending')->first()->id || $order->status == TypeOftype::whereLibelle('rejected')->first()->id){
+                    $o = 67;
+                } else if($order->status == TypeOftype::whereLibelle('validated')->first()->id){
+                    $o = 5;
+                } else if ($order->status == TypeOftype::whereLibelle('paid')->first()->id){
+                    $o = 11;
+                }else{
+                    $o = 1000;
+                }
+
+                $order->order_statut = $o;
+                // return [$order,$order->order_details];   
                 $shopUid = Shop::find($order->order_details->first()->shop_id)->uid;
                 $order->ad_image = File::whereReferencecode((new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'][0]->file_code)->first()->location;
                 $order->statut =  TypeOfType::whereId($order->status)->first()->libelle;
                 $order->commun = ($order->status == TypeOftype::whereLibelle('pending')->first()->id || $order->status == TypeOftype::whereLibelle('rejected')->first()->id)?"oui":"non";
                 $order->ads_number = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['number'];
                 $order->ads = (new ShopController())->getShopOrderAds($order->uid, $shopUid)->original['data']['ads'];
+                    // return 1;
 
+                    unset($order->order_details);
             }
-            unset($order->order_details);
             return response()->json([
+                // 'count' => count($orders),
                 'data' => $orders
             ],200);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'id'=>$order->id
             ], 500);
         }
         

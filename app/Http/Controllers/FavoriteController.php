@@ -72,12 +72,12 @@ class FavoriteController extends Controller
             $user_id = Auth::user()->id;
             $exist = Favorite::where('ad_id', $adId)->where('user_id', $user_id)->where('deleted', false)->exists();
     
-            if ($exist) {
-                Favorite::where('user_id', $user_id)->where('ad_id', $adId)->first()->delete();
-                // return $this->returnFavoritesList($user_id, 'Product removed from wishlist successfully!');
+            // if ($exist) {
+            //     Favorite::where('user_id', $user_id)->where('ad_id', $adId)->first()->delete();
+            //     // return $this->returnFavoritesList($user_id, 'Product removed from wishlist successfully!');
 
-                return(new Service())->apiResponse(200,(new AdController())->getAllAd()->original['data'],"Product removed from wishlist successfully!");
-            } else {
+            //     return(new Service())->apiResponse(200,(new AdController())->getAllAd()->original['data'],"Product removed from wishlist successfully!");
+            // } else {
                 $ulid = Uuid::uuid1();
                 $ulidFavorite = $ulid->toString();
                 $uid = $ulidFavorite;
@@ -101,7 +101,7 @@ class FavoriteController extends Controller
 
                 return(new Service())->apiResponse(200,(new AdController())->getAllAd()->original['data'],"Product added to wishlist successfully!");
                 // return $this->returnFavoritesList($user_id, 'Product added to wishlist successfully!');
-            }
+            // }
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()]);
         }
