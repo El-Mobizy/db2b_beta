@@ -265,11 +265,6 @@ public function getRecentAdd(Request $request,$perpage)
 
         return (new Service())->apiResponse(200,$ads,'A paginated list of all products to be displayed to a user');
 
-        // return response()->json([
-        //     'data' => $ads,
-        //     'status' => 'success',
-        //     'message' => 'A paginated list of all products to be displayed to a user'
-        // ]);
     } catch (Exception $e) {
         return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
@@ -337,11 +332,7 @@ public function getRecentAdd(Request $request,$perpage)
 
                 return (new Service())->apiResponse(200,$ads,'List of all products to display for a logged-in user');
 
-                // return response()->json([
-                //     'data'=> $ads,
-                //     'status' => 'success',
-                //     'message' => 'List of all products to display for a logged-in user'
-                // ], 200);
+
 
         } catch (Exception $e) {
             return  (new Service())->apiResponse(500,[],$e->getMessage());
@@ -475,48 +466,7 @@ public function getRecentAdd(Request $request,$perpage)
     }
 
 
-//    /**
-//  * @OA\Post(
-//  *     path="/api/ad/storeAd",
-//  *     summary="Create a new ad",
-//  *     security={{"bearerAuth": {}}},
-//  *     tags={"Ad"},
-//  *     @OA\RequestBody(
-//  *         required=true,
-//  *         @OA\MediaType(
-//  *             mediaType="multipart/form-data",
-//  *             @OA\Schema(
-//  *                 @OA\Property(property="title", type="string", example="Ad title"),
-//  *                 @OA\Property(property="location_id", type="integer", example=1),
-//  *                 @OA\Property(property="category_id", type="integer", example=1),
-//  *                 @OA\Property(property="shop_id", type="integer", example=1),
-//  *  @OA\Property(property="price", type="double", example=1),
-//  *            @OA\Property(
-//  *                     property="value_entered[]",
-//  *                     type="array",
-//  *                     @OA\Items(type="string", example="value1"),
-//  *                     example={"value1", "value2", "value3"}
-//  *                 ),
-//  *                 @OA\Property(property="image[]", type="array", @OA\Items(type="string", format="binary"))
-//  *             )
-//  *         )
-//  *     ),
-//  *     @OA\Response(
-//  *         response=200,
-//  *         description="Ad added successfully",
-//  *         @OA\JsonContent(
-//  *             @OA\Property(property="message", type="string", example="Ad added successfully!")
-//  *         )
-//  *     ),
-//  *     @OA\Response(
-//  *         response=400,
-//  *         description="Validation error or bad request",
-//  *         @OA\JsonContent(
-//  *             @OA\Property(property="error", type="string", example="Validation error message")
-//  *         )
-//  *     )
-//  * )
-//  */
+
 
  /**
  * @OA\Post(

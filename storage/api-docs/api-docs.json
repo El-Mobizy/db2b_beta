@@ -11075,7 +11075,7 @@
                                         "description": "Description of the shop, maximum 500 characters.",
                                         "type": "string"
                                     },
-                                    "allo[]": {
+                                    "image[]": {
                                         "description": "Optional files to upload for the shop.",
                                         "type": "array",
                                         "items": {

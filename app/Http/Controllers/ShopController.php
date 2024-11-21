@@ -175,7 +175,7 @@ class ShopController extends Controller
  *                         description="Description of the shop, maximum 500 characters."
  *                     ),
  *                     @OA\Property(
- *                         property="allo[]",
+ *                         property="image[]",
  *                         type="array",
  *                         @OA\Items(
  *                             type="string",

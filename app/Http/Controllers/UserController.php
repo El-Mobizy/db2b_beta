@@ -666,11 +666,11 @@ class UserController extends Controller
                 Auth::logout();
                 return (new Service())->apiResponse(200, [], 'Successfully logged out');
             }
-            // else {
-            //     return response()->json([
-            //         'error' => 'User is not authenticated',
-            //     ], 401);
-            // }
+            else {
+                return response()->json([
+                    'error' => 'User is not authenticated',
+                ], 401);
+            }
         } catch (Exception $e) {
             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
