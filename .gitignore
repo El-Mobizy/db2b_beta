@@ -1,10 +1,10 @@
 /.phpunit.cache
 /node_modules
-# /public/build
-# /public/hot
-# public/image/
-# public/uploads/
-# /public/storage
+/public/build
+/public/hot
+public/image/
+public/uploads/
+/public/storage
 /storage/*.key
 /vendor
 .env.backup
