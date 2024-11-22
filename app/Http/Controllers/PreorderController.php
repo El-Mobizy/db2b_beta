@@ -1438,7 +1438,7 @@ public function write(Request $request, $PreordersAnswerUid){
         $randomString = $service->generateRandomAlphaNumeric(7,$review,'filecode');
         $review->filecode = $randomString;
 
-        if ($request->hasFile('files')) {
+        if ($request->hasFile('image')) {
             $service->uploadFiles($request,$randomString,"preorder");
         }
 
