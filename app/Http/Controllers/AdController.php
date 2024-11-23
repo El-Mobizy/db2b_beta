@@ -601,6 +601,8 @@ public function getRecentAdd(Request $request,$perpage)
             return (new Service())->apiResponse(404,[],'Ad must be associated with a subcategory.');
         }
 
+        return 1;
+
 
     $checkAdAttribute = $service->checkAdAttribute($request,$request->input('category_id'));
     if($checkAdAttribute){
