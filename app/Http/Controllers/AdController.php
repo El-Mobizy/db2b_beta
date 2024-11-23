@@ -563,6 +563,7 @@ public function getRecentAdd(Request $request,$perpage)
       }
       
         $checkIfmerchant = $this->checkMerchant();
+        return 1;
 
         if($checkIfmerchant ==0){
             return (new Service())->apiResponse(200,[],'You are not merchant');
@@ -601,7 +602,7 @@ public function getRecentAdd(Request $request,$perpage)
             return (new Service())->apiResponse(404,[],'Ad must be associated with a subcategory.');
         }
 
-        return 1;
+       
 
 
     $checkAdAttribute = $service->checkAdAttribute($request,$request->input('category_id'));
