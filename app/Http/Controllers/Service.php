@@ -606,8 +606,9 @@ function isValidUuid($uuid) {
     }
 
 
-    // throw new Exception("  a".$a[0]);
+    // 
     public function checkAdAttribute(Request $request, $category_id)
+
 {
     // Trouver la catégorie en fonction de l'ID
     $category = Category::find($category_id);
@@ -629,25 +630,28 @@ function isValidUuid($uuid) {
             if (isset($entry['value']) && is_string($entry['value'])) {
                 $values[] = $entry['value'];
             } else {
-                return response()->json([
-                    'message' => "Chaque objet doit contenir une clé 'value' avec une chaîne de caractères."
-                ]);
+                throw new Exception( "Chaque objet doit contenir une clé 'value' avec une chaîne de caractères.");
+                // return response()->json([
+                //     'message' => "Chaque objet doit contenir une clé 'value' avec une chaîne de caractères."
+                // ]);
             }
         }
 
         // Vérifier si le nombre de valeurs correspond au nombre d'attributs attendus
         if ($countAttributes != count($values)) {
-            return response()->json([
-                'message' => "Le nombre de valeurs entrées doit être égal au nombre d'attributs attendus : {$countAttributes} (donné : " . count($values) . ")"
-            ]);
+            throw new Exception( "Le nombre de valeurs entrées doit être égal au nombre d'attributs attendus : {$countAttributes} (donné : " . count($values) . ")");
+            // return response()->json([
+            //     'message' => "Le nombre de valeurs entrées doit être égal au nombre d'attributs attendus : {$countAttributes} (donné : " . count($values) . ")"
+            // ]);
         }
 
        
     } else {
         // Si value_entered n'est pas un tableau
-        return response()->json([
-            'message' => "Le format des données est incorrect. 'value_entered' doit être un tableau d'objets."
-        ]);
+        throw new Exception( "Le format des données est incorrect. 'value_entered' doit être un tableau d'objets.");
+        // return response()->json([
+        //     'message' => "Le format des données est incorrect. 'value_entered' doit être un tableau d'objets."
+        // ]);
     }
 }
 
