@@ -581,7 +581,7 @@ public function getRecentAdd(Request $request,$perpage)
         $this->validateRequest($request);
 
         if ($request->price <= 0) {
-            return (new Service())->apiResponse(200,[ $clientId ],'The price must be greater than 0');
+            return (new Service())->apiResponse(200,[ ],'The price must be greater than 0');
           }
 
      
@@ -671,7 +671,10 @@ public function checkShop($shop_id){
         $clientId = (new Service())->returnClientIdAuth();
 
         if(!Shop::whereId($shop_id)->where('client_id',$clientId)->exists()){
-            return (new Service())->apiResponse(404,[],'Check if this shop is yours');
+            return (new Service())->apiResponse(404,[
+                'client' => $clientId,
+                'shop'=>$shop_id
+            ],'Check if this shop is yours');
         }
     } catch (\Exception $e) {
         return  (new Service())->apiResponse(500,[],$e->getMessage());
