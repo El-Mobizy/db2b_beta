@@ -257,6 +257,10 @@ class ShopController extends Controller
             $shop->client_id = $client->id;
             $randomString = $service->generateRandomAlphaNumeric(7,$shop,'filecode');
             $shop->filecode = $randomString;
+
+            if(!$request->image){
+                return (new Service())->apiResponse(404, [], "File is required for created shop");
+            }
             $service->uploadFiles($request,$randomString,"shop");
      
 

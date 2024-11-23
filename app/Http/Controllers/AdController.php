@@ -50,7 +50,7 @@ class AdController extends Controller
      */
     public function allAds(): JsonResponse
     {
-        $data = Ad::with('file')->with('ad_detail')->get();
+        $data = Ad::get();
 
         return(new Service())->apiResponse(200,$data,'');
     }
@@ -548,6 +548,8 @@ public function getRecentAdd(Request $request,$perpage)
 
 
  public function storeAd(Request $request){
+
+    return $request;
     try {
         // return gettype($request->value_entered[0]);
 
