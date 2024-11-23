@@ -817,7 +817,6 @@ class UserController extends Controller
 
 
                 foreach($users as $user){
-                    // $user->profile = ($user->person->file)? $user->person->file->location:null;
                     unset($user->password);
                     unset($user->code);
                     $data[] = $user;
