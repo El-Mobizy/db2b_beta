@@ -550,6 +550,7 @@ public function getRecentAdd(Request $request,$perpage)
  public function storeAd(Request $request){
 
     try {
+        return $request;
         // return gettype($request->value_entered[0]);
 
         // return  explode(",", $request->value_entered[0]);
@@ -572,7 +573,6 @@ public function getRecentAdd(Request $request,$perpage)
             return $checkCategoryShop;
         }
 
-        return $request->shop_id;
 
         $checkShop = $this->checkShop($request->shop_id);
         if($checkShop){
