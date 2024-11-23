@@ -562,12 +562,7 @@ public function getRecentAdd(Request $request,$perpage)
          return $checkAuth;
       }
       
-        $checkIfmerchant = $this->checkMerchant();
-        
-        if($checkIfmerchant ==0){
-            return (new Service())->apiResponse(200,[],'You are not merchant');
-        }
-        return 1;
+        $this->checkMerchant();
 
         $checkCategoryShop = $this->checkCategoryShop($checkIfmerchant,$request);
         if($checkCategoryShop){
@@ -686,12 +681,10 @@ public function checkMerchant(){
 
         $client = Client::where('person_id',$person->id)->first();
 
-
         if($client->is_merchant == false){
-          return 0;
+            throw new Exception( "You're not a merchant.");
         }
 
-        return $client->id;
     } catch (\Exception $e) {
         return  (new Service())->apiResponse(500,[],$e->getMessage());
     }

@@ -216,13 +216,9 @@ class PreorderController extends Controller
             }
 
           $a = new AdController();
-          $checkIfmerchant = $a->checkMerchant();
+          $a->checkMerchant();
 
-          if($checkIfmerchant ==0){
-              return response()->json([
-                  'message' => 'You are not merchant'
-                  ],400);
-                  }
+        
 
 
         $service = new Service();

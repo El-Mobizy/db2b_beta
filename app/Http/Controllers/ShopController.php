@@ -1681,12 +1681,8 @@ public function getShopOrderAds($orderUid, $shopUid) {
                 return $checkAuth;
             }
     
-            $checkIfMerchant = (new AdController())->checkMerchant();
-            if ($checkIfMerchant == 0) {
-                return response()->json([
-                    'message' => 'You are not merchant'
-                ], 200);
-            }
+            (new AdController())->checkMerchant();
+           
     
             $merchantId = Auth::user()->id;
             $userShops = (new ShopController())->anUserShop($merchantId)->pluck('id')->toArray();

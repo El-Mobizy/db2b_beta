@@ -1604,12 +1604,7 @@ private function getCartAds($cartItem){
             return $checkAuth;
         }
 
-        $checkIfmerchant = (new AdController())->checkMerchant();
-        if ($checkIfmerchant == 0) {
-            return response()->json([
-                'message' => 'You are not merchant'
-            ], 200);
-        }
+         (new AdController())->checkMerchant();
 
         $userShops = (new ShopController())->anUserShop(Auth::user()->id)->pluck('id')->toArray();
         if (empty($userShops)) {
