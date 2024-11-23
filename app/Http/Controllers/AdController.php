@@ -549,7 +549,6 @@ public function getRecentAdd(Request $request,$perpage)
 
  public function storeAd(Request $request){
 
-    return $request;
     try {
         // return gettype($request->value_entered[0]);
 
@@ -582,7 +581,7 @@ public function getRecentAdd(Request $request,$perpage)
         $this->validateRequest($request);
 
         if ($request->price <= 0) {
-            return (new Service())->apiResponse(200,[],'The price must be greater than 0');
+            return (new Service())->apiResponse(200,[ $clientId ],'The price must be greater than 0');
           }
 
      
@@ -664,12 +663,14 @@ public function getRecentAdd(Request $request,$perpage)
 
 public function checkShop($shop_id){
     try {
-        $personQuery = "SELECT * FROM person WHERE user_id = :userId";
-        $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
+        // $personQuery = "SELECT * FROM person WHERE user_id = :userId";
+        // $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
 
-        $client = Client::where('person_id',$person->id)->first();
+        // $client = Client::where('person_id',$person->id)->first();
 
-        if(!Shop::whereId($shop_id)->where('client_id',$client->id)->exists()){
+        $clientId = (new Service())->returnClientIdAuth();
+
+        if(!Shop::whereId($shop_id)->where('client_id',$clientId)->exists()){
             return (new Service())->apiResponse(404,[],'Check if this shop is yours');
         }
     } catch (\Exception $e) {
