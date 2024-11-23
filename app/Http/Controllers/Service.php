@@ -605,32 +605,53 @@ function isValidUuid($uuid) {
         }
     }
 
-    public function checkAdAttribute(Request $request,$category_id){
-        $category = Category::find($category_id);
-        $attributeGroups = AttributeGroup::where('group_title_id',$category->attribute_group_id)->get();
-        $a = $request->input('value_entered');
 
-        if (is_array($a) && count($a) === 1) {
-            $values = explode(",", $a[0]);
-            $c = count($values);
+    // throw new Exception("  a".$a[0]);
+    public function checkAdAttribute(Request $request, $category_id)
+{
+    // Trouver la catégorie en fonction de l'ID
+    $category = Category::find($category_id);
+    
+    // Récupérer les groupes d'attributs associés à la catégorie
+    $attributeGroups = AttributeGroup::where('group_title_id', $category->attribute_group_id)->get();
 
-            if ($attributeGroups->count() != $c) {
-
+    // Récupérer les valeurs entrées depuis la requête
+    $valueEntered = $request->input('value_entered');
+    
+    // Vérifier que value_entered est un tableau d'objets
+    if (is_array($valueEntered)) {
+        // Compter les attributs et vérifier les valeurs
+        $countAttributes = $attributeGroups->count();
+        $values = [];
+        
+        // Extraire les valeurs de chaque objet et les stocker dans $values
+        foreach ($valueEntered as $entry) {
+            if (isset($entry['value']) && is_string($entry['value'])) {
+                $values[] = $entry['value'];
+            } else {
                 return response()->json([
-                    'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".$c
+                    'message' => "Chaque objet doit contenir une clé 'value' avec une chaîne de caractères."
                 ]);
             }
-
-        } else{
-
-            if ($attributeGroups->count() != count( $request->input('value_entered'))) {
-
-                return response()->json([
-                    'message' => " le nombre de valeur entree doit être égale au nombre d attribut {$attributeGroups->count()} ".count( $request->input('value_entered'))
-                ]);
         }
+
+        // Vérifier si le nombre de valeurs correspond au nombre d'attributs attendus
+        if ($countAttributes != count($values)) {
+            return response()->json([
+                'message' => "Le nombre de valeurs entrées doit être égal au nombre d'attributs attendus : {$countAttributes} (donné : " . count($values) . ")"
+            ]);
         }
+
+       
+    } else {
+        // Si value_entered n'est pas un tableau
+        return response()->json([
+            'message' => "Le format des données est incorrect. 'value_entered' doit être un tableau d'objets."
+        ]);
     }
+}
+
+
 
    public function returnClientIdAuth(){
     try {

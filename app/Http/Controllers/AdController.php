@@ -549,6 +549,9 @@ public function getRecentAdd(Request $request,$perpage)
 
  public function storeAd(Request $request){
     try {
+        // return gettype($request->value_entered[0]);
+
+        // return  explode(",", $request->value_entered[0]);
 
         // return gettype($request->quantity);
         // DB::beginTransaction();
