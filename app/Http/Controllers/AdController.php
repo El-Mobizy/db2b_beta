@@ -1002,7 +1002,7 @@ public function checkCategoryShop($ownerId, Request $request){
         try {
             $n = Ad::where('shop_id',$request->shop_id)->where('owner_id',Auth::user()->id)->count();
 
-            $limitOfAdInStore = TypeOfType::whereLibelle("limitOfAdInStore")->first()->codereference;
+            $limitOfAdInStore = TypeOfType::whereLibelle("limitOfAdInStore")->first()->codereference??10;
 
             if($n >=$limitOfAdInStore ){
                 return 0;
