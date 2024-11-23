@@ -566,8 +566,6 @@ public function getRecentAdd(Request $request,$perpage)
 
         $clientId =(new Service())->returnClientIdAuth(); 
 
-        return $clientId;
-
         $checkCategoryShop = $this->checkCategoryShop($clientId,$request);
         if($checkCategoryShop){
             return $checkCategoryShop;

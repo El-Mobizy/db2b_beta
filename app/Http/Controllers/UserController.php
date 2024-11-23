@@ -811,13 +811,13 @@ class UserController extends Controller
         {
             try {
 
-                $users = User::with('person')->where('deleted',0)->get();
+                $users = User::with(['person','person.client'])->where('deleted',0)->get();
 
                 $data = [];
 
 
                 foreach($users as $user){
-                    $user->image = $user->person->file!=null? $user->person->file->location:null;
+                    // $user->profile = ($user->person->file)? $user->person->file->location:null;
                     unset($user->password);
                     unset($user->code);
                     $data[] = $user;
