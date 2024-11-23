@@ -572,6 +572,8 @@ public function getRecentAdd(Request $request,$perpage)
             return $checkCategoryShop;
         }
 
+        return $request->shop_id;
+
         $checkShop = $this->checkShop($request->shop_id);
         if($checkShop){
             return $checkShop;
