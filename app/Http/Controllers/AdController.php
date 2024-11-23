@@ -549,20 +549,13 @@ public function getRecentAdd(Request $request,$perpage)
 
  public function storeAd(Request $request){
 
-    try {
-        return $request;
-        // return gettype($request->value_entered[0]);
-
-        // return  explode(",", $request->value_entered[0]);
-
-        // return gettype($request->quantity);
-        // DB::beginTransaction();
-      $service = new Service();
-
-      $checkAuth=$service->checkAuth();
-      if($checkAuth){
-         return $checkAuth;
-      }
+     try {
+         $service = new Service();
+         
+         $checkAuth=$service->checkAuth();
+         if($checkAuth){
+             return $checkAuth;
+            }
       
         $this->checkMerchant();
 
