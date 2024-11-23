@@ -563,11 +563,11 @@ public function getRecentAdd(Request $request,$perpage)
       }
       
         $checkIfmerchant = $this->checkMerchant();
-        return 1;
-
+        
         if($checkIfmerchant ==0){
             return (new Service())->apiResponse(200,[],'You are not merchant');
         }
+        return 1;
 
         $checkCategoryShop = $this->checkCategoryShop($checkIfmerchant,$request);
         if($checkCategoryShop){
