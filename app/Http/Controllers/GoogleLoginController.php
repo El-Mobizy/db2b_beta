@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite ;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class GoogleLoginController extends Controller
 {
@@ -33,6 +36,57 @@ class GoogleLoginController extends Controller
     }
 
 
+        /**
+ * @OA\Post(
+ *     path="/api/users/connexion/google",
+ *     summary="Connexion via Google",
+ *     description="Permet à un utilisateur de se connecter via Google OAuth 2.0.",
+ *     tags={"Authentication"},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="code", type="string", description="Code d'autorisation retourné par Google", example="4/0AX4XfWhd-example-code")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *     response=200,
+ *     description="Connexion réussie",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="status_code", type="integer", example=200),
+ *         @OA\Property(property="data", type="object"),
+ *         @OA\Property(property="message", type="string", example="Connexion réussie."),
+ *           @OA\Property(property="error", type="string", example=""),
+ *             @OA\Property(property="success", type="boolean", example=true)
+ *     )
+ * ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Erreur",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status_code", type="integer", example=400),
+ *            @OA\Property(property="data", type="object"),
+ *             @OA\Property(property="message", type="string", example="Email ou mot de passe incorrect."),
+ *             @OA\Property(property="error", type="string", example="Erreur"),
+ *             @OA\Property(property="success", type="boolean", example=false)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur interne du serveur",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status_code", type="boolean", example=false),
+ *             @OA\Property(property="data", type="object"),
+ *             @OA\Property(property="message", type="string", example="Erreur interne."),
+ *             @OA\Property(property="error", type="string", example="Erreur inattendue."),
+ *             @OA\Property(property="success", type="boolean", example=false)
+ *         )
+ *     )
+ * )
+ */
+
     public function connexionGoogle(Request $request){
         try {
 
@@ -50,8 +104,7 @@ class GoogleLoginController extends Controller
             if (isset($googleToken['error'])) {
                 return (new Service())->apiResponse(404, [$googleToken['error']], $googleToken['error_description']);
             }
-    
-            
+
             $tk =  $googleToken['access_token'];
     
             $userInfoResponse = Http::withToken($tk)
@@ -61,7 +114,7 @@ class GoogleLoginController extends Controller
                 "lastname" => $userInfoResponse['family_name'],
                 "firstname" => $userInfoResponse['given_name'],
                 "email" => $userInfoResponse['email'],
-                "passwword" =>null
+                "password" =>null
             ];
     
     
@@ -72,11 +125,37 @@ class GoogleLoginController extends Controller
             $user = User::whereEmail($email)->first();
     
             if(!$user){
-                //todo: create user
+                $user = new User();
+
+                $phone = $data['phone'] ?? null;
+                $user->email = $data['email'];
+                $user->phone =$phone;
+                $user->password = $data['password'] ?? 'P@$$w0rd';
+                $user->uid = Str::uuid();
+                $user->last_ip_login = request()->ip();
+                $user->code_user = (new Service())->generateRandomAlphaNumeric(7,(new User()),'code_user');
+                $user->created_at = date('Y-m-d H:i:s');;
+                $user->updated_at =date('Y-m-d H:i:s');
+
+                $user->save();
+
+                (new PersonController())->createPerson(null, $user->email, $phone,$request);
             }
-    
-    
-           //todo: connect user
+
+            $user = User::whereEmail($email)->first();
+
+            Auth::login($user);
+
+            $token = JWTAuth::fromUser($user);
+
+            unset($user->code);
+
+            $data = [
+                    'user' => $user,
+                    'access_token' => $token,
+            ];
+
+            return (new Service())->apiResponse(200, $data, 'Logged sucessfully');
 
         } catch (Exception $e) {
             return (new Service())->apiResponse(500, [], $e->getMessage());

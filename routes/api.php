@@ -19,6 +19,7 @@ use App\Http\Controllers\EscrowController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FileTypeController;
+use App\Http\Controllers\GoogleLoginController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OngingTradeStageController;
 use App\Http\Controllers\OrderController;
@@ -65,6 +66,8 @@ Route::prefix('users')->group(function () {
     Route::get('/getUserLogin', [UserController::class, 'getUserLogin'])->name('getUserLogin');
     Route::get('/getUserLogout', [UserController::class, 'getUserLogout'])->name('getUserLogout');
     Route::post('/login', [UserController::class, 'login'])->name('login');
+    Route::get('/auth/google', [GoogleLoginController::class, 'redirectToGoogle']);
+   Route::post('/connexion/google', [GoogleLoginController::class, 'connexionGoogle'])->name('user.connexionGoogle');
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
     Route::post('/restrictedUser', [UserController::class, 'restrictedUser'])->name('restrictedUser');
     Route::post('/validateEmail', [UserController::class, 'validateEmail'])->name('validateEmail');

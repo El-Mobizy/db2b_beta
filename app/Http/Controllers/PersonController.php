@@ -68,9 +68,7 @@ class PersonController extends Controller
           (new ClientController)->createClient( $person['id'], $request);
       
         }catch(Exception $e){
-            return response()->json([
-                'error' => $e->getMessage()
-            ]);
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -146,14 +144,15 @@ class PersonController extends Controller
               return(new Service())->apiResponse(404,$data, 'Person not found');
           }
 
-        //   return ($request->dateofbirth);
-
           $person->first_name = $request->first_name ?? $person->first_name;
           $person->last_name = $request->last_name ?? $person->last_name;
           $person->sex = $request->sex ?? $person->sex;
           $person->dateofbirth = $request->dateofbirth ?? $person->dateofbirth;
           $person->country_id = $request->country_id ?? $person->country_id;
           $person->phonenumber = $request->phonenumber ?? $person->phonenumber;
+          if($person->phonenumber){
+            User::whereId($person->user_id)->update(['phone' => $person->phonenumber]);
+          }
           $person->save();
 
             return(new Service())->apiResponse(200,$data, 'Information updated successfully');

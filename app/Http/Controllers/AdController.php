@@ -571,6 +571,8 @@ public function getRecentAdd(Request $request,$perpage)
 
      try {
 
+        // return $request;
+
         $service = new Service();
 
          
@@ -583,7 +585,7 @@ public function getRecentAdd(Request $request,$perpage)
 
         $clientId =(new Service())->returnClientIdAuth(); 
 
-        $checkCategoryShop = $this->checkCategoryShop($clientId,$request);
+        $checkCategoryShop = $this->checkCategoryShop($request);
         if($checkCategoryShop){
             return $checkCategoryShop;
         }
@@ -713,14 +715,13 @@ public function checkMerchant(){
     }
 }
 
-public function checkCategoryShop($ownerId, Request $request){
+public function checkCategoryShop(Request $request){
     try {
-        $shop = Shop::where('client_id',$ownerId)->first();
 
-        $exist = ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->exists();
+        $exist = ShopHasCategory::where('shop_id',$request->shop_id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->exists();
 
         if(!$exist){
-            return (new Service())->apiResponse(404,[],'You can only add the categories added to your shop');
+            return (new Service())->apiResponse(404,[$request->shop_id,$request->input('category_id')],'You can only add the categories added to your shop');
         }
     } catch (\Exception $e) {
         return  (new Service())->apiResponse(500,[],$e->getMessage());
@@ -1003,10 +1004,13 @@ public function checkCategoryShop($ownerId, Request $request){
  *     )
  * )
  */
-    public function checkAdTitle($title,$shopId){
-        try{
+public function checkAdTitle($title, $shopId)
+{
+    try{
 
-        $existUserAd = Ad::where('title',$title)->where('owner_id',Auth::user()->id)->where('shop_id',$shopId)->exists();
+        $existUserAd = Ad::where('title',$title)->where('owner_id',Auth::user()->id)
+        ->where('shop_id',$shopId)->exists()
+        ;
         if($existUserAd){
             return(new Service())->apiResponse(404,[], "You already added this ad in your shop ".Shop::whereId($shopId)->first()->title);
         }
@@ -1014,7 +1018,8 @@ public function checkCategoryShop($ownerId, Request $request){
     } catch (Exception $e) {
         return(new Service())->apiResponse(500,[], $e->getMessage());
     }
-    }
+}
+
 
     private function checkNumberProductStore(Request $request){
         try {

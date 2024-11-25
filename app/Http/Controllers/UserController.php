@@ -559,7 +559,6 @@ class UserController extends Controller
           $created_at = date('Y-m-d H:i:s');
           $service = new Service();
           $updated_at = date('Y-m-d H:i:s');
-          $userObject = new User();
           $code_user = $service->generateRandomAlphaNumeric(7,(new User()),'code_user');
 
           $testEmail = new TestEmailController();
