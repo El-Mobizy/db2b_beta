@@ -318,76 +318,94 @@
                     "Ad"
                 ],
                 "summary": "Create a new ad",
-                "operationId": "bb2a41d34a4a6df9f03ef86f694a3ed7",
+                "description": "Endpoint to create a new advertisement",
+                "operationId": "storeAd",
                 "requestBody": {
+                    "description": "Ad creation payload",
                     "required": true,
                     "content": {
-                        "multipart/form-data": {
+                        "application/json": {
                             "schema": {
                                 "required": [
                                     "title",
                                     "location_id",
-                                    "value_entered",
+                                    "category_id",
                                     "price",
-                                    "shop_id"
+                                    "shop_id",
+                                    "description",
+                                    "quantity",
+                                    "threshold",
+                                    "value_entered"
                                 ],
                                 "properties": {
                                     "title": {
-                                        "description": "Title of the advertisement",
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Chaussure"
                                     },
                                     "location_id": {
-                                        "description": "ID of the location",
-                                        "type": "integer"
+                                        "type": "integer",
+                                        "example": 1
                                     },
                                     "category_id": {
-                                        "description": "ID of the category",
-                                        "type": "integer"
+                                        "type": "integer",
+                                        "example": 1
                                     },
-                                    "value_entered": {
-                                        "description": "Array of entered values for ad attributes",
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 4
+                                    },
+                                    "shop_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "image": {
                                         "type": "array",
                                         "items": {
                                             "properties": {
-                                                "id": {
-                                                    "description": "ID of the attribute",
-                                                    "type": "integer"
+                                                "data": {
+                                                    "type": "string",
+                                                    "example": "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC"
                                                 },
-                                                "value": {
-                                                    "oneOf": [
-                                                        {
-                                                            "description": "Single value for the attribute",
-                                                            "type": "string"
-                                                        },
-                                                        {
-                                                            "description": "Multiple values (checkbox type)",
-                                                            "type": "array",
-                                                            "items": {
-                                                                "type": "string"
-                                                            }
-                                                        }
-                                                    ]
+                                                "mime": {
+                                                    "type": "string",
+                                                    "example": "image/png"
+                                                },
+                                                "size": {
+                                                    "type": "integer",
+                                                    "example": 5120
                                                 }
                                             },
                                             "type": "object"
                                         }
                                     },
-                                    "image": {
-                                        "description": "Array of files to upload",
+                                    "description": {
+                                        "type": "string",
+                                        "example": "my shop"
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 4
+                                    },
+                                    "threshold": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "value_entered": {
                                         "type": "array",
                                         "items": {
-                                            "type": "string",
-                                            "format": "binary"
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "example": "blue"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
-                                    },
-                                    "price": {
-                                        "description": "Price of the item",
-                                        "type": "number",
-                                        "format": "float"
-                                    },
-                                    "shop_id": {
-                                        "description": "ID of the shop",
-                                        "type": "integer"
                                     }
                                 },
                                 "type": "object"
@@ -403,16 +421,12 @@
                                 "schema": {
                                     "properties": {
                                         "status": {
-                                            "type": "integer",
-                                            "example": 200
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {}
+                                            "type": "string",
+                                            "example": "success"
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "ad added successfully !"
+                                            "example": "Ad added successfully!"
                                         }
                                     },
                                     "type": "object"
@@ -420,47 +434,19 @@
                             }
                         }
                     },
-                    "404": {
-                        "description": "Not found error",
+                    "400": {
+                        "description": "Validation error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "status": {
-                                            "type": "integer",
-                                            "example": 404
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {}
+                                            "type": "string",
+                                            "example": "error"
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Resource not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": 500
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {}
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "An internal server error occurred"
+                                            "example": "Invalid input"
                                         }
                                     },
                                     "type": "object"
@@ -2203,24 +2189,49 @@
                 "summary": "Ajouter une nouvelle catégorie",
                 "operationId": "b82d7c0248c8e3f8560bb206d70ddaa7",
                 "requestBody": {
+                    "description": "Ajouter une nouvelle catégorie avec un fichier JSON",
                     "required": true,
                     "content": {
-                        "multipart/form-data": {
+                        "application/json": {
                             "schema": {
+                                "required": [
+                                    "title",
+                                    "parent_id",
+                                    "image"
+                                ],
                                 "properties": {
                                     "title": {
+                                        "description": "Le titre de la catégorie",
                                         "type": "string",
-                                        "example": ""
+                                        "example": "Costume"
                                     },
                                     "parent_id": {
-                                        "type": "integer"
+                                        "description": "L'ID de la catégorie parente",
+                                        "type": "integer",
+                                        "example": 2
                                     },
-                                    "files[]": {
+                                    "image": {
+                                        "description": "Liste des images liées à la catégorie",
                                         "type": "array",
                                         "items": {
-                                            "description": "Image de la catégorie (JPEG, PNG, JPG, GIF, taille max : 2048)",
-                                            "type": "string",
-                                            "format": "binary"
+                                            "properties": {
+                                                "data": {
+                                                    "description": "Base64 du fichier image",
+                                                    "type": "string",
+                                                    "example": "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC"
+                                                },
+                                                "mime": {
+                                                    "description": "Le type MIME de l'image",
+                                                    "type": "string",
+                                                    "example": "image/png"
+                                                },
+                                                "size": {
+                                                    "description": "La taille de l'image en octets",
+                                                    "type": "integer",
+                                                    "example": 5120
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     }
                                 },
@@ -2231,10 +2242,48 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Criteria  created successfully"
+                        "description": "Catégorie ajoutée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category created successfully"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Invalid credentials"
+                        "description": "Accès refusé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid credentials"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -8173,15 +8222,31 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "multipart/form-data": {
+                        "application/json": {
                             "schema": {
                                 "properties": {
-                                    "files": {
-                                        "description": "The file(s) to upload",
+                                    "image": {
+                                        "description": "List of images in base64 format",
                                         "type": "array",
                                         "items": {
-                                            "type": "string",
-                                            "format": "binary"
+                                            "properties": {
+                                                "data": {
+                                                    "description": "Base64 encoded image data",
+                                                    "type": "string",
+                                                    "example": "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC"
+                                                },
+                                                "mime": {
+                                                    "description": "MIME type of the image",
+                                                    "type": "string",
+                                                    "example": "image/png"
+                                                },
+                                                "size": {
+                                                    "description": "Size of the image in bytes",
+                                                    "type": "integer",
+                                                    "example": 5120
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     }
                                 },
@@ -8278,7 +8343,7 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "multipart/form-data": {
+                        "application/json": {
                             "schema": {
                                 "required": [
                                     "title",
@@ -8288,33 +8353,57 @@
                                 ],
                                 "properties": {
                                     "title": {
+                                        "description": "Title of the preorder",
                                         "type": "string"
                                     },
                                     "description": {
+                                        "description": "Description of the preorder",
                                         "type": "string"
                                     },
                                     "minimumbudget": {
+                                        "description": "Minimum budget for the preorder",
                                         "type": "string",
                                         "pattern": "^\\d{1,2}\\.\\d{6,}$"
                                     },
                                     "maximumbudget": {
+                                        "description": "Maximum budget for the preorder",
                                         "type": "string",
                                         "pattern": "^\\d{1,2}\\.\\d{6,}$"
                                     },
                                     "address": {
+                                        "description": "Address for the preorder",
                                         "type": "string"
                                     },
                                     "location_id": {
+                                        "description": "Location ID for the preorder",
                                         "type": "integer"
                                     },
                                     "category_id": {
+                                        "description": "Category ID for the preorder",
                                         "type": "integer"
                                     },
-                                    "files[]": {
+                                    "image": {
+                                        "description": "List of images related to the preorder",
                                         "type": "array",
                                         "items": {
-                                            "type": "string",
-                                            "format": "binary"
+                                            "properties": {
+                                                "data": {
+                                                    "description": "Base64 encoded image data",
+                                                    "type": "string",
+                                                    "example": "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC"
+                                                },
+                                                "mime": {
+                                                    "description": "MIME type of the image",
+                                                    "type": "string",
+                                                    "example": "image/png"
+                                                },
+                                                "size": {
+                                                    "description": "Size of the image in bytes",
+                                                    "type": "integer",
+                                                    "example": 5120
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     }
                                 },
@@ -8331,7 +8420,8 @@
                                 "schema": {
                                     "properties": {
                                         "message": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Preorder created successfully"
                                         }
                                     },
                                     "type": "object"
@@ -8346,7 +8436,8 @@
                                 "schema": {
                                     "properties": {
                                         "error": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Error message"
                                         }
                                     },
                                     "type": "object"
@@ -8382,27 +8473,52 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "multipart/form-data": {
+                        "application/json": {
                             "schema": {
+                                "required": [
+                                    "content",
+                                    "price"
+                                ],
                                 "properties": {
                                     "content": {
+                                        "description": "Content of the preorder answer",
                                         "type": "string"
                                     },
-                                    "files[]": {
+                                    "image": {
+                                        "description": "List of images related to the preorder answer",
                                         "type": "array",
                                         "items": {
-                                            "type": "string",
-                                            "format": "binary"
+                                            "properties": {
+                                                "data": {
+                                                    "description": "Base64 encoded image data",
+                                                    "type": "string",
+                                                    "example": "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmC"
+                                                },
+                                                "mime": {
+                                                    "description": "MIME type of the image",
+                                                    "type": "string",
+                                                    "example": "image/png"
+                                                },
+                                                "size": {
+                                                    "description": "Size of the image in bytes",
+                                                    "type": "integer",
+                                                    "example": 5120
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "price": {
+                                        "description": "Price for the preorder answer",
                                         "type": "string",
                                         "pattern": "^\\d{1,2}\\.\\d{6,}$"
                                     },
                                     "delivery_time": {
+                                        "description": "Estimated delivery time in days",
                                         "type": "integer"
                                     },
                                     "parent_id": {
+                                        "description": "Parent preorder ID",
                                         "type": "integer"
                                     }
                                 },
@@ -10938,14 +11054,15 @@
                 "description": "This endpoint allows a client to become a merchant.",
                 "operationId": "dd3658025a6e486627935b4a25de2be1",
                 "requestBody": {
+                    "description": "Shop details in JSON format",
                     "required": true,
                     "content": {
-                        "multipart/form-data": {
+                        "application/json": {
                             "schema": {
                                 "required": [
                                     "title",
                                     "description",
-                                    "files[]"
+                                    "image"
                                 ],
                                 "properties": {
                                     "title": {
@@ -10959,12 +11076,28 @@
                                         "maxLength": 500,
                                         "example": "This is my shop description"
                                     },
-                                    "files[]": {
+                                    "image": {
                                         "description": "Array of images",
                                         "type": "array",
                                         "items": {
-                                            "type": "string",
-                                            "format": "binary"
+                                            "properties": {
+                                                "data": {
+                                                    "description": "Base64 encoded image data",
+                                                    "type": "string",
+                                                    "example": "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC"
+                                                },
+                                                "mime": {
+                                                    "description": "MIME type of the image",
+                                                    "type": "string",
+                                                    "example": "image/png"
+                                                },
+                                                "size": {
+                                                    "description": "Size of the image in bytes",
+                                                    "type": "integer",
+                                                    "example": 5120
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     }
                                 },
@@ -11055,12 +11188,13 @@
                     "Shop"
                 ],
                 "summary": "Create a new shop for a client",
-                "description": "This endpoint allows you to create a new shop for a specific client. The shop must have a unique title and a description. Optional files can be uploaded and linked to the shop.",
+                "description": "This endpoint allows you to create a new shop for a specific client. The shop must have a unique title and a description. Optional images can be uploaded and linked to the shop.",
                 "operationId": "5067dbf8829e0a4a442ba495b97fbff7",
                 "requestBody": {
+                    "description": "Shop details in JSON format",
                     "required": true,
                     "content": {
-                        "multipart/form-data": {
+                        "application/json": {
                             "schema": {
                                 "required": [
                                     "title",
@@ -11069,18 +11203,36 @@
                                 "properties": {
                                     "title": {
                                         "description": "Title of the shop, must be unique.",
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Citrouille house"
                                     },
                                     "description": {
                                         "description": "Description of the shop, maximum 500 characters.",
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Vente de jouet et d'articles d'halloween"
                                     },
-                                    "image[]": {
-                                        "description": "Optional files to upload for the shop.",
+                                    "image": {
+                                        "description": "List of images linked to the shop",
                                         "type": "array",
                                         "items": {
-                                            "type": "string",
-                                            "format": "binary"
+                                            "properties": {
+                                                "data": {
+                                                    "description": "Base64 encoded string of the image",
+                                                    "type": "string",
+                                                    "example": "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC"
+                                                },
+                                                "mime": {
+                                                    "description": "MIME type of the image",
+                                                    "type": "string",
+                                                    "example": "image/png"
+                                                },
+                                                "size": {
+                                                    "description": "Size of the image in bytes",
+                                                    "type": "integer",
+                                                    "example": 5120
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     }
                                 },

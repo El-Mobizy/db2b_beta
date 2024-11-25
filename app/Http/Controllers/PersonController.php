@@ -168,61 +168,102 @@ class PersonController extends Controller
 
     /**
  * @OA\Post(
- *       path="/api/person/AddOrUpdateProfileImg",
+ *     path="/api/person/AddOrUpdateProfileImg",
  *     summary="Add or update profile image",
  *     description="Uploads a new profile image for the authenticated person, replacing any existing image.",
  *     tags={"Persons"},
- * security={{"bearerAuth": {}}},
+ *     security={{"bearerAuth": {}}},
  *     @OA\RequestBody(
  *         required=true,
- *         @OA\MediaType(
- *             mediaType="multipart/form-data",
- *             @OA\Schema(
- *                 type="object",
- *                 @OA\Property(
- *                     property="files",
- *                     type="array",
- *                     @OA\Items(type="string", format="binary"),
- *                     description="The file(s) to upload"
+ *         content={
+ *             @OA\MediaType(
+ *                 mediaType="application/json",
+ *                 @OA\Schema(
+ *                     @OA\Property(
+ *                         property="image",
+ *                         type="array",
+ *                         description="List of images in base64 format",
+ *                         @OA\Items(
+ *                             type="object",
+ *                             @OA\Property(
+ *                                 property="data",
+ *                                 type="string",
+ *                                 example="iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC",
+ *                                 description="Base64 encoded image data"
+ *                             ),
+ *                             @OA\Property(
+ *                                 property="mime",
+ *                                 type="string",
+ *                                 example="image/png",
+ *                                 description="MIME type of the image"
+ *                             ),
+ *                             @OA\Property(
+ *                                 property="size",
+ *                                 type="integer",
+ *                                 example=5120,
+ *                                 description="Size of the image in bytes"
+ *                             )
+ *                         )
+ *                     )
  *                 )
  *             )
- *         )
+ *         }
  *     ),
  *     @OA\Response(
  *         response=200,
  *         description="Picture added successfully",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="status", type="integer", example=200),
- *             @OA\Property(property="data", type="object"),
- *             @OA\Property(property="message", type="string", example="Picture added successfully")
- *         )
+ *         content={
+ *             @OA\MediaType(
+ *                 mediaType="application/json",
+ *                 @OA\Schema(
+ *                     type="object",
+ *                     @OA\Property(property="status", type="integer", example=200),
+ *                     @OA\Property(property="data", type="object"),
+ *                     @OA\Property(property="message", type="string", example="Picture added successfully")
+ *                 )
+ *             )
+ *         }
  *     ),
  *     @OA\Response(
  *         response=404,
  *         description="Person not found",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="status", type="integer", example=404),
- *             @OA\Property(property="data", type="object"),
- *             @OA\Property(property="message", type="string", example="Person not found")
- *         )
+ *         content={
+ *             @OA\MediaType(
+ *                 mediaType="application/json",
+ *                 @OA\Schema(
+ *                     type="object",
+ *                     @OA\Property(property="status", type="integer", example=404),
+ *                     @OA\Property(property="data", type="object"),
+ *                     @OA\Property(property="message", type="string", example="Person not found")
+ *                 )
+ *             )
+ *         }
  *     ),
  *     @OA\Response(
  *         response=500,
  *         description="Internal server error",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="status", type="integer", example=500),
- *             @OA\Property(property="data", type="object"),
- *             @OA\Property(property="message", type="string", example="An error occurred")
- *         )
+ *         content={
+ *             @OA\MediaType(
+ *                 mediaType="application/json",
+ *                 @OA\Schema(
+ *                     type="object",
+ *                     @OA\Property(property="status", type="integer", example=500),
+ *                     @OA\Property(property="data", type="object"),
+ *                     @OA\Property(property="message", type="string", example="An error occurred")
+ *                 )
+ *             )
+ *         }
  *     ),
  *     @OA\Tag(name="Profile")
  * )
  */
+
     public function AddOrUpdateProfileImg(Request $request){
         try {
+
+            $request->validate([
+                'image' => 'required|array|max:1|max:1'
+            ]);
 
             $data = [];
 

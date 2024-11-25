@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Validator;
 class ShopController extends Controller
 {
 
- /**
+/**
  * @OA\Post(
  *     path="/api/shop/becomeMerchant",
  *     tags={"Shop"},
@@ -30,32 +30,48 @@ class ShopController extends Controller
  *     description="This endpoint allows a client to become a merchant.",
  *     @OA\RequestBody(
  *         required=true,
- *         @OA\MediaType(
- *             mediaType="multipart/form-data",
- *             @OA\Schema(
- *                 @OA\Property(
- *                     property="title",
- *                     type="string",
- *                     description="Title of the shop",
- *                     example="My Shop"
- *                 ),
- *                 @OA\Property(
- *                     property="description",
- *                     type="string",
- *                     description="Description of the shop",
- *                     maxLength=500,
- *                     example="This is my shop description"
- *                 ),
- *                 @OA\Property(
- *                     property="files[]",
- *                     type="array",
- *                     description="Array of images",
- *                     @OA\Items(
+ *         description="Shop details in JSON format",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             required={"title", "description", "image"},
+ *             @OA\Property(
+ *                 property="title",
+ *                 type="string",
+ *                 description="Title of the shop",
+ *                 example="My Shop"
+ *             ),
+ *             @OA\Property(
+ *                 property="description",
+ *                 type="string",
+ *                 description="Description of the shop",
+ *                 maxLength=500,
+ *                 example="This is my shop description"
+ *             ),
+ *             @OA\Property(
+ *                 property="image",
+ *                 type="array",
+ *                 description="Array of images",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(
+ *                         property="data",
  *                         type="string",
- *                         format="binary"
+ *                         description="Base64 encoded image data",
+ *                         example="iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="mime",
+ *                         type="string",
+ *                         description="MIME type of the image",
+ *                         example="image/png"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="size",
+ *                         type="integer",
+ *                         description="Size of the image in bytes",
+ *                         example=5120
  *                     )
- *                 ),
- *                 required={"title", "description", "files[]"}
+ *                 )
  *             )
  *         )
  *     ),
@@ -111,6 +127,7 @@ class ShopController extends Controller
  */
 
 
+
     public function becomeMerchant( Request $request){
         try{
             DB::beginTransaction();
@@ -155,37 +172,53 @@ class ShopController extends Controller
  * @OA\Post(
  *     path="/api/shop/createShop",
  *     summary="Create a new shop for a client",
- *     description="This endpoint allows you to create a new shop for a specific client. The shop must have a unique title and a description. Optional files can be uploaded and linked to the shop.",
+ *     description="This endpoint allows you to create a new shop for a specific client. The shop must have a unique title and a description. Optional images can be uploaded and linked to the shop.",
  *     tags={"Shop"},
  *     @OA\RequestBody(
  *         required=true,
- *         content={
- *             @OA\MediaType(
- *                 mediaType="multipart/form-data",
- *                 @OA\Schema(
- *                     required={"title", "description"},
+ *         description="Shop details in JSON format",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             required={"title", "description"},
+ *             @OA\Property(
+ *                 property="title",
+ *                 type="string",
+ *                 example="Citrouille house",
+ *                 description="Title of the shop, must be unique."
+ *             ),
+ *             @OA\Property(
+ *                 property="description",
+ *                 type="string",
+ *                 example="Vente de jouet et d'articles d'halloween",
+ *                 description="Description of the shop, maximum 500 characters."
+ *             ),
+ *             @OA\Property(
+ *                 property="image",
+ *                 type="array",
+ *                 description="List of images linked to the shop",
+ *                 @OA\Items(
+ *                     type="object",
  *                     @OA\Property(
- *                         property="title",
+ *                         property="data",
  *                         type="string",
- *                         description="Title of the shop, must be unique."
+ *                         description="Base64 encoded string of the image",
+ *                         example="iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC"
  *                     ),
  *                     @OA\Property(
- *                         property="description",
+ *                         property="mime",
  *                         type="string",
- *                         description="Description of the shop, maximum 500 characters."
+ *                         description="MIME type of the image",
+ *                         example="image/png"
  *                     ),
  *                     @OA\Property(
- *                         property="image[]",
- *                         type="array",
- *                         @OA\Items(
- *                             type="string",
- *                             format="binary"
- *                         ),
- *                         description="Optional files to upload for the shop."
+ *                         property="size",
+ *                         type="integer",
+ *                         description="Size of the image in bytes",
+ *                         example=5120
  *                     )
  *                 )
  *             )
- *         }
+ *         )
  *     ),
  *     @OA\Response(
  *         response=200,
@@ -209,18 +242,18 @@ class ShopController extends Controller
  *             @OA\Property(property="error", type="string", example="Error message")
  *         )
  *     ),
- *     security={{"bearerAuth": {}}},
+ *     security={{"bearerAuth": {}}}
  * )
  */
+
     public function createShop(Request $request){
         try{
-
-            // return[ $request->image[0]['size'], $request->image[0]['mime']];
 
 
 
             $validator = Validator::make($request->all(), [
                 'title' => 'required|string',
+                 'image' => 'required|array|max:1|max:1',
                 'description' => ['required','max:500'],
             ]);
 
@@ -229,7 +262,6 @@ class ShopController extends Controller
 
             if ($validator->fails()) {
                 return (new Service())->apiResponse(404, [], 'The data provided is not valid. '. $validator->errors());
-                // return response()->json(['message' => 'The data provided is not valid.', 'errors' => $validator->errors()], 200);
             }
 
             if(Shop::whereTitle($request->title)->exists()){
@@ -262,7 +294,7 @@ class ShopController extends Controller
                 return (new Service())->apiResponse(404, [], "File is required for created shop");
             }
             $service->uploadFiles($request,$randomString,"shop");
-     
+
 
             $shop->save();
             // DB::commit();
@@ -612,6 +644,8 @@ class ShopController extends Controller
 
             $service = new Service();
 
+            File::whereReferenceCode($filecodeShop)->delete();
+
             $service->uploadFiles($request,$filecodeShop,'shop');
 
             return (new Service())->apiResponse(404, [], 'file add successfully');
@@ -824,6 +858,9 @@ class ShopController extends Controller
                 }
                 if(Category::whereId($categoryId)->first()->attribute_group_id == null){
                     return (new Service())->apiResponse(404,[],"The $categoryName category does not have an attribute so you cannot associate it with your store");
+                }
+                if(Category::whereId($categoryId)->first()->parent_id == null){
+                    return (new Service())->apiResponse(404,[],"You can only add subcategories to your store");
                 }
         
                 if($countCategory == $limit){

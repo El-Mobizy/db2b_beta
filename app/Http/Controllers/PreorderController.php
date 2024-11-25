@@ -29,34 +29,108 @@ class PreorderController extends Controller
 /**
  * @OA\Post(
  *    path="/api/preorder/createPreorder",
- *     summary="Create a new preorder",
- *     tags={"Preorder"},
- *   security={{"bearerAuth": {}}},
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\MediaType(
- *             mediaType="multipart/form-data",
- *             @OA\Schema(
- *                 required={"title", "description", "location_id", "category_id"},
- *                 @OA\Property(property="title", type="string"),
- *                 @OA\Property(property="description", type="string"),
- *                 @OA\Property(property="minimumbudget", type="string", pattern="^\d{1,2}\.\d{6,}$"),
- *                 @OA\Property(property="maximumbudget", type="string", pattern="^\d{1,2}\.\d{6,}$"),
- *                 @OA\Property(property="address", type="string"),
- *                 @OA\Property(property="location_id", type="integer"),
- *                 @OA\Property(property="category_id", type="integer"),
- *                 @OA\Property(property="files[]", type="array", @OA\Items(type="string", format="binary"))
- *             )
- *         )
- *     ),
- *     @OA\Response(response="200", description="Success", @OA\JsonContent(
- *         @OA\Property(property="message", type="string")
- *     )),
- *     @OA\Response(response="500", description="Internal Server Error", @OA\JsonContent(
- *         @OA\Property(property="error", type="string")
- *     ))
+ *    summary="Create a new preorder",
+ *    tags={"Preorder"},
+ *    security={{"bearerAuth": {}}},
+ *    @OA\RequestBody(
+ *        required=true,
+ *        content={
+ *            @OA\MediaType(
+ *                mediaType="application/json",
+ *                @OA\Schema(
+ *                    required={"title", "description", "location_id", "category_id"},
+ *                    @OA\Property(
+ *                        property="title",
+ *                        type="string",
+ *                        description="Title of the preorder"
+ *                    ),
+ *                    @OA\Property(
+ *                        property="description",
+ *                        type="string",
+ *                        description="Description of the preorder"
+ *                    ),
+ *                    @OA\Property(
+ *                        property="minimumbudget",
+ *                        type="string",
+ *                        pattern="^\d{1,2}\.\d{6,}$",
+ *                        description="Minimum budget for the preorder"
+ *                    ),
+ *                    @OA\Property(
+ *                        property="maximumbudget",
+ *                        type="string",
+ *                        pattern="^\d{1,2}\.\d{6,}$",
+ *                        description="Maximum budget for the preorder"
+ *                    ),
+ *                    @OA\Property(
+ *                        property="address",
+ *                        type="string",
+ *                        description="Address for the preorder"
+ *                    ),
+ *                    @OA\Property(
+ *                        property="location_id",
+ *                        type="integer",
+ *                        description="Location ID for the preorder"
+ *                    ),
+ *                    @OA\Property(
+ *                        property="category_id",
+ *                        type="integer",
+ *                        description="Category ID for the preorder"
+ *                    ),
+ *                    @OA\Property(
+ *                        property="image",
+ *                        type="array",
+ *                        description="List of images related to the preorder",
+ *                        @OA\Items(
+ *                            type="object",
+ *                            @OA\Property(
+ *                                property="data",
+ *                                type="string",
+ *                                example="iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC",
+ *                                description="Base64 encoded image data"
+ *                            ),
+ *                            @OA\Property(
+ *                                property="mime",
+ *                                type="string",
+ *                                example="image/png",
+ *                                description="MIME type of the image"
+ *                            ),
+ *                            @OA\Property(
+ *                                property="size",
+ *                                type="integer",
+ *                                example=5120,
+ *                                description="Size of the image in bytes"
+ *                            )
+ *                        )
+ *                    )
+ *                )
+ *            )
+ *        }
+ *    ),
+ *    @OA\Response(
+ *        response=200,
+ *        description="Success",
+ *        @OA\JsonContent(
+ *            @OA\Property(
+ *                property="message",
+ *                type="string",
+ *                example="Preorder created successfully"
+ *            )
+ *        )
+ *    ),
+ *    @OA\Response(
+ *        response=500,
+ *        description="Internal Server Error",
+ *        @OA\JsonContent(
+ *            @OA\Property(
+ *                property="error",
+ *                type="string",
+ *                example="Error message"
+ *            )
+ *        )
+ *    )
  * )
  */
+
     public function createPreorder(Request $request){
         try {
             $request->validate([
@@ -144,12 +218,15 @@ class PreorderController extends Controller
         }
     }
 
- /**
+
+
+
+/**
  * @OA\Post(
  *     path="/api/preorder_answer/createPreorderAnswer/{preorderId}",
  *     summary="Create a new preorder answer",
- *   tags={"PreorderAnswers"},
- *   security={{"bearerAuth": {}}},
+ *     tags={"PreorderAnswers"},
+ *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(
  *         name="preorderId",
  *         in="path",
@@ -158,16 +235,61 @@ class PreorderController extends Controller
  *     ),
  *     @OA\RequestBody(
  *         required=true,
- *         @OA\MediaType(
- *             mediaType="multipart/form-data",
- *             @OA\Schema(
- *                 @OA\Property(property="content", type="string"),
- *                 @OA\Property(property="files[]", type="array", @OA\Items(type="string", format="binary")),
- *                 @OA\Property(property="price", type="string", pattern="^\d{1,2}\.\d{6,}$"),
- *                  @OA\Property(property="delivery_time", type="integer"),
- *                 @OA\Property(property="parent_id", type="integer")
+ *         content={
+ *             @OA\MediaType(
+ *                 mediaType="application/json",
+ *                 @OA\Schema(
+ *                     required={"content", "price"},
+ *                     @OA\Property(
+ *                         property="content",
+ *                         type="string",
+ *                         description="Content of the preorder answer"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="image",
+ *                         type="array",
+ *                         description="List of images related to the preorder answer",
+ *                         @OA\Items(
+ *                             type="object",
+ *                             @OA\Property(
+ *                                 property="data",
+ *                                 type="string",
+ *                                 example="iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmC",
+ *                                 description="Base64 encoded image data"
+ *                             ),
+ *                             @OA\Property(
+ *                                 property="mime",
+ *                                 type="string",
+ *                                 example="image/png",
+ *                                 description="MIME type of the image"
+ *                             ),
+ *                             @OA\Property(
+ *                                 property="size",
+ *                                 type="integer",
+ *                                 example=5120,
+ *                                 description="Size of the image in bytes"
+ *                             )
+ *                         )
+ *                     ),
+ *                     @OA\Property(
+ *                         property="price",
+ *                         type="string",
+ *                         pattern="^\d{1,2}\.\d{6,}$",
+ *                         description="Price for the preorder answer"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="delivery_time",
+ *                         type="integer",
+ *                         description="Estimated delivery time in days"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="parent_id",
+ *                         type="integer",
+ *                         description="Parent preorder ID"
+ *                     )
+ *                 )
  *             )
- *         )
+ *         }
  *     ),
  *     @OA\Response(
  *         response=200,
@@ -192,6 +314,8 @@ class PreorderController extends Controller
  *     )
  * )
  */
+
+
 
     public function createPreorderAnswer(Request $request,$preorderId){
         try {
@@ -1527,12 +1651,6 @@ public function merchantAffectedByPreorder($perPage){
                     $preorder->preorder_statut =  TypeOfType::whereId($preorder->statut)->first()->libelle;
                     $preorder->category = Category::whereId($preorder->category_id)->first()->title;
                 }
-
-                         if(count($preorders) == 0){
-                            return response()->json([
-                                'message' => 'No data found'
-                            ]);
-                        }
 
             return response()->json([
                 'data' => $preorders,

@@ -64,6 +64,8 @@ class CommissionController extends Controller
     public function store(Request $request){
         try {
 
+          (new Service())->checkAdmin();
+
             $service = new Service();
 
             $validator = Validator::make($request->all(), [
@@ -240,6 +242,7 @@ class CommissionController extends Controller
      */
     public function update($id, Request $request){
         try {
+          (new Service())->checkAdmin();
             $commission = Commission::find($id);
             if(!$commission){
                 return response()->json([

@@ -911,6 +911,19 @@ public function encrypt($key, $message)
         
     }
 
-// EscrowDelivery(id, person_id, order_id, delivery_agent_amount, order_amount, status, pickup_date, delivery_date, created_at, updated_at)
+    public function checkAdmin()
+    {
+        try {
+            $personId = $this->returnPersonIdAuth();
+
+            if (!Admin::wherePersonId($personId)->exists()) {
+                throw new Exception("Access denied: You are not an admin.");
+            }
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage(), 403);
+        }
+    }
+
 
 }

@@ -18,44 +18,91 @@ class CategoryController extends Controller
 {
 
 /**
-         * @OA\Post(
-         *     path="/api/category/add",
-         *     summary="Ajouter une nouvelle catégorie",
-         *     tags={"Category"},
-         * security={{"bearerAuth": {}}},
- * @OA\RequestBody(
- *     required=true,
- *     @OA\MediaType(
- *       mediaType="multipart/form-data",
- *       @OA\Schema(
- *         type="object",
- *         @OA\Property(property="title", type="string", example=""),
- *    @OA\Property(property="parent_id", type="integer"),
- *          @OA\Property(
- *                     property="files[]",
- *                     type="array",
- *                     @OA\Items(type="string", format="binary", description="Image de la catégorie (JPEG, PNG, JPG, GIF, taille max : 2048)")
- *                 ),
- *       )
+ * @OA\Post(
+ *     path="/api/category/add",
+ *     summary="Ajouter une nouvelle catégorie",
+ *     tags={"Category"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         description="Ajouter une nouvelle catégorie avec un fichier JSON",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             required={"title", "parent_id", "image"},
+ *             @OA\Property(
+ *                 property="title",
+ *                 type="string",
+ *                 example="Costume",
+ *                 description="Le titre de la catégorie"
+ *             ),
+ *             @OA\Property(
+ *                 property="parent_id",
+ *                 type="integer",
+ *                 example=2,
+ *                 description="L'ID de la catégorie parente"
+ *             ),
+ *             @OA\Property(
+ *                 property="image",
+ *                 type="array",
+ *                 description="Liste des images liées à la catégorie",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(
+ *                         property="data",
+ *                         type="string",
+ *                         example="iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC",
+ *                         description="Base64 du fichier image"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="mime",
+ *                         type="string",
+ *                         example="image/png",
+ *                         description="Le type MIME de l'image"
+ *                     ),
+ *                     @OA\Property(
+ *                         property="size",
+ *                         type="integer",
+ *                         example=5120,
+ *                         description="La taille de l'image en octets"
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Catégorie ajoutée avec succès",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="success"),
+ *             @OA\Property(property="message", type="string", example="Category created successfully"),
+ *             @OA\Property(property="data", type="object", example={})
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=401,
+ *         description="Accès refusé",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="error"),
+ *             @OA\Property(property="message", type="string", example="Invalid credentials")
+ *         )
  *     )
- *   ),
-         *     @OA\Response(
-         *         response=200,
-         *         description="Criteria  created successfully"
-         *     ),
-         *     @OA\Response(
-         *         response=401,
-         *         description="Invalid credentials"
-         *     )
-         * )
-         */
+ * )
+ */
+
+
+
     public function add(Request $request)
     {
           try {
+
+            (new Service())->checkAdmin();
+
             $db = DB::connection()->getPdo();
             $request->validate([
                 'title' => 'required|unique:categories|max:255',
-                // 'files' => 'image|mimes:jpeg,jpg,png,gif'
+                'image' => 'required|array|max:1|max:1'
             ]);
 
 
@@ -101,14 +148,10 @@ class CategoryController extends Controller
            
 
             $statement->execute();
-            return response()->json([
-                'message' => "category created successfuly"
-            ],200);
+            return  (new Service())->apiResponse(200,[],"Category added successfully");
 
         } catch (Exception $e) {
-           return response()->json([
-            'error' => $e->getMessage()
-           ]);
+            return  (new Service())->apiResponse(500,[],$e->getMessage());
         }
     }
 
@@ -157,6 +200,8 @@ class CategoryController extends Controller
     public function showCategoryDetail(Request $request, $uid)
     {
            try {
+
+
             $db = DB::connection()->getPdo();
             if((new Service())->isValidUuid($uid)){
                 return (new Service())->isValidUuid($uid);
@@ -216,6 +261,7 @@ class CategoryController extends Controller
     public function getAllCategories()
     {
         try {
+
 
             $categories =  Category::with('file')->whereDeleted(0)->with('subcategories')->get();
             foreach($categories as $categorie){
@@ -473,6 +519,8 @@ public function getAllPaginateSubSubcategory($perpage)
     public function searchCategory(Request $request)
     {
         try {
+
+            
             $db = DB::connection()->getPdo();
             $search = htmlspecialchars($request->input('search'));
             $s = '%'.$search.'%';
@@ -541,6 +589,8 @@ public function getAllPaginateSubSubcategory($perpage)
 
     public function updateCategorie($id,Request $request){
         try {
+
+            (new Service())->checkAdmin();
 
             $category = Category::find($id);
             if(!$category){

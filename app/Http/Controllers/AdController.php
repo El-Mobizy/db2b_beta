@@ -472,43 +472,75 @@ public function getRecentAdd(Request $request,$perpage)
  * @OA\Post(
  *     path="/api/ad/storeAd",
  *     summary="Create a new ad",
- *     security={{"bearerAuth": {}}}, 
+ *     description="Endpoint to create a new advertisement",
+ *     operationId="storeAd",
  *     tags={"Ad"},
+ *  security={{"bearerAuth": {}}},
  *     @OA\RequestBody(
  *         required=true,
- *         @OA\MediaType(
- *             mediaType="multipart/form-data",
- *             @OA\Schema(
- *                 type="object",
- *                 @OA\Property(property="title", type="string", description="Title of the advertisement"),
- *                 @OA\Property(property="location_id", type="integer", description="ID of the location"),
- *                 @OA\Property(property="category_id", type="integer", description="ID of the category"),
- *                 @OA\Property(
- *                     property="value_entered",
- *                     type="array",
- *                     @OA\Items(
- *                         type="object",
- *                         @OA\Property(property="id", type="integer", description="ID of the attribute"),
- *                         @OA\Property(property="value", oneOf={
- *                             @OA\Schema(type="string", description="Single value for the attribute"),
- *                             @OA\Schema(
- *                                 type="array",
- *                                 description="Multiple values (checkbox type)",
- *                                 @OA\Items(type="string")
- *                             )
- *                         })
- *                     ),
- *                     description="Array of entered values for ad attributes"
- *                 ),
- *                 @OA\Property(
- *                     property="image",
- *                     type="array",
- *                     @OA\Items(type="string", format="binary"),
- *                     description="Array of files to upload"
- *                 ),
- *                 @OA\Property(property="price", type="number", format="float", description="Price of the item"),
- *                 @OA\Property(property="shop_id", type="integer", description="ID of the shop"),
- *                 required={"title", "location_id", "value_entered", "price", "shop_id"}
+ *         description="Ad creation payload",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             required={"title", "location_id", "category_id", "price", "shop_id", "description", "quantity", "threshold", "value_entered"},
+ *             @OA\Property(
+ *                 property="title",
+ *                 type="string",
+ *                 example="Chaussure"
+ *             ),
+ *             @OA\Property(
+ *                 property="location_id",
+ *                 type="integer",
+ *                 example=1
+ *             ),
+ *             @OA\Property(
+ *                 property="category_id",
+ *                 type="integer",
+ *                 example=1
+ *             ),
+ *             @OA\Property(
+ *                 property="price",
+ *                 type="number",
+ *                 format="float",
+ *                 example=4
+ *             ),
+ *             @OA\Property(
+ *                 property="shop_id",
+ *                 type="integer",
+ *                 example=1
+ *             ),
+ *             @OA\Property(
+ *                 property="image",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="data", type="string", example="iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAS0lEQVR4nO3OsQEAEADAMPz/Mw9YMjE0F2Tu8aP1OnBXS9QStUQtUUvUErVELVFL1BK1RC1RS9QStUQtUUvUErVELVFL1BK1RC1xAEGqAWOFuDKrAAAAAElFTkSuQmCC"),
+ *                     @OA\Property(property="mime", type="string", example="image/png"),
+ *                     @OA\Property(property="size", type="integer", example=5120)
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="description",
+ *                 type="string",
+ *                 example="my shop"
+ *             ),
+ *             @OA\Property(
+ *                 property="quantity",
+ *                 type="integer",
+ *                 example=4
+ *             ),
+ *             @OA\Property(
+ *                 property="threshold",
+ *                 type="integer",
+ *                 example=2
+ *             ),
+ *             @OA\Property(
+ *                 property="value_entered",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="id", type="integer", example=2),
+ *                     @OA\Property(property="value", type="string", example="blue")
+ *                 )
  *             )
  *         )
  *     ),
@@ -517,40 +549,30 @@ public function getRecentAdd(Request $request,$perpage)
  *         description="Ad added successfully",
  *         @OA\JsonContent(
  *             type="object",
- *             @OA\Property(property="status", type="integer", example=200),
- *             @OA\Property(property="data", type="array", @OA\Items()),
- *             @OA\Property(property="message", type="string", example="ad added successfully !")
+ *             @OA\Property(property="status", type="string", example="success"),
+ *             @OA\Property(property="message", type="string", example="Ad added successfully!")
  *         )
  *     ),
  *     @OA\Response(
- *         response=404,
- *         description="Not found error",
+ *         response=400,
+ *         description="Validation error",
  *         @OA\JsonContent(
  *             type="object",
- *             @OA\Property(property="status", type="integer", example=404),
- *             @OA\Property(property="data", type="array", @OA\Items()),
- *             @OA\Property(property="message", type="string", example="Resource not found")
+ *             @OA\Property(property="status", type="string", example="error"),
+ *             @OA\Property(property="message", type="string", example="Invalid input")
  *         )
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Internal server error",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="status", type="integer", example=500),
- *             @OA\Property(property="data", type="array", @OA\Items()),
- *             @OA\Property(property="message", type="string", example="An internal server error occurred")
- *         )
- *     ),
- *     security={{"bearerAuth": {}}}
+ *     )
  * )
  */
+
 
 
  public function storeAd(Request $request){
 
      try {
-         $service = new Service();
+
+        $service = new Service();
+
          
          $checkAuth=$service->checkAuth();
          if($checkAuth){
@@ -579,8 +601,6 @@ public function getRecentAdd(Request $request,$perpage)
             return (new Service())->apiResponse(200,[ ],'The price must be greater than 0');
           }
 
-     
-
          $validateLocation=$service->validateLocation($request->location_id);
          if($validateLocation){
             return $validateLocation;
@@ -605,9 +625,9 @@ public function getRecentAdd(Request $request,$perpage)
      $checkNumberProductStore = $this->checkNumberProductStore($request);
 
 
-     if($checkNumberProductStore === 0){
-        return (new Service())->apiResponse(404,[],"You've reached your limit of products on the store");
-     }
+    //  if($checkNumberProductStore === 0){
+    //     return (new Service())->apiResponse(404,[],"You've reached your limit of products on the store");
+    //  }
 
 
          $ad = $this->createAd($request);
@@ -699,8 +719,6 @@ public function checkCategoryShop($ownerId, Request $request){
 
         $exist = ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->exists();
 
-        return ShopHasCategory::where('shop_id',$shop->id)->where('category_id',$request->input('category_id'))->whereDeleted(false)->first();
-
         if(!$exist){
             return (new Service())->apiResponse(404,[],'You can only add the categories added to your shop');
         }
@@ -767,7 +785,7 @@ public function checkCategoryShop($ownerId, Request $request){
         if((new Service())->isValidUuid($uid)){
             return (new Service())->isValidUuid($uid);
         }
-  
+
 
         $personQuery = "SELECT * FROM person WHERE user_id = :userId";
         $person = DB::selectOne($personQuery, ['userId' => Auth::user()->id]);
@@ -1013,17 +1031,45 @@ public function checkCategoryShop($ownerId, Request $request){
         }
     }
 
+    private function checkAdDetail(Request $request){
+        $values = $request->input('value_entered');
+
+        $ids = array_column($values, 'id');
+        if (count($ids) !== count(array_unique($ids))) {
+            throw new Exception("Duplicate IDs are not allowed in value_entered.");
+        }
+
+        $category = Category::find($request->category_id);
+        if (!$category) {
+            throw new Exception("Category not found.");
+        }
+
+        $attributeGroups = AttributeGroup::whereGroupTitleId($category->attribute_group_id)->get();
+        $categoryAttributeIds = $attributeGroups->pluck('attribute_id')->toArray();
+
+        $invalidIds = array_diff($ids, $categoryAttributeIds);
+        if (!empty($invalidIds)) {
+            throw new Exception('Invalid attribute IDs found in value_entered: ' . implode(', ', $invalidIds));
+        }
+        
+    }
+
     private function saveAdDetails(Request $request, Ad $ad)
     {
         $category = Category::find($request->input('category_id'));
         $attributeGroups = AttributeGroup::where('group_title_id', $category->attribute_group_id)->get();
-        $values = $request->input('value_entered'); // Récupérer toutes les valeurs
+       
+
     
         foreach ($attributeGroups as $index => $attributeGroup) {
             foreach (CategoryAttributes::where('id', $attributeGroup->attribute_id)
                      ->where('is_active', true)
                      ->orderBy('id', 'asc')
                      ->get() as $d) {
+
+            $values = $request->input('value_entered');
+
+            $this->checkAdDetail($request);
     
                 // Trouver la valeur correspondante en utilisant l'ID
                 $valueEntered = collect($values)->firstWhere('id', $d->id);
@@ -1042,6 +1088,7 @@ public function checkCategoryShop($ownerId, Request $request){
                 // Validation des valeurs en fonction du type de champ
                 switch ($cat->fieldtype) {
                     case 'string':
+                      
                         if (!is_string($value)) {
                             return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une chaîne de caractères'], 400);
                         }
