@@ -26,7 +26,7 @@ return new class extends Migration
         DB::table('attribute_groups')->insert([
             [
                 'attribute_id' => 1,
-                'group_title_id' => 1,
+                'group_title_id' => 16,
                 'deleted' => false,
                 'uid' => uniqid(),
                 'created_at' => now(),
@@ -34,7 +34,7 @@ return new class extends Migration
             ],
             [
                 'attribute_id' => 2,
-                'group_title_id' => 1,
+                'group_title_id' => 16,
                 'deleted' => false,
                 'uid' => uniqid(),
                 'created_at' => now(),
@@ -42,7 +42,7 @@ return new class extends Migration
             ],
             [
                 'attribute_id' => 1,
-                'group_title_id' => 2,
+                'group_title_id' => 17,
                 'deleted' => false,
                 'uid' => uniqid(),
                 'created_at' => now(),
@@ -50,7 +50,56 @@ return new class extends Migration
             ],
             [
                 'attribute_id' => 2,
-                'group_title_id' => 2,
+                'group_title_id' => 17,
+                'deleted' => false,
+                'uid' => uniqid(),
+                'created_at' => now(),
+                'updated_at'=>now()
+            ],
+
+            [
+                'attribute_id' => 1,
+                'group_title_id' => 15,
+                'deleted' => false,
+                'uid' => uniqid(),
+                'created_at' => now(),
+                'updated_at'=>now()
+            ],
+            [
+                'attribute_id' => 2,
+                'group_title_id' => 15,
+                'deleted' => false,
+                'uid' => uniqid(),
+                'created_at' => now(),
+                'updated_at'=>now()
+            ],
+            [
+                'attribute_id' => 3,
+                'group_title_id' => 15,
+                'deleted' => false,
+                'uid' => uniqid(),
+                'created_at' => now(),
+                'updated_at'=>now()
+            ],
+            [
+                'attribute_id' => 4,
+                'group_title_id' => 15,
+                'deleted' => false,
+                'uid' => uniqid(),
+                'created_at' => now(),
+                'updated_at'=>now()
+            ],
+            [
+                'attribute_id' => 5,
+                'group_title_id' => 15,
+                'deleted' => false,
+                'uid' => uniqid(),
+                'created_at' => now(),
+                'updated_at'=>now()
+            ],
+            [
+                'attribute_id' => 6,
+                'group_title_id' => 15,
                 'deleted' => false,
                 'uid' => uniqid(),
                 'created_at' => now(),

@@ -40,6 +40,10 @@ return new class extends Migration
             ['libelle' => 'endtrade','codereference' => 'STATUS_ENDTRADE', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>null],
             ['libelle' => 'canceltrade','codereference' => 'STATUS_CANCEL_TRADE', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>null],
             ['libelle' => 'started','codereference' => 'STATUS_STARTED', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>null],
+            ['libelle' => 'Mode attribute','codereference' => 'MODE_ATTRIBUTE', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>null],
+
+            ['libelle' => 'Attribute group A','codereference' => 'GROUP_A', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>null],
+            ['libelle' => 'Attribute group B','codereference' => 'GROUP_B', 'created_at' => now(), 'updated_at' => now(),'uid'=>uniqid(),'parent_id'=>null],
           
         ]);
     }

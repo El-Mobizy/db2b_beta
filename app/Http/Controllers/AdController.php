@@ -1096,49 +1096,49 @@ public function checkAdTitle($title, $shopId)
                     case 'string':
                       
                         if (!is_string($value)) {
-                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une chaîne de caractères'], 400);
+                            return(new Service())->apiResponse(404,[], 'La valeur pour l\'attribut ' . $cat->label . ' doit être une chaîne de caractères');
                         }
                         break;
     
                     case 'number':
                         if (!is_numeric($value)) {
-                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être un nombre'], 400);
+                            return(new Service())->apiResponse(404,[], 'La valeur pour l\'attribut ' . $cat->label . ' doit être un nombre');
                         }
                         break;
     
                     case 'url':
                         if (!filter_var($value, FILTER_VALIDATE_URL)) {
-                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une URL valide'], 400);
+                            return(new Service())->apiResponse(404,[],'La valeur pour l\'attribut ' . $cat->label . ' doit être une URL valide');
                         }
                         break;
     
                     case 'date':
                         if (!DateTime::createFromFormat('Y-m-d', $value)) {
-                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une date valide au format YYYY-MM-DD'], 400);
+                            return(new Service())->apiResponse(404,[],'La valeur pour l\'attribut ' . $cat->label . ' doit être une date valide au format YYYY-MM-DD');
                         }
                         break;
     
                     case 'tel':
                         if (!preg_match('/^\+?[0-9]{7,15}$/', $value)) {
-                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être un numéro de téléphone valide'], 400);
+                            return(new Service())->apiResponse(404,[],  'La valeur pour l\'attribut ' . $cat->label . ' doit être un numéro de téléphone valide');
                         }
                         break;
     
                     case 'text':
                         if (!is_string($value)) {
-                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une chaîne de caractères'], 400);
+                            return(new Service())->apiResponse(404,[],'La valeur pour l\'attribut ' . $cat->label . ' doit être une chaîne de caractères');
                         }
                         break;
     
                     case 'color':
                         if (!preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value)) {
-                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une couleur valide au format hexadécimal'], 400);
+                            return(new Service())->apiResponse(404,[], 'La valeur pour l\'attribut ' . $cat->label . ' doit être une couleur valide au format hexadécimal');
                         }
                         break;
     
                     case 'range':
                         if (!is_numeric($value)) {
-                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être un nombre pour un champ de plage'], 400);
+                            return(new Service())->apiResponse(404,[],'La valeur pour l\'attribut ' . $cat->label . ' doit être un nombre pour un champ de plage');
                         }
                         break;
     
@@ -1146,18 +1146,17 @@ public function checkAdTitle($title, $shopId)
                     case 'radio':
                         $possibleValues = array_map('trim', explode(',', $cat->possible_value));
                         if (!in_array($value, $possibleValues)) {
-                            return response()->json(['message' => 'La valeur pour l\'attribut ' . $cat->label . ' doit être une des options suivantes : ' . implode(', ', $possibleValues)], 400);
+                            return(new Service())->apiResponse(404,[],'La valeur pour l\'attribut ' . $cat->label . ' doit être une des options suivantes : ' . implode(', ', $possibleValues));
                         }
                         break;
     
                         case 'checkbox':
                             $possibleValues = array_map('trim', explode(',', $cat->possible_value));
-                            $selectedValues = $value; // Assurez-vous que $value est un tableau
+                            $selectedValues = $value;
                         
-                            // Vérifiez que toutes les valeurs sélectionnées sont valides
                             foreach ($selectedValues as $selectedValue) {
                                 if (!in_array($selectedValue, $possibleValues)) {
-                                    return response()->json(['message' => 'L\'une des valeurs sélectionnées pour l\'attribut ' . $cat->label . ' n\'est pas valide'], 400);
+                                    return(new Service())->apiResponse(404,[],  'L\'une des valeurs sélectionnées pour l\'attribut ' . $cat->label . ' n\'est pas valide');
                                 }
                             }
                         
@@ -1167,7 +1166,7 @@ public function checkAdTitle($title, $shopId)
                         
     
                     default:
-                        return response()->json(['message' => 'Type d\'attribut inconnu : ' . $cat->fieldtype], 400);
+                    return(new Service())->apiResponse(404,[],  'Type d\'attribut inconnu : ' . $cat->fieldtype);
                 }
     
                 // Enregistrement de l'attribut dans la base de données
