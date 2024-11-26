@@ -633,10 +633,9 @@ function isValidUuid($uuid) {
                 throw new Exception("Chaque objet doit contenir une clé 'value'.");
             }
         }
-        
 
         // Vérifier si le nombre de valeurs correspond au nombre d'attributs attendus
-        if ($countAttributes != count($values)) {
+        if ($countAttributes != count($valueEntered)) {
             throw new Exception( "Le nombre de valeurs entrées doit être égal au nombre d'attributs attendus : {$countAttributes} (donné : " . count($values) . ")");
             // return response()->json([
             //     'message' => "Le nombre de valeurs entrées doit être égal au nombre d'attributs attendus : {$countAttributes} (donné : " . count($values) . ")"
@@ -651,6 +650,7 @@ function isValidUuid($uuid) {
         //     'message' => "Le format des données est incorrect. 'value_entered' doit être un tableau d'objets."
         // ]);
     }
+ 
 }
 
 

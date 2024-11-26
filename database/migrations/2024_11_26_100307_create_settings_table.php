@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name')->nullable()->unique();
             $table->text('value')->nullable();
             $table->string('type')->nullable();
+            $table->boolean('deleted')->default(false);
             $table->timestamps();
         });
     }

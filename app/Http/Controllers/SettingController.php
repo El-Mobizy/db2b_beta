@@ -16,8 +16,8 @@ class SettingController extends Controller
         try {
             $request->validate([
                 'name' => 'required|string|unique:settings,name',
-                'value' => 'required|string',
-                'type' => 'nullable|string',
+                'value' => 'required',
+                'type' => 'required|string',
             ]);
 
             $typeAvailable = ['string', 'integer','double'];
@@ -34,7 +34,7 @@ class SettingController extends Controller
                 return (new Service())->apiResponse(404, [], 'Value must be an integer when type is "integer"');
             }
 
-            if ($request->type === 'double' && !is_numeric($request->value)) {
+            if ($request->type === 'double' && !is_float($request->value)) {
                 return (new Service())->apiResponse(404, [], 'Value must be a double when type is "double"');
             }
 
@@ -114,11 +114,11 @@ class SettingController extends Controller
                 return (new Service())->apiResponse(404, [], 'Value must be a string when type is "string"');
             }
 
-            if ($request->type === 'integer' && !is_numeric($request->value)) {
+            if ($request->type === 'integer' && !is_int($request->value)) {
                 return (new Service())->apiResponse(404, [], 'Value must be an integer when type is "integer"');
             }
 
-            if ($request->type === 'double' && !filter_var($request->value, FILTER_VALIDATE_FLOAT)) {
+            if ($request->type === 'double' && !is_float($request->value)) {
                 return (new Service())->apiResponse(404, [], 'Value must be a double when type is "double"');
             }
         }
@@ -127,14 +127,26 @@ class SettingController extends Controller
             $setting->name = $request->name;
         }
 
-        if ($request->value) {
-            $setting->value = $request->value;
-        }
-
         if ($request->type) {
             $setting->type = $request->type;
         }
 
+        if ($request->value) {
+            if(!$request->type){
+                if ($setting->type === 'string' && !is_string($request->value)) {
+                    return (new Service())->apiResponse(404, [], 'Value must be a string when type is "string"');
+                }
+    
+                if ($setting->type === 'integer' && !is_int($request->value)) {
+                    return (new Service())->apiResponse(404, [], 'Value must be an integer when type is "integer"');
+                }
+    
+                if ($setting->type === 'double' && !is_float($request->value)) {
+                    return (new Service())->apiResponse(404, [], 'Value must be a double when type is "double"');
+                }
+                $setting->value = $request->value;
+            }
+        }
         $setting->save();
 
         return (new Service())->apiResponse(200, [$setting], 'Specific settings details');
@@ -158,7 +170,8 @@ class SettingController extends Controller
 
             $setting->delete();
 
-            return response()->json(['status' => 200, 'message' => 'Setting deleted successfully']);
+            return (new Service())->apiResponse(200, [], 'Setting deleted successfully');
+
         } catch (Exception $e) {
             return (new Service())->apiResponse(500, [], $e->getMessage());
         }

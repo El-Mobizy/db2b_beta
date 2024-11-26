@@ -437,10 +437,10 @@ Route::prefix('users')->group(function () {
 
                 Route::prefix('settings')->group(function () {
                     Route::post('create', [SettingController::class, 'createSetting']);
-                    Route::get('{uid}', [SettingController::class, 'getSetting']);
-                    Route::get('/', [SettingController::class, 'getAllSettings']);
-                    Route::post('{uid}', [SettingController::class, 'updateSetting']);
-                    Route::post('{uid}', [SettingController::class, 'deleteSetting']);
+                    Route::get('show/{uid}', [SettingController::class, 'getSetting']);
+                    Route::get('list', [SettingController::class, 'getAllSettings']);
+                    Route::post('update/{uid}', [SettingController::class, 'updateSetting']);
+                    Route::post('delete/{uid}', [SettingController::class, 'deleteSetting']);
                 });
 
 
