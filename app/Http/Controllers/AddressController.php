@@ -152,7 +152,7 @@ public function getAllAuthAddresses()
 {
     try {
         $user = Auth::user();
-        $addresses = Address::where('user_id', $user->id)->get();
+        $addresses = Address::where('user_id', $user->id)->whereDeleted(false)->get();
 
         return (new Service())->apiResponse(200, $addresses, 'Auth user addresses');
     } catch (Exception $e) {

@@ -610,32 +610,30 @@ function isValidUuid($uuid) {
     public function checkAdAttribute(Request $request, $category_id)
 
 {
-    // Trouver la catégorie en fonction de l'ID
     $category = Category::find($category_id);
     
-    // Récupérer les groupes d'attributs associés à la catégorie
     $attributeGroups = AttributeGroup::where('group_title_id', $category->attribute_group_id)->get();
 
-    // Récupérer les valeurs entrées depuis la requête
     $valueEntered = $request->input('value_entered');
     
-    // Vérifier que value_entered est un tableau d'objets
     if (is_array($valueEntered)) {
-        // Compter les attributs et vérifier les valeurs
         $countAttributes = $attributeGroups->count();
         $values = [];
         
-        // Extraire les valeurs de chaque objet et les stocker dans $values
         foreach ($valueEntered as $entry) {
-            if (isset($entry['value']) && is_string($entry['value'])) {
-                $values[] = $entry['value'];
+            if (isset($entry['value'])) {
+                if (is_string($entry['value'])) {
+                    $values[] = $entry['value']; 
+                } elseif (is_array($entry['value'])) {
+                    $values = array_merge($values, $entry['value']); 
+                } else {
+                    throw new Exception("Chaque objet doit contenir une clé 'value' avec une chaîne ou un tableau de chaînes de caractères.");
+                }
             } else {
-                throw new Exception( "Chaque objet doit contenir une clé 'value' avec une chaîne de caractères.");
-                // return response()->json([
-                //     'message' => "Chaque objet doit contenir une clé 'value' avec une chaîne de caractères."
-                // ]);
+                throw new Exception("Chaque objet doit contenir une clé 'value'.");
             }
         }
+        
 
         // Vérifier si le nombre de valeurs correspond au nombre d'attributs attendus
         if ($countAttributes != count($values)) {

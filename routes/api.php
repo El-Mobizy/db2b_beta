@@ -33,6 +33,7 @@ use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\RightController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\Service;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\TradeChatController;
 use App\Http\Controllers\TradeController;
@@ -430,6 +431,16 @@ Route::prefix('users')->group(function () {
                     Route::post('/createDeliveryPlace/{orderId}/{addressId}', [OrderDeliveryPlaceController::class, 'createDeliveryPlace'])->name('deliveryplace.createDeliveryPlace');
                     Route::post('/updateDeliveryPlaceAddress/{dliveryPlaceUuid}', [OrderDeliveryPlaceController::class, 'updateDeliveryPlaceAddress'])->name('deliveryplace.updateDeliveryPlaceAddress');
                     Route::get('/getUserDeliveryPlaces', [OrderDeliveryPlaceController::class, 'getUserDeliveryPlaces'])->name('deliveryplace.getUserDeliveryPlaces');
+                });
+
+                //Settling
+
+                Route::prefix('settings')->group(function () {
+                    Route::post('create', [SettingController::class, 'createSetting']);
+                    Route::get('{uid}', [SettingController::class, 'getSetting']);
+                    Route::get('/', [SettingController::class, 'getAllSettings']);
+                    Route::post('{uid}', [SettingController::class, 'updateSetting']);
+                    Route::post('{uid}', [SettingController::class, 'deleteSetting']);
                 });
 
 
