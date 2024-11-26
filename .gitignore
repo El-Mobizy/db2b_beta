@@ -19,6 +19,7 @@ yarn-error.log
 /.idea
 /.vscode
 .env
+.env.example
 
 -------fichier_inutile-------
 
