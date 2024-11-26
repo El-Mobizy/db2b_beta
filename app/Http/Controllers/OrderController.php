@@ -1441,11 +1441,7 @@ private function getCartAds($cartItem){
                 }
             }
     
-            if (empty($finalizedOrders)) {
-                return response()->json([
-                    'message' => 'No finalized orders found'
-                ], 200);
-            }
+        
     
             return response()->json([
                 'data' => $finalizedOrders,
@@ -2126,7 +2122,7 @@ public function getMerchantOrderWithDelivery($perPage)
                 $order->delivery_person = [
                     'name' => $deliveryPerson->first_name ?? 'null',
                     'email' => User::whereId($deliveryPerson->user_id)->first()->email,
-                    'phone' => User::whereId($deliveryPerson->user_id)->first()->phone ?? 'N/A',
+                    'phone' => User::whereId($deliveryPerson->user_id)->first()->phone ?? 'null',
                     'image' => User::whereId($deliveryPerson->user_id)->first()->person->file != null ? User::whereId($deliveryPerson->user_id)->first()->person->file->location : 'null',
                 ];
                 $order->delivery_info = [

@@ -583,8 +583,6 @@ public function getRecentAdd(Request $request,$perpage)
       
         $this->checkMerchant();
 
-        $clientId =(new Service())->returnClientIdAuth(); 
-
         $checkCategoryShop = $this->checkCategoryShop($request);
         if($checkCategoryShop){
             return $checkCategoryShop;
@@ -594,6 +592,10 @@ public function getRecentAdd(Request $request,$perpage)
         $checkShop = $this->checkShop($request->shop_id);
         if($checkShop){
             return $checkShop;
+        }
+
+        if(Ad::whereShopId($request->shop_id)->whereTitle($request->title)->exists()){
+            return(new Service())->apiResponse(404,[], "You already added this ad in your shop ".Shop::whereId($request->shop_id)->first()->title);
         }
 
 
@@ -617,7 +619,6 @@ public function getRecentAdd(Request $request,$perpage)
             return (new Service())->apiResponse(404,[],'Ad must be associated with a subcategory.');
         }
 
-       
 
 
     $checkAdAttribute = $service->checkAdAttribute($request,$request->input('category_id'));
