@@ -199,8 +199,7 @@ class CategoryController extends Controller
 
     public function showCategoryDetail(Request $request, $uid)
     {
-           try {
-
+        try {
 
             $db = DB::connection()->getPdo();
             if((new Service())->isValidUuid($uid)){

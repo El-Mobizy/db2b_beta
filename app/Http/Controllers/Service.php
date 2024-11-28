@@ -634,21 +634,13 @@ function isValidUuid($uuid) {
             }
         }
 
-        // Vérifier si le nombre de valeurs correspond au nombre d'attributs attendus
         if ($countAttributes != count($valueEntered)) {
             throw new Exception( "Le nombre de valeurs entrées doit être égal au nombre d'attributs attendus : {$countAttributes} (donné : " . count($values) . ")");
-            // return response()->json([
-            //     'message' => "Le nombre de valeurs entrées doit être égal au nombre d'attributs attendus : {$countAttributes} (donné : " . count($values) . ")"
-            // ]);
         }
 
        
     } else {
-        // Si value_entered n'est pas un tableau
         throw new Exception( "Le format des données est incorrect. 'value_entered' doit être un tableau d'objets.");
-        // return response()->json([
-        //     'message' => "Le format des données est incorrect. 'value_entered' doit être un tableau d'objets."
-        // ]);
     }
  
 }
@@ -912,6 +904,12 @@ public function encrypt($key, $message)
     public function checkAdmin()
     {
         try {
+
+            $checkAuth= (new Service())->checkAuth();
+            if($checkAuth){
+                throw new Exception((new Service())->checkAuth()->original['message']);
+            }
+
             $personId = $this->returnPersonIdAuth();
 
             if (!Admin::wherePersonId($personId)->exists()) {

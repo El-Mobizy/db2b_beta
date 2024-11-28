@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\File;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Setting;
 use App\Models\Shop;
 use App\Models\ShopHasCategory;
 use App\Models\TypeOfType;
@@ -830,7 +831,7 @@ class ShopController extends Controller
             // return [$request->categoryIds,'autre élément'];
 
             $request->validate([
-                'categoryIds' => 'required|array',
+                'categoryIds' => 'required|array|max:3',
                 'categoryIds.*' => 'integer|exists:categories,id'
             ]);
 
@@ -847,9 +848,11 @@ class ShopController extends Controller
 
             $countCategory = ShopHasCategory::where('shop_id',$shopId)->whereDeleted(0)->count();
 
-            $limit = TypeOfType::whereLibelle("limitOfCategory")->first()->codereference;
 
-           
+            $limit = Setting::whereName("limitOfCategory")->first()->value??3;
+
+            // return $limit;
+
 
             foreach($request->input('categoryIds') as $categoryId){
                 $categoryName =  Category::whereId($categoryId)->first()->title;
@@ -862,7 +865,7 @@ class ShopController extends Controller
                 if(Category::whereId($categoryId)->first()->parent_id == null){
                     return (new Service())->apiResponse(404,[],"You can only add subcategories to your store");
                 }
-        
+
                 if($countCategory == $limit){
                     return (new Service())->apiResponse(404,[],"You have reached the maximum number of categories which is $limit you cannot add others");
                 }
@@ -967,9 +970,6 @@ class ShopController extends Controller
 
             if(!Shop::find($shopId)){
                 return (new Service())->apiResponse(404, [], "Shop not found");
-                // return response()->json([
-                //     'message' =>"Shop not found"
-                // ],404);
             }
 
             $shop = Shop::whereId($shopId)->first();

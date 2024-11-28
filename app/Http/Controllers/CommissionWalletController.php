@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Commission;
 use App\Models\CommissionWallet;
+use App\Services\PaiementService;
 use App\Services\WalletService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class CommissionWalletController extends Controller
 {
@@ -368,8 +370,10 @@ class CommissionWalletController extends Controller
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\JsonContent(
- *             required={"amount"},
- *             @OA\Property(property="amount", type="number", example=100.00)
+ *             @OA\Property(property="amount", type="number", example=100.00),
+ *              @OA\Property(property="type", type="string", example="kkiapay"),
+ *              @OA\Property(property="transaction_id", type="string", example="za_i42jlk"),
+ *              @OA\Property(property="status", type="number", example=1)
  *         )
  *     ),
  *     @OA\Response(
@@ -399,8 +403,77 @@ class CommissionWalletController extends Controller
  public function addFund(Request $request){
     try{
         $request->validate([
-            'amount' => 'required'
+            'amount' => 'required',
+            'type' => 'required|string',
+            'transaction_id' => 'required|string',
+            'status' => 'nullable|boolean'
         ]);
+
+        $typeRequired = ['kkiapay', 'mtn'];
+
+        if (!in_array($request->type, $typeRequired)) {
+            return (new Service())->apiResponse(404,[],"La valeur de 'type' doit être l'une des suivantes : " . implode(', ', $typeRequired));
+        }
+
+
+        if ($request->status != '0' && $request->status != '1') {
+            return (new Service())->apiResponse(404,[], "La valeur de 'status' doit être soit '0', soit '1'.");
+        }
+
+
+        $statusPayement =  $request->status;
+
+           $status = (new PaiementService())->verifyFundWalletTransaction($request->type,$request->transaction_id);
+
+
+
+            if($status['status'] == 'ERROR'){
+                return (new Service())->apiResponse(404, [], $status['message'] );
+            }
+
+
+            if($status['status'] == 'FAILED'){
+                $motif = $status['message'];
+                if($request->status == 1){
+                    return (new Service())->apiResponse(404, [], "Vérifiez bien le statut de paiement que vous retourné. Dans ce cas, le paiement a échoué et vous nous envoyé un statut qui a pour valeur  ".$request->status);
+                }
+                $statusPayement = 0;
+            }
+
+            if($status['status'] == 'SUCCESS'){
+                $motif =  "Recharge de portefeuille";
+                if($request->status == 0){
+                    return (new Service())->apiResponse(404, [], "Vérifiez bien le statut de paiement que vous retourné. Dans ce cas, le paiement a réussi et vous nous envoyé un statut qui a pour valeur  ".$request->status);
+                }
+                $statusPayement = 1;
+            }
+
+            if($statusPayement == 1){
+                (new PayementController())->storePayement(
+                    Auth::user()->id,
+                    $request->transaction_id,
+                    $request->type,
+                    $request->amount,
+                    "SUCCESS",
+                    null
+                );
+            }else{
+                (new PayementController())->storePayement(
+                    Auth::user()->id,
+                    $request->transaction_id,
+                    $request->type,
+                    $request->amount,
+                    "FAILED",
+                    $motif
+                );
+            }
+
+            if($status['status'] == 'FAILED'){
+                $motif = $status['message'];
+                return (new Service())->apiResponse(404, [],$motif);
+            }
+
+
         $typeId = Commission::whereShort('STD')->first()->id;
         $service = new Service();
         $personId = $service->returnPersonIdAuth();
@@ -413,14 +486,11 @@ class CommissionWalletController extends Controller
         $credit =  $request->amount + CommissionWallet::where('person_id',$personId)->first()->balance;
 
         (new WalletService())->updateUserWallet($personId,$credit);
-        return response()->json(
-            ['message' => 'Successfully credited wallet'
-        ],200);
+
+        return (new Service())->apiResponse(200,[],'Successfully credited wallet');
 
     }catch(Exception $e){
-        return response()->json([
-            'error' => $e->getMessage()
-        ]);
+        return (new Service())->apiResponse(500,[], $e->getMessage());
     }
 }
 

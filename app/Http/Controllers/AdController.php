@@ -20,6 +20,7 @@ use App\Models\Favorite;
 use App\Models\File;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Setting;
 use App\Models\ShopHasCategory;
 use App\Models\Shop;
 use App\Models\TypeOfType;
@@ -89,7 +90,6 @@ class AdController extends Controller
             if(Auth::user()){
                 return $this->getAllAd();
             }
-            // return Auth::user();
             $data = [];
             $ads =  Ad::with('file')
             ->orderBy('created_at', 'desc')
@@ -136,6 +136,7 @@ class AdController extends Controller
                 ->where('ads.deleted', false)
                 ->where('ads.statut',$validatedStatusId)
                 ->get();
+                $data = [];
 
                 foreach($ads as $ad){
                     $ad->category_title =  Category::find($ad->category_id)->title ;
@@ -1026,7 +1027,7 @@ public function checkAdTitle($title, $shopId)
         try {
             $n = Ad::where('shop_id',$request->shop_id)->where('owner_id',Auth::user()->id)->count();
 
-            $limitOfAdInStore = TypeOfType::whereLibelle("limitOfAdInStore")->first()->codereference??10;
+            $limitOfAdInStore = Setting::whereName("limitOfAdInStore")->first()->value??10;
 
             if($n >=$limitOfAdInStore ){
                 return 0;
@@ -1270,22 +1271,15 @@ public function checkAdTitle($title, $shopId)
    public function validateAd(Request $request,$uid){
     try {
 
-        //todo: check if a person who make this action is an admin
+        (new Service())->checkAdmin();
 
         $ad = Ad::where('uid',$uid)->first();
-        // dd($ad->validated_by_id);
         if(!$ad){
             return (new Service())->apiResponse(404,[],' Ad not found');
-            // return response()->json([
-            //     'message' => ' Ad not found'
-            // ],404);
         }
 
         if($ad->statut != TypeOfType::whereLibelle('pending')->first()->id){
             return (new Service())->apiResponse(404,[],'Statut of ad must be pending. Please, check it !');
-            // return response()->json([
-            //     'message' => 'Statut of ad must be pending. Please, check it !'
-            // ]);
         }
 
         $ad->statut = TypeOfType::whereLibelle('validated')->first()->id;
@@ -1293,11 +1287,8 @@ public function checkAdTitle($title, $shopId)
         $ad->validated_by_id = Auth::user()->id;
         $ad->save();
 
-        return (new Service())->apiResponse(404,[],'Ad validated successfully!');
+        return (new Service())->apiResponse(200,[],'Ad validated successfully!');
 
-        // return response()->json([
-        //     'message' => 'Ad validated successfully!'
-        // ]);
     } catch (\Exception $e) {
          return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
@@ -1401,7 +1392,7 @@ public function checkAdTitle($title, $shopId)
         $ad->reject_reason = $request->input('reject_reason');
         $ad->save();
 
-        return (new Service())->apiResponse(404,[],'Ad rejected successfully!');
+        return (new Service())->apiResponse(200,[],'Ad rejected successfully!');
 
         // return response()->json([
         //     'message' => 'Ad rejected successfully!'

@@ -37,4 +37,12 @@ return [
         'redirect' =>env('GOOGLE_REDIRECT'),
       ],
 
+
+      'kkiapay' => [
+        'public_key' => env('KKIAPAY_PUBLIC_KEY'),
+        'private_key' => env('KKIAPAY_PRIVATE_KEY'),
+        'secret_key' =>env('KKIAPAY_SECRET_KEY'),
+        'is_sandbox' =>env('KKIAPAY_IS_SANDBOX'),
+      ],
+
 ];

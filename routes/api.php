@@ -20,6 +20,7 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FileTypeController;
 use App\Http\Controllers\GoogleLoginController;
+use App\Http\Controllers\KkiapayController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OngingTradeStageController;
 use App\Http\Controllers\OrderController;
@@ -82,6 +83,10 @@ Route::prefix('users')->group(function () {
     Route::post('/new_code/{id}', [UserController::class, 'new_code'])->name('new_code');
     Route::post('/verification_code', [UserController::class, 'verification_code'])->name('verification_code');
 });
+
+//Verification kkiapay
+Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::class, 'verifyTransaction'])
+->name('kkiapay.verifyTransaction');
 
 
 

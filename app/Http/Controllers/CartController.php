@@ -519,6 +519,7 @@ public function actualiseAuthCart(Request $request) {
 
         foreach($AuthCarts as $AuthCart){
             $AuthCart->ad_title = Ad::whereId($AuthCart->ad_id)->first()->title;
+            $AuthCart->image = File::where('referencecode',Ad::whereId($AuthCart->ad_id)->first()->file_code)->exists()?File::where('referencecode',Ad::whereId($AuthCart->ad_id)->first()->file_code)->first()->location:null;
             $AuthCart->ad_final_price = Ad::whereId($AuthCart->ad_id)->first()->final_price;
         }
 

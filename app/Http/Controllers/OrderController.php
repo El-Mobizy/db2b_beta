@@ -28,7 +28,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Spatie\LaravelIgnition\Http\Requests\UpdateConfigRequest;
 
 class OrderController extends Controller
 {
@@ -748,11 +747,15 @@ private function getCartAds($cartItem){
         try {
             $request->validate([
                 'cartItemids' => 'required|array',
+                'address_id' => 'required|integer',
             ]);
+
+            DB::beginTransaction();
+
             $service = new Service();
 
             $checkAuth=$service->checkAuth();
-    
+
             if($checkAuth){
                return $checkAuth;
             }
@@ -795,6 +798,8 @@ private function getCartAds($cartItem){
                             return (new Service())->apiResponse(404, [], 'Cart is empty');
                         }
 
+                        $this->checkSolde($total);
+
                         $request = new Request();
 
                         $orderId = $this->storeOrder($total,$request);
@@ -807,12 +812,14 @@ private function getCartAds($cartItem){
                     Cart::whereId($cartId)->first()->delete();
                 }
 
-                // return $orderId;
+                 (new OrderDeliveryPlaceController())->createDeliveryPlace($orderId,$request->address_id);
+
+
+                return $orderId;
 
                 return (new Service())->apiResponse(200,$orderId, 'Order created successffuly');
 
-                // DB::commit();
-    
+                DB::commit();
 
         }  catch(Exception $e){
              return (new Service())->apiResponse(500, [], $e->getMessage());
@@ -901,7 +908,7 @@ private function getCartAds($cartItem){
         try {
 
             $request->validate([
-                'address_id' => 'required',
+                'address_id' => 'nullable',
             ]);
 
             $service = new Service();
@@ -936,10 +943,6 @@ private function getCartAds($cartItem){
         }
 
         $diff = $this->checkSolde($orderId);
-
-        if($diff < 0){
-            return (new Service())->apiResponse(404, [],'insufficient balance');
-        }
 
         (new WalletService())->updateUserWallet($personId,$diff);
 
@@ -1060,8 +1063,6 @@ private function getCartAds($cartItem){
             $user = Auth::user();
             $order = Order::find($orderId);
 
-            // return [ Auth::user()->id, $order->user_id ];
-
             if(!$order){
                 return (new Service())->apiResponse(404, [], 'Order not found');
             }
@@ -1083,27 +1084,26 @@ private function getCartAds($cartItem){
                 }
             }
 
-            $personId = $service->returnPersonIdAuth();
-            $typeId = Commission::whereShort('STD')->first()->id;
-            $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
-
-            if(!$wallet){
-                return (new Service())->apiResponse(404, [],   'Fund your account');
-            }
+            
 
         } catch(Exception $e){
              return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
-    public function checkSolde($orderId){
+    public function checkSolde($orderAmount){
         try{
+
+            $personId = (new Service())->returnPersonIdAuth();
+            $typeId = Commission::whereShort('STD')->first()->id;
+            $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
+
+            if(!$wallet){
+                throw new Exception( 'Fund your account');
+            }
 
             $service = new Service();
             $personId = $service->returnPersonIdAuth();
-
-            $order = Order::find($orderId);
-            $orderAmount = $order->amount;
 
             $typeId = Commission::whereShort('STD')->first()->id;
             $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
@@ -1111,10 +1111,15 @@ private function getCartAds($cartItem){
 
             $diff = $walletAmount - $orderAmount;
 
-            return $diff;
+
+            if($diff < 0){
+                throw new Exception( 'insufficient balance');
+                // return (new Service())->apiResponse(404, [],'insufficient balance');
+            }
 
         }catch(Exception $e){
-             return (new Service())->apiResponse(500, [], $e->getMessage());
+            throw new Exception($e->getMessage());
+            //  return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
