@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\errorException;
 use App\Models\Commission;
 use App\Models\CommissionWallet;
 use App\Services\PaiementService;
@@ -363,7 +364,7 @@ class CommissionWalletController extends Controller
        /**
  * @OA\Post(
  *     path="/api/wallet/addFund",
- *     tags={"Wallet"},
+* tags={"MANAGE WALLET"},
  *   security={{"bearerAuth":{}}},
  *     summary="Add funds to a user's wallet",
  *     description="Add funds to a user's wallet",
@@ -420,6 +421,16 @@ class CommissionWalletController extends Controller
             return (new Service())->apiResponse(404,[], "La valeur de 'status' doit être soit '0', soit '1'.");
         }
 
+        $typeId = Commission::whereShort('STD')->first()->id;
+        $service = new Service();
+        $personId = $service->returnPersonIdAuth();
+        $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
+
+        if(!$wallet){
+            $this->generateStandardWallet();
+        }
+
+        $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
 
         $statusPayement =  $request->status;
 
@@ -450,7 +461,7 @@ class CommissionWalletController extends Controller
 
             if($statusPayement == 1){
                 (new PayementController())->storePayement(
-                    Auth::user()->id,
+                    $wallet->id,
                     $request->transaction_id,
                     $request->type,
                     $request->amount,
@@ -459,7 +470,7 @@ class CommissionWalletController extends Controller
                 );
             }else{
                 (new PayementController())->storePayement(
-                    Auth::user()->id,
+                    $wallet->id,
                     $request->transaction_id,
                     $request->type,
                     $request->amount,
@@ -473,22 +484,14 @@ class CommissionWalletController extends Controller
                 return (new Service())->apiResponse(404, [],$motif);
             }
 
-
-        $typeId = Commission::whereShort('STD')->first()->id;
-        $service = new Service();
-        $personId = $service->returnPersonIdAuth();
-        $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
-
-        if(!$wallet){
-            $this->generateStandardWallet();
-        }
-
         $credit =  $request->amount + CommissionWallet::where('person_id',$personId)->first()->balance;
 
         (new WalletService())->updateUserWallet($personId,$credit);
 
         return (new Service())->apiResponse(200,[],'Successfully credited wallet');
 
+    } catch (errorException $e) {
+        return (new Service())->apiResponse(404, [], $e->getMessage());
     }catch(Exception $e){
         return (new Service())->apiResponse(500,[], $e->getMessage());
     }

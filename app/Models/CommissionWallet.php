@@ -14,4 +14,10 @@ class CommissionWallet extends Model
     public function person(){
         return $this->belongsTo(Person::class);
     }
+
+    public function payements()
+    {
+        return $this->hasMany(Payement::class, 'commission_wallet_id');
+    }
+
 }

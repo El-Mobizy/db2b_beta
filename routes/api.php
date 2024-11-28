@@ -26,6 +26,7 @@ use App\Http\Controllers\OngingTradeStageController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDeliveryPlaceController;
 use App\Http\Controllers\OtpPasswordForgottenController;
+use App\Http\Controllers\PayementController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\PersonFileController;
@@ -259,6 +260,10 @@ Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::cl
             Route::post('/updateOngingTradeStage/{ongingTradeStageId}', [OngingTradeStageController::class, 'updateOngingTradeStage'])->name('ongingtradeStage.updateOngingTradeStage');
             Route::post('/handleTradeStageAction/{ongingtradeStageId}/{actionType}', [OngingTradeStageController::class, 'handleTradeStageAction'])->name('order.handleTradeStageAction');
         });
+
+
+        //Payement
+        Route::post('payement/detail/user/{perpage}', [PayementController::class, 'getUserPayements']);
 
 
         //TradeChat

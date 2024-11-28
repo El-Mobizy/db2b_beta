@@ -3837,7 +3837,7 @@
         "/api/wallet/addFund": {
             "post": {
                 "tags": [
-                    "Wallet"
+                    "MANAGE WALLET"
                 ],
                 "summary": "Add funds to a user's wallet",
                 "description": "Add funds to a user's wallet",
@@ -8167,6 +8167,178 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/payement/detail/user/{perpage}": {
+            "get": {
+                "tags": [
+                    "MANAGE WALLET"
+                ],
+                "summary": "Retrieve all payments made by the user for wallet top-ups",
+                "operationId": "23bc5b7640b5db90b1385be3f4c53adb",
+                "parameters": [
+                    {
+                        "name": "perpage",
+                        "in": "path",
+                        "description": "Number of payments to retrieve per page",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The page number for pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of payments made when topping up the wallet",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "transaction_id": {
+                                                                "type": "string",
+                                                                "example": "txn12345"
+                                                            },
+                                                            "payement_type": {
+                                                                "type": "string",
+                                                                "example": "kkiapay"
+                                                            },
+                                                            "amount": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 100.5
+                                                            },
+                                                            "statut": {
+                                                                "type": "string",
+                                                                "example": "SUCCESS"
+                                                            },
+                                                            "motif": {
+                                                                "type": "string",
+                                                                "example": "Recharge de portefeuille"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 100
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "from": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "to": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "List of payments made when topping up the wallet"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No payments found or invalid request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": ""
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No payments found or invalid request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/permission/index": {
