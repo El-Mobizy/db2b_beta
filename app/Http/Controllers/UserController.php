@@ -1528,6 +1528,41 @@ public function regenerateToken(){
 }
 
 
+public function updateUserEmail($currentEmail, $newEmail)
+{
+    try {
+        $user = DB::table('users')->where('email', $currentEmail)->first();
+
+        if (!$user) {
+            return response()->json([
+                'error' => 'L\'utilisateur avec l\'email actuel n\'existe pas.'
+            ], 404);
+        }
+
+        $existingUser = DB::table('users')->where('email', $newEmail)->first();
+
+        if ($existingUser) {
+            return response()->json([
+                'error' => 'Le nouvel email est déjà utilisé par un autre utilisateur.'
+            ], 409);
+        }
+
+        // Mettre à jour l'email
+        DB::table('users')
+            ->where('email', $currentEmail)
+            ->update(['email' => $newEmail]);
+
+        return response()->json([
+            'message' => 'L\'email a été mis à jour avec succès.'
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Erreur lors de la mise à jour de l\'email : ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+
 
 
 
