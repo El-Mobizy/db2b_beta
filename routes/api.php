@@ -263,7 +263,7 @@ Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::cl
 
 
         //Payement
-        Route::post('payement/detail/user/{perpage}', [PayementController::class, 'getUserPayements']);
+        Route::get('payement/detail/user/{perpage}', [PayementController::class, 'getUserPayements']);
 
 
         //TradeChat

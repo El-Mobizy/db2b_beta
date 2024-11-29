@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\SendEmail;
+use App\Models\Ad;
+use App\Models\Address;
 use App\Models\Commission;
 use App\Models\CommissionWallet;
 use App\Models\DeliveryAgency;
 use App\Models\EscrowDelivery;
+use App\Models\File;
 use App\Models\Order;
 use App\Models\Person;
 use App\Models\TypeOfType;
@@ -393,6 +396,13 @@ class DeliveryAgencyController extends Controller
      *     tags={"Delivery Agencies"},
      *  @OA\Parameter(
      *         name="perpage",
+     *         in="path",
+     *         description="Number of eleme,t per page",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     * @OA\Parameter(
+     *         name="page",
      *         in="query",
      *         description="Page number",
      *         required=false,
@@ -438,6 +448,36 @@ class DeliveryAgencyController extends Controller
                 })
                 ->orderBy('created_at', 'desc')
                 ->paginate(intval($perpage));
+
+               
+
+                foreach ($orders as $order) {
+
+                    $orderProducts = $order->order_details_not_deleted;
+
+                    $products = [];
+
+                    foreach ($orderProducts as $orderProduct){
+
+                        $ad =  Ad::whereId($orderProduct->ad_id)->first();
+
+                        $products[] = [
+                            "ad_id" => $orderProduct->ad_id,
+                            "ad_title" => $ad->title,
+                            "image" => File::where('referencecode',$ad->file_code)->first()->location,
+                            "description" => $ad->description
+                        ];
+
+                    }
+
+
+                    $order->customer_address = [
+                        "latitude" =>Address::whereUserId($order->user_id)->first()->latitude,
+                        "longitude" =>Address::whereUserId($order->user_id)->first()->longitude,
+                    ];
+
+                    $order->product_detail = $order->order_details_not_deleted;
+                }
     
             return response()->json(['data' => $orders]);
     

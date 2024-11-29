@@ -623,6 +623,8 @@ private function getCartAds($cartItem){
     private function storeOrder($total){
         try {
 
+         
+
                 $service = new Service();
 
                 $user = Auth::user();
@@ -632,7 +634,9 @@ private function getCartAds($cartItem){
                 $order->status =  TypeOfType::whereLibelle('pending')->first()->id;
                 $order->uid= $service->generateUid($order);
 
-                if( $order->save()){
+
+                if($order->save()){
+                    // return $order;
                     return $order->id;
                 }else{
                     $e = new Exception();
@@ -641,6 +645,8 @@ private function getCartAds($cartItem){
                     ]);
                 }
 
+                
+
         }  catch(Exception $e){
              return (new Service())->apiResponse(500, [], $e->getMessage());
         }
@@ -648,9 +654,8 @@ private function getCartAds($cartItem){
 
     private function storeOrderDetail($ads,$orderId){
         try {
-            // return $ads;
             $service = new Service();
-            $trade = new TradeController();
+            // $trade = new TradeController();
             $order_detail = new OrderDetail();
                 $order_detail->order_id = $orderId;
                 $order_detail->uid = $service->generateUid($order_detail);
@@ -661,8 +666,7 @@ private function getCartAds($cartItem){
                 $order_detail->shop_id = $ads['shop_id'];
                 $order_detail->amount = $ads['final_price_product'] *  $ads['quantity_product'];
                 $order_detail->save();
-                $trade->createTrade($order_detail->id,Order::find($orderId)->user_id,Shop::find($ads['shop_id'])->client_id,'1000-10-10 10:10:10', $ads['final_price_product']);
-           
+                // $trade->createTrade($order_detail->id,Order::find($orderId)->user_id,Shop::find($ads['shop_id'])->client_id,'1000-10-10 10:10:10', $ads['final_price_product']);
             return 'done';
         }  catch(Exception $e){
              return (new Service())->apiResponse(500, [], $e->getMessage());
@@ -750,7 +754,9 @@ private function getCartAds($cartItem){
                 'address_id' => 'required|integer',
             ]);
 
-            DB::beginTransaction();
+            // DB::beginTransaction();
+
+           
 
             $service = new Service();
 
@@ -773,55 +779,74 @@ private function getCartAds($cartItem){
                 $cartItems[] = Cart::where('user_id', $user->id)->whereId($cartItem)->first();
             }
 
-        //    return $cartItems;
             $ads=[]  ;
 
             foreach ($cartItems as $cartItem) {
                 $ads[] =  [
                     'id_product' =>Ad::whereId($cartItem->ad_id)->first()->id,
+                    'title_product' =>Ad::whereId($cartItem->ad_id)->first()->title,
                     'shop_id' =>Ad::whereId($cartItem->ad_id)->first()->shop->id,
-                    'quantity_product' => $cartItem->quantity,
+                    'quantity_product' =>Ad::whereId($cartItem->ad_id)->first()->quantity,
+                    'quantity_ordered' => $cartItem->quantity,
                     'price_product' => Ad::whereId($cartItem->ad_id)->first()->price,
                     'final_price_product' =>Ad::whereId($cartItem->ad_id)->first()->final_price,
                 ];
             }
 
+           foreach ($ads as $ad) {
+            $this->checkProductAvailability($ad);
+           }
+
+           foreach ($ads as $ad) {
+
+            $product = Ad::whereId($ad['id_product'])->first();
+
+            $product->quantity = $ad['quantity_product'] -  $ad['quantity_ordered'];
+
+            $product->save();
+
+            $this->notifyMerchantOnLowStock($ad);
+           }
+
+
             $flatAds = array_merge($ads);
 
-                    $total = array_sum(array_map(function ($item) {
-                        return floatval($item['final_price_product']) * $item['quantity_product'];
-                        }, $flatAds));
+            $total = 0;
+            foreach ($flatAds as $item) {
+                if (is_array($item)) { 
+                    $finalPrice = floatval($item['final_price_product'] ?? 0); 
+                    $quantity = $item['quantity_ordered'] ?? 0;
+                    $total += $finalPrice * $quantity;
+                }
+            }
 
-                        $cartitemsnumber = count($cartItems);
+                $cartitemsnumber = count($cartItems);
 
-                        if ($cartitemsnumber== 0) {
-                            return (new Service())->apiResponse(404, [], 'Cart is empty');
-                        }
+                if ($cartitemsnumber== 0) {
+                    return (new Service())->apiResponse(404, [], 'Cart is empty');
+                }
 
-                        $this->checkSolde($total);
+                $this->checkSolde($total);
 
-                        $request = new Request();
+                $request = new Request();
 
-                        $orderId = $this->storeOrder($total,$request);
+                    $orderId = $this->storeOrder($total,$request);
 
-                        foreach ($ads as $ad) {
-                            $this->storeOrderDetail($ad,$orderId);
-                        }
+                foreach ($ads as $ad) {
+                    $this->storeOrderDetail($ad,$orderId);
+                }
 
                 foreach($cartIds as $cartId){
                     Cart::whereId($cartId)->first()->delete();
                 }
 
-                 (new OrderDeliveryPlaceController())->createDeliveryPlace($orderId,$request->address_id);
+                 return $orderId;
 
 
-                return $orderId;
-
-                return (new Service())->apiResponse(200,$orderId, 'Order created successffuly');
-
-                DB::commit();
+                // DB::commit();
 
         }  catch(Exception $e){
+            // DB::rollback();
              return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
@@ -906,6 +931,7 @@ private function getCartAds($cartItem){
 
     public function payOrder($orderId, Request $request){
         try {
+            // DB::beginTransaction();
 
             $request->validate([
                 'address_id' => 'nullable',
@@ -936,13 +962,16 @@ private function getCartAds($cartItem){
                 return $checkAuth;
             }
 
-        $data = $this->payOrderVerification($orderId);
 
-        if($data){
-            return $data;
-        }
 
-        $diff = $this->checkSolde($orderId);
+            $service = new Service();
+            $personId = $service->returnPersonIdAuth();
+
+            $typeId = Commission::whereShort('STD')->first()->id;
+            $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
+            $walletAmount = $wallet->balance;
+
+            $diff = $walletAmount - $order->amount;
 
         (new WalletService())->updateUserWallet($personId,$diff);
 
@@ -952,40 +981,24 @@ private function getCartAds($cartItem){
 
         $order->save();
 
-        $orderDetails = $this->getOrderAds($order->uid);
-        $ads = $orderDetails->original['data']['ad'];
-
-        foreach ($ads as $ad) {
-            $adUid = $ad['uid'];
-            $quantitySale = $ad['quantity_sale'];
-            $decrementRequest = new Request(['quantity' => $quantitySale]);
-
-            $response = (new AdController())->decrementQuantity($decrementRequest, $adUid);
-
-            if ($response->getStatusCode() !== 200) {
-                return (new Service())->apiResponse(404, [],"Failed to decrement quantity for product {$ad['title']}");
-            }
-
-
-            $a[] = $this->notifyMerchantOnLowStock($ad);
-        }
-
        $this->notifyParty($orderId,$request->address_id);
 
          (new OrderDeliveryPlaceController())->createDeliveryPlace($orderId,$request->address_id);
 
+        //  DB::commit();
 
-//Secured
+
             return (new Service())->apiResponse(200, [], 'Payement done Successfully');
 
         } catch(Exception $e){
+            // DB::rollback();
              return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
     public function notifyMerchantOnLowStock($ad)
     {
-        $ad = Ad::whereId($ad->id)->first();
+        $ad = Ad::whereId($ad['id_product'])->first();
     
         if (!$ad) {
             return response()->json(['message' => 'Ad not found'], 404);
@@ -1019,7 +1032,6 @@ private function getCartAds($cartItem){
 
         $this->notifyBuyer(Order::where('id',$orderId)->first()->uid);
 
-
         $orderDetails = OrderDetail::where('order_id',$order->id)->get();
 
         foreach($orderDetails as $orderDetail){
@@ -1031,7 +1043,7 @@ private function getCartAds($cartItem){
         // $notification = new DeliveryAgencyController();
         // $notification->notifyDeliveryAgents($orderUid);
 
-        (new ZoneController())->isWithinDeliveryZone($addressId, Order::where('id',$orderId)->first()->uid);
+        // (new ZoneController())->isWithinDeliveryZone($addressId, Order::where('id',$orderId)->first()->uid);
 
         return 'sent';
 
@@ -1056,38 +1068,17 @@ private function getCartAds($cartItem){
 
 
 
-    public function payOrderVerification($orderId){
-        try {
 
-            $service = new Service();
-            $user = Auth::user();
-            $order = Order::find($orderId);
 
-            if(!$order){
-                return (new Service())->apiResponse(404, [], 'Order not found');
+    public function checkProductAvailability($productCart){
+        try{
+
+            if($productCart['quantity_product'] < $productCart['quantity_ordered']){
+                throw new Exception("Product {$productCart['title_product']} has only {$productCart['quantity_product']} left in stock.");
             }
 
-            if($user->id != $order->user_id){
-                return (new Service())->apiResponse(404, [], 'This order it is not yours');
-            }
-
-            $orderDetails = $this->getOrderAds($order->uid);
-            if ($orderDetails->getStatusCode() !== 200) {
-                return $orderDetails;
-            }
-            
-            $ads = $orderDetails->original['data']['ad'];
-    
-            foreach ($ads as $ad) {
-                if ($ad['quantity'] !== null && $ad['quantity_sale'] > $ad['quantity']) {
-                    return (new Service())->apiResponse(404, [],  "Product {$ad['title']} has only {$ad['quantity']} left in stock.");
-                }
-            }
-
-            
-
-        } catch(Exception $e){
-             return (new Service())->apiResponse(500, [], $e->getMessage());
+        }catch(Exception $e){
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -1119,7 +1110,6 @@ private function getCartAds($cartItem){
 
         }catch(Exception $e){
             throw new Exception($e->getMessage());
-            //  return (new Service())->apiResponse(500, [], $e->getMessage());
         }
     }
 
@@ -1738,6 +1728,7 @@ private function getCartAds($cartItem){
               ],200);
             }
 
+
             $PayOrder = $this->PayOrder($orderId, $request);
 
             if ($PayOrder) {
@@ -1784,7 +1775,7 @@ private function getCartAds($cartItem){
             $body = "Your order has been placed successfully. Your wallet has been debited, and your new balance is $balance XOF. Thank you for your purchase!";
 
 
-            (new MailController())->sendNotification($user->id,$title,$body, 2);
+            (new MailController())->sendNotification($user->id,$title,$body, 0);
             // dispatch(new SendEmail($user->id,$title,$body,2));
 
         } catch (Exception $e) {
@@ -2219,17 +2210,20 @@ public function getMerchantOrderWithDelivery($perPage)
 public function createAndPayManyItem(Request $request)
 {
     try {
-        $orderCreationResponse = $this->orderManyItem($request)->original;
 
+        $orderCreationResponse = $this->orderManyItem($request);
 
-        if ($orderCreationResponse['status_code'] !== 200) {
+        if (!is_numeric($orderCreationResponse)) {
             return $orderCreationResponse; 
         }
 
-        $orderId = $orderCreationResponse['data'];
+
+        $orderId = $orderCreationResponse;
 
 
         $paymentResponse = $this->payOrder($orderId,$request)->original;
+
+
 
         if ($paymentResponse['status_code'] !== 200) {
             return $paymentResponse; 

@@ -4221,6 +4221,15 @@
                 "parameters": [
                     {
                         "name": "perpage",
+                        "in": "path",
+                        "description": "Number of eleme,t per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
                         "in": "query",
                         "description": "Page number",
                         "required": false,

@@ -122,7 +122,7 @@ class PayementController extends Controller
             $personId = (new Service())->returnPersonIdAuth();
             $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',Commission::whereShort($typeId)->first()->id)->first();
 
-            $perpage = $request->input('perpage', 10);
+            $perpage = $request->perpage;
 
             $data = $wallet->payements()->paginate($perpage);
 
