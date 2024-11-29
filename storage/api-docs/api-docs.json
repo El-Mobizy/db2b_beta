@@ -17173,6 +17173,102 @@
                 ]
             }
         },
+        "/api/updateUserEmail": {
+            "post": {
+                "tags": [
+                    "updateemail"
+                ],
+                "summary": "Mettre à jour l'email de l'utilisateur",
+                "description": "Permet de mettre à jour l'email d'un utilisateur, à condition que le nouvel email ne soit pas déjà utilisé par un autre utilisateur.",
+                "operationId": "updateUserEmail",
+                "parameters": [
+                    {
+                        "name": "currentEmail",
+                        "in": "query",
+                        "description": "L'email actuel de l'utilisateur",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "newEmail",
+                        "in": "query",
+                        "description": "Le nouvel email à attribuer à l'utilisateur",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email mis à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "L'email a été mis à jour avec succès."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "L'utilisateur avec l'email actuel n'existe pas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "L'utilisateur avec l'email actuel n'existe pas."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Le nouvel email est déjà utilisé par un autre utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Le nouvel email est déjà utilisé par un autre utilisateur."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Erreur lors de la mise à jour de l'email : message d'erreur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/zone/index/{paginate}": {
             "get": {
                 "tags": [

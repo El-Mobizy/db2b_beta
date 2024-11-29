@@ -1528,9 +1528,83 @@ public function regenerateToken(){
 }
 
 
-public function updateUserEmail($currentEmail, $newEmail)
+/**
+ * @OA\Post(
+ *     path="/api/updateUserEmail",
+ *     tags={"updateemail"},
+ *     summary="Mettre à jour l'email de l'utilisateur",
+ *     description="Permet de mettre à jour l'email d'un utilisateur, à condition que le nouvel email ne soit pas déjà utilisé par un autre utilisateur.",
+ *     operationId="updateUserEmail",
+ *     @OA\Parameter(
+ *         name="currentEmail",
+ *         in="query",
+ *         required=true,
+ *         description="L'email actuel de l'utilisateur",
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\Parameter(
+ *         name="newEmail",
+ *         in="query",
+ *         required=true,
+ *         description="Le nouvel email à attribuer à l'utilisateur",
+ *         @OA\Schema(
+ *             type="string"
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Email mis à jour avec succès",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="message",
+ *                 type="string",
+ *                 example="L'email a été mis à jour avec succès."
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="L'utilisateur avec l'email actuel n'existe pas",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="L'utilisateur avec l'email actuel n'existe pas."
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=409,
+ *         description="Le nouvel email est déjà utilisé par un autre utilisateur",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Le nouvel email est déjà utilisé par un autre utilisateur."
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur",
+ *         @OA\JsonContent(
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="string",
+ *                 example="Erreur lors de la mise à jour de l'email : message d'erreur"
+ *             )
+ *         )
+ *     )
+ * )
+ */
+
+public function updateUserEmail(Request $request)
 {
     try {
+        $currentEmail = $request->query('currentEmail');
+        $newEmail = $request->query('newEmail');
         $user = DB::table('users')->where('email', $currentEmail)->first();
 
         if (!$user) {
@@ -1546,6 +1620,8 @@ public function updateUserEmail($currentEmail, $newEmail)
                 'error' => 'Le nouvel email est déjà utilisé par un autre utilisateur.'
             ], 409);
         }
+
+      
 
         // Mettre à jour l'email
         DB::table('users')

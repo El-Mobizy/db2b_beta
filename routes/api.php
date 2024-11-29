@@ -575,4 +575,4 @@ Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::cl
 
     Route::post('/TestCrypto', [Service::class, 'TestCrypto'])->name("file.TestCrypto");
 
-    Route::post('/updateUserEmail/{currentEmail}/{newEmail}', [UserController::class, 'updateUserEmail']);
+    Route::post('/updateUserEmail', [UserController::class, 'updateUserEmail']);
