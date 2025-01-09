@@ -171,8 +171,6 @@ class TradeStageController extends Controller
     public function updateTradeStage(Request $request, $tradeStageId){
         try {
                 $tradeStage = TradeStage::find($tradeStageId);
-                 
-
 
                 if(!$tradeStage){
                     return response()->json([

@@ -96,7 +96,7 @@ Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::cl
         //Delivery Agency
         Route::prefix('deliveryAgency')->group(function () {
             Route::post('/add', [DeliveryAgencyController::class, 'add'])->name('deliveryAgency.add');
-            Route::post('/acceptOrder/{orderUid}', [DeliveryAgencyController::class, 'acceptOrder'])->name('deliveryAgency.acceptOrder');
+            Route::post('/acceptOrder', [DeliveryAgencyController::class, 'acceptOrder'])->name('deliveryAgency.acceptOrder');
             Route::get('/getAvailableOrders/{perpage}', [DeliveryAgencyController::class, 'getAvailableOrders'])->name('deliveryAgency.getAvailableOrders');
             Route::post('/becomeDeliveryAgent', [DeliveryAgencyController::class, 'becomeDeliveryAgent'])->name('deliveryAgency.becomeDeliveryAgent');
             Route::get('/getDeliveryAgent', [DeliveryAgencyController::class, 'getDeliveryAgent'])->name('deliveryAgency.getDeliveryAgent');
@@ -431,7 +431,8 @@ Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::cl
                     Route::get('/getAllAuthAddresses', [AddressController::class, 'getAllAuthAddresses'])->name('address.getAllAuthAddresses');
                     Route::get('/getAllUserAddresses/{userUid}', [AddressController::class, 'getAllUserAddresses'])->name('address.getAllUserAddresses');
                     Route::post('/updateAddress/{addressUid}', [AddressController::class, 'updateAddress'])->name('address.updateAddress');
-                    Route::post('/deleteAddress/{id}', [AddressController::class, 'deleteAddress'])->name('address.deleteAddress');
+                    Route::post('/deleteAddress/{addressUid}', [AddressController::class, 'deleteAddress'])->name('address.deleteAddress');
+                    Route::post('/activateAddress/{addressUid}', [AddressController::class, 'activateAddress'])->name('address.activateAddress');
                     Route::get('/getActiveService', [AddressController::class, 'getActiveService'])->name('address.getActiveService');
                     Route::get('/getUserActiveService/{userUid}', [AddressController::class, 'getUserActiveService'])->name('address.getUserActiveService');
                 });

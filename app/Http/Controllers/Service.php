@@ -786,11 +786,12 @@ public function checkIfDeliveryAgent(){
     
     $personId =$this->returnPersonIdAuth();
     $personUid = Person::whereId($personId)->first()->uid;
-    $exist = DeliveryAgency::where('person_id',$personId)->exists();
+    $exist = DeliveryAgency::where('person_id',$personId)->whereNotNull('validated_by_id')
+    ->whereNotNull('validated_on')
+    ->exists();
     if($exist){
         return $personId;
     }else{
-        
         return 0;
     }
 }

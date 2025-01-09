@@ -58,7 +58,7 @@ class OngingTradeStageService
     public function isTradeFinished($trade) {
         return $trade->status_id == TypeOfType::whereLibelle('endtrade')->first()->id || $trade->status_id == TypeOfType::whereLibelle('canceltrade')->first()->id;
     }
-    
+
     public function tradeFinishedResponse() {
         return response()->json([
             'message' => 'This trade is already finished'
@@ -391,7 +391,7 @@ class OngingTradeStageService
 
     }
 
-    public function errorResponse($e) {
+     public function errorResponse($e) {
         return response()->json([
             'error' => $e->getMessage()
         ], 500);

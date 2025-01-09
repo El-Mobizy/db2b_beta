@@ -107,14 +107,11 @@ class OrderController extends Controller
                             return (new Service())->apiResponse(404, [], 'Cart is empty');
 
                          }
-                         $request = new Request();
                         $orderId = $this->storeOrder($total);
 
                         foreach ($ads as $tab) {
-                           $i =  $this->storeOrderDetail($tab,$orderId);
-                        //    return $i;
+                            $this->storeOrderDetail($tab,$orderId);
                         }
-
 
                 foreach( Cart::where('user_id', $user->id)->get() as $cart){
                     $cart->delete();
@@ -655,7 +652,7 @@ private function getCartAds($cartItem){
     private function storeOrderDetail($ads,$orderId){
         try {
             $service = new Service();
-            // $trade = new TradeController();
+            $trade = new TradeController();
             $order_detail = new OrderDetail();
                 $order_detail->order_id = $orderId;
                 $order_detail->uid = $service->generateUid($order_detail);
@@ -666,7 +663,7 @@ private function getCartAds($cartItem){
                 $order_detail->shop_id = $ads['shop_id'];
                 $order_detail->amount = $ads['final_price_product'] *  $ads['quantity_product'];
                 $order_detail->save();
-                // $trade->createTrade($order_detail->id,Order::find($orderId)->user_id,Shop::find($ads['shop_id'])->client_id,'1000-10-10 10:10:10', $ads['final_price_product']);
+                $trade->createTrade($order_detail->id,Order::find($orderId)->user_id,Shop::find($ads['shop_id'])->client_id,'1000-10-10 10:10:10', $ads['final_price_product']);
             return 'done';
         }  catch(Exception $e){
              return (new Service())->apiResponse(500, [], $e->getMessage());
@@ -756,7 +753,6 @@ private function getCartAds($cartItem){
 
             // DB::beginTransaction();
 
-           
 
             $service = new Service();
 
@@ -813,12 +809,14 @@ private function getCartAds($cartItem){
 
             $total = 0;
             foreach ($flatAds as $item) {
-                if (is_array($item)) { 
-                    $finalPrice = floatval($item['final_price_product'] ?? 0); 
+                if (is_array($item)) {
+                    $finalPrice = floatval($item['final_price_product'] ?? 0);
                     $quantity = $item['quantity_ordered'] ?? 0;
                     $total += $finalPrice * $quantity;
                 }
             }
+
+            // return $total;
 
                 $cartitemsnumber = count($cartItems);
 
@@ -840,7 +838,7 @@ private function getCartAds($cartItem){
                     Cart::whereId($cartId)->first()->delete();
                 }
 
-                 return $orderId;
+                return $orderId;
 
 
                 // DB::commit();

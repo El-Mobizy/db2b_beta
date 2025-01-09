@@ -170,13 +170,8 @@ class DeliveryAgencyController extends Controller
      $titleAdmin = "New Delivery Agent Registration Request";
      $bodyAdmin = "A new registration request as a delivery agent has been submitted. Please log in to your account to review and validate the request promptly. Your attention is required. Thank you!";
 
-
-     //notify delivery agent
-
     (new MailController())->sendNotification(Auth::user()->id,$title,$body, 2);
-    //  dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
 
-      //notify admin
       $service->notifyAdmin($titleAdmin,$bodyAdmin);
 
      return  $deliveryAgency->file_reference_code;
@@ -205,24 +200,24 @@ class DeliveryAgencyController extends Controller
        }
     }
 
-    public function storeEscrowDelivery($deliveryPersonUid, $orderUid){
+    public function storeEscrowDelivery($deliveryPersonUid, $orderDetailUid){
         try {
             if((new Service())->isValidUuid($deliveryPersonUid)){
                 return (new Service())->isValidUuid($deliveryPersonUid);
             }
-            if((new Service())->isValidUuid($orderUid)){
-                return (new Service())->isValidUuid($orderUid);
-            } 
-            if(!Order::whereUid($orderUid)->first()){
-                return (new Service())->apiResponse(404, [], 'Order not found');
+            if((new Service())->isValidUuid($orderDetailUid)){
+                return (new Service())->isValidUuid($orderDetailUid);
+            }
+            if(!OrderDetail::whereUid($orderDetailUid)->first()){
+                return (new Service())->apiResponse(404, [], 'Order detailnot found');
             }
             $escrowDelivery = new EscrowDelivery();
             $escrowDelivery->person_uid = $deliveryPersonUid;
-            $escrowDelivery->order_uid = $orderUid;
-            $escrowDelivery->order_amount = Order::whereUid($orderUid)->first()->amount;
+            $escrowDelivery->order_detail_uid = $orderDetailUid;
+            $escrowDelivery->order_amount = OrderDetail::whereUid($orderDetailUid)->first()->amount;
             $escrowDelivery->delivery_agent_amount = $escrowDelivery->order_amount;
             $escrowDelivery->status = TypeOfType::where('libelle','pending')->first()->id; 
-            $escrowDelivery->pickup_date = null; // Date de prise en charge 
+            $escrowDelivery->pickup_date = now(); // Date de prise en charge 
             $escrowDelivery->delivery_date = null; // Date de livraison 
             $escrowDelivery->created_at = now();
             $escrowDelivery->updated_at = now();
@@ -234,14 +229,14 @@ class DeliveryAgencyController extends Controller
          }
     }
 
-    public function reserveAmount($deliveryPersonId, $orderUid) {
+    public function reserveAmount($deliveryPersonId, $orderDetailUid) {
         try {
-            if((new Service())->isValidUuid($orderUid)){
-                return (new Service())->isValidUuid($orderUid);
+            if((new Service())->isValidUuid($orderDetailUid)){
+                return (new Service())->isValidUuid($orderDetailUid);
             }
-            $order = Order::whereUid($orderUid)->first();
+            $orderD = OrderDetail::whereUid($orderDetailUid)->first();
             // return $order;
-            if (!$order) {
+            if (!$orderD) {
                 return response()->json(['error' => 'Order not found'], 404);
             }
             $typeId = Commission::whereShort('STD')->first()->id;
@@ -251,7 +246,7 @@ class DeliveryAgencyController extends Controller
             }
             
             $updateWallet = new OngingTradeStageService();
-            $deliveryAgentAmount = $wallet->balance - $order->amount;
+            $deliveryAgentAmount = $wallet->balance - $orderD->amount;
             $errorUpdateUserWallet = $updateWallet->updateUserWallet($deliveryPersonId, $deliveryAgentAmount);
             if ($errorUpdateUserWallet) {
                 return $errorUpdateUserWallet;
@@ -265,143 +260,87 @@ class DeliveryAgencyController extends Controller
     }
     
 
-    /**
-     * @OA\Post(
-     *     path="/api/deliveryAgency/acceptOrder/{orderUid}",
-      * security={{"bearerAuth": {}}},
-     *     summary="Accept an order",
-     *     description="Allows a delivery person to accept an order after validating wallet balance and reserving the amount.",
-     *     tags={"Delivery Agencies"},
-     *     @OA\Parameter(
-     *         name="orderUid",
-     *         in="path",
-     *         description="ID of the order to accept",
-     *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),   
-     *     @OA\Response(
-     *         response=200,
-     *         description="Order accepted successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Order accepted successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Error: Only delivery people can accept orders",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="Only delivery people can accept orders")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Error: Wallet balance insufficient",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="Wallet balance insufficient")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="An error occurred")
-     *         )
-     *     ),
-     *     
-     * )
-     */
+    
 
 
-    public function acceptOrder($orderUid){
-        try{
-            // return Order::whereUid($orderUid)->first();
-            if((new Service())->isValidUuid($orderUid)){
-                return (new Service())->isValidUuid($orderUid);
-            }
-
-            if(!Order::whereUid($orderUid)->first()){
-                return response()->json([
-                    'message' => 'Order not found'
-                ], 200);
-            }
-
-            $service = new Service();
-
-            $checkAuth=$service->checkAuth();
-            if($checkAuth){
-               return $checkAuth;
-            }
-
-            $order = Order::whereId(Order::whereUid($orderUid)->first()->id)->first();
-
-            $pendingStatusId = TypeOfType::where('libelle', 'pending')->first()->id;
-            $paidStatusId = TypeOfType::where('libelle', 'paid')->first()->id;
-
-            if($order->status != $paidStatusId){
-                return response()->json(['error' => 'Order must be paid'], 404);
-            }
-
-
-            $deliveryPersonId= $service->checkIfDeliveryAgent();
-
-            if($deliveryPersonId == 0){
-                return response()->json(['error' => 'Only delivery agent can accept orders'], 404);
-            }
-            $personUid = Person::whereId($deliveryPersonId)->first()->uid;
-
-            $existAcceptingOrder = EscrowDelivery::where('order_uid',$orderUid)->where('person_uid',$personUid)->where('status',$pendingStatusId)->exists();
-
-            $checkIfIndividualHaveOrderInProgress = EscrowDelivery::where('person_uid',$personUid)->where('status',$pendingStatusId)->count();
-
-            if($checkIfIndividualHaveOrderInProgress >= 2 && DeliveryAgency::where('person_id',$deliveryPersonId)->first()->agent_type == 'individual' ){
-                return response()->json(['error' => 'You already have orders in progress'], 404);
-            }
-
-            // return  $existAcceptingOrder;
-
-            if($existAcceptingOrder){
-                return response()->json([
-                    'message' => 'Order already accepted'
-                ], 200);
-            }
-
-            $deliveryPersonUid = Person::find($deliveryPersonId)->uid;
-
-            $errorcheckWalletBalance = $this->checkWalletBalance($deliveryPersonId, $order->amount);
-            if($errorcheckWalletBalance){
-                return $errorcheckWalletBalance;
-            }
-
-            $errorreserveAmount = $this->reserveAmount($deliveryPersonId, $orderUid);
-            if($errorreserveAmount){
-                return $errorreserveAmount;
-            }
-
-            $errorstoreEscrowDelivery = $this->storeEscrowDelivery($deliveryPersonUid, $orderUid);
-            if($errorstoreEscrowDelivery){
-                return $errorstoreEscrowDelivery;
-            }
+  /**
+ * @OA\Post(
+ *     path="/api/deliveryAgency/acceptOrder",
+ *     security={{"bearerAuth": {}}},
+ *     summary="Accept order details",
+ *     description="Allows a delivery person to accept order details after validating wallet balance and reserving the amount.",
+ *     tags={"Delivery Agencies"},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="orderDetailUids",
+ *                 type="array",
+ *                 description="Array of order detail UIDs",
+ *                 @OA\Items(type="integer"),
+ *                 example="[1, 2, 3]"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Order details accepted successfully",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Order details accepted successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad request",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Invalid order details provided")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="Forbidden",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Only delivery agents can accept deliveries")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Order not found")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="An error occurred")
+ *         )
+ *     )
+ * )
+ */
 
 
-            return response()->json([
-                'message' => 'Order accepted successfully'
-            ], 200);
-        }catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
 
-    public function acceptOrderDetails(array $orderDetailIds)
+    public function acceptOrder(Request $request)
 {
     try {
 
-        if (empty($orderDetailIds) || !is_array($orderDetailIds)) {
+        $request->validate([
+            "orderDetailUids" => "required|array|min:1|distinct|exists:order_details,uid"
+        ]);
+
+
+        $orderDetailUids = $request->orderDetailUids;
+
+        if (empty($orderDetailUids) || !is_array($orderDetailUids)) {
             return response()->json(['error' => 'Invalid order details provided'], 400);
         }
 
-        $orderDetails = OrderDetail::whereIn('id', $orderDetailIds)->get();
+        $orderDetails = OrderDetail::whereIn('uid', $orderDetailUids)->get();
 
-        if ($orderDetails->count() !== count($orderDetailIds)) {
+        if ($orderDetails->count() !== count($orderDetailUids)) {
             return response()->json(['error' => 'Some order details are invalid'], 400);
         }
 
@@ -437,36 +376,40 @@ class DeliveryAgencyController extends Controller
             ->where('status', $pendingStatusId)
             ->count();
 
-        if ($checkIfIndividualHaveOrderInProgress >= 2 && DeliveryAgency::where('person_id', $deliveryPersonId)->first()->agent_type == 'individual') {
-            return response()->json(['error' => 'You already have orders in progress'], 403);
-        }
+        // if ($checkIfIndividualHaveOrderInProgress >= 2 && DeliveryAgency::where('person_id', $deliveryPersonId)->first()->agent_type == 'individual') {
+        //     return response()->json(['error' => 'You already have orders in progress'], 403);
+        // }
 
         $errorCheckWalletBalance = $this->checkWalletBalance($deliveryPersonId, $order->amount);
         if ($errorCheckWalletBalance) {
             return $errorCheckWalletBalance;
         }
 
-        $errorReserveAmount = $this->reserveAmount($deliveryPersonId, $order->amount);
-        if ($errorReserveAmount) {
-            return $errorReserveAmount;
-        }
 
         foreach ($orderDetails as $orderDetail) {
-            $exists = EscrowDelivery::where('order_detail_id', $orderDetail->id)
+            $exists = EscrowDelivery::where('order_detail_uid', $orderDetail->uid)
                 ->where('person_uid', $personUid)
                 ->where('status', $pendingStatusId)
                 ->exists();
 
             if ($exists) {
-                continue; 
+                return (new Service())->apiResponse(200,$orderDetail, 'This product delivery has already accepted');
+            }
+        }
+
+        foreach ($orderDetails as $orderDetail) {
+            $orderDetailUid = OrderDetail::whereId($orderDetail->id)->first()->uid;
+
+            $errorReserveAmount = $this->reserveAmount($deliveryPersonId, $orderDetailUid);
+            if ($errorReserveAmount) {
+                return $errorReserveAmount;
+            }
+            $errorstoreEscrowDelivery = $this->storeEscrowDelivery($personUid, $orderDetailUid);
+            if($errorstoreEscrowDelivery){
+                return $errorstoreEscrowDelivery;
             }
 
-            EscrowDelivery::create([
-                'order_uid' => $order->uid,
-                'order_detail_id' => $orderDetail->id,
-                'person_uid' => $personUid,
-                'status' => $pendingStatusId,
-            ]);
+            // (new GeneralTradeController())->storeGeneralTrade
         }
 
         return response()->json(['message' => 'Order details accepted successfully'], 200);
@@ -516,94 +459,97 @@ class DeliveryAgencyController extends Controller
      * )
      */
 
-    public function getAvailableOrders($perpage = 10) {
+     public function getAvailableOrders($perpage = 10) {
         try {
             $service = new Service();
-
-            $checkAuth=$service->checkAuth();
-            if($checkAuth){
-               return $checkAuth;
+    
+            $checkAuth = $service->checkAuth();
+            if ($checkAuth) {
+                return $checkAuth;
             }
-
+    
             $personId = $service->returnPersonIdAuth();
             $personLocation = Person::where('user_id', $personId)->first()->country_id;
             $paidStatusId = TypeOfType::where('libelle', 'paid')->first()->id;
-
+    
             $orders = Order::where('status', $paidStatusId)
-                ->whereNotIn('uid', EscrowDelivery::pluck('order_uid'))
                 ->whereHas('user.person', function ($query) use ($personLocation) {
-                    $query->where('country_id',$personLocation);
+                    $query->where('country_id', $personLocation);
                 })
                 ->orderBy('created_at', 'desc')
                 ->paginate(intval($perpage));
-
-               
-
-
-        $orderAdIds = $orders->pluck('order_details_not_deleted.*.ad_id')->flatten()->unique();
-        $userIds = $orders->pluck('user_id')->unique();
-        $adFiles = Ad::whereIn('id', $orderAdIds)->get();
-        $addresses = Address::whereIn('user_id', $userIds)->get();
-
-        foreach ($orders as $order) {
-            $products = [];
-            foreach ($order->order_details_not_deleted as $orderProduct) {
-                $ad = $adFiles->firstWhere('id', $orderProduct->ad_id);
-                $image = File::where('referencecode', $ad->file_code)->first();
-
-                $owner = User::whereId(
-                    Ad::whereId($ad->id)->first()->owner_id
-                )->first();
-
-                $userPersonId = (new Service())->returnUserPersonId($owner->id);
-
-                $ownerPerson = Person::whereUserId($userPersonId)->first();
-
-                $address = $addresses->firstWhere('user_id', $owner->id);
-
-
-                $products[] = [
-                    "order_detail_id" => $orderProduct->id,
-                    "ad_id" => $ad->id,
-                    "ad_title" => $ad->title,
-                    "image" => $image->location ?? null,
-                    "ad_price" => $orderProduct->final_price,
-                    "quantity_ordered" => $orderProduct->quantity,
-                    "description" => $ad->description,
-                    "category_id" =>Category::whereId($ad->category_id)->first()->id,
-                    "category_title" =>Category::whereId($ad->category_id)->first()->title,
-                    "shop_id" => Shop::whereId($ad->shop_id)->first()->id,
-                    "shop_title" => Shop::whereId($ad->shop_id)->first()->title,
-                    "merchant" =>[
-                        "id" =>$owner->id,
-                        "firstname" =>$ownerPerson->first_name,
-                        "lastname" =>$ownerPerson->last_name,
-                        "merchant_address" =>[
-                            "latitude" => $address->latitude ?? null,
-                            "longitude" => $address->longitude ?? null,
-                        ]
-                    ]
-                ];
-            }
-
-            $address = $addresses->firstWhere('user_id', $order->user_id);
-            $order->customer_address = [
-                "latitude" => $address->latitude ?? null,
-                "longitude" => $address->longitude ?? null,
-            ];
-
-            $order->product_detail = $products;
-
-            unset($order->order_details_not_deleted);
-        }
-
     
-return (new Service())->apiResponse(200, $orders, 'available orders list');
+            $takenOrderDetails = EscrowDelivery::pluck('order_detail_uid')->toArray();
+    
+            $orderAdIds = $orders->pluck('order_details_not_deleted.*.ad_id')->flatten()->unique();
+            $userIds = $orders->pluck('user_id')->unique();
+            $adFiles = Ad::with('user')->whereIn('id', $orderAdIds)->get();
+            $addresses = Address::whereIn('user_id', $userIds)->get();
+
+            foreach ($orders as $order) {
+                $products = [];
+                foreach ($order->order_details_not_deleted as $orderProduct) {
+                    $ad = $adFiles->firstWhere('id', $orderProduct->ad_id);
+    
+                    if (in_array($orderProduct->uid, $takenOrderDetails)) {
+                        continue; 
+                    }
+                    if ($ad->user->person->client->is_deliverer ?? false) {
+                        continue; 
+                    }
+    
+                    $image = File::where('referencecode', $ad->file_code)->first();
+                    $ownerPerson = Person::whereUserId($ad->user->id)->first();
+                    $address = $addresses->firstWhere('user_id', $ad->user->id);
+    
+                    $products[] = [
+                        "order_detail_id" => $orderProduct->id,
+                        "order_detail_uid" => $orderProduct->uid,
+                        "order_detail_amount" => $orderProduct->amount,
+                        "ad_id" => $ad->id,
+                        "ad_title" => $ad->title,
+                        "image" => $image->location ?? null,
+                        "ad_price" => $orderProduct->final_price,
+                        "quantity_ordered" => $orderProduct->quantity,
+                        "description" => $ad->description,
+                        "category_id" => Category::find($ad->category_id)->id ?? null,
+                        "category_title" => Category::find($ad->category_id)->title ?? null,
+                        "shop_id" => Shop::find($ad->shop_id)->id ?? null,
+                        "shop_title" => Shop::find($ad->shop_id)->title ?? null,
+                        "merchant" => [
+                            "id" => $ad->user->id,
+                            "firstname" => $ownerPerson->first_name ?? null,
+                            "lastname" => $ownerPerson->last_name ?? null,
+                            "merchant_address" => [
+                                "latitude" => $address->latitude ?? null,
+                                "longitude" => $address->longitude ?? null,
+                            ],
+                        ],
+                    ];
+                }
+    
+                if (empty($products)) {
+                    $orders = $orders->filter(fn($o) => $o->id !== $order->id);
+                    continue;
+                }
+    
+                $customerAddress = $addresses->firstWhere('user_id', $order->user_id);
+                $order->customer_address = [
+                    "latitude" => $customerAddress->latitude ?? null,
+                    "longitude" => $customerAddress->longitude ?? null,
+                ];
+                $order->product_detail = $products;
+    
+                unset($order->order_details_not_deleted);
+            }
+    
+            return (new Service())->apiResponse(200, $orders, 'Available orders list');
     
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    
 
 
     public function notifyDeliveryAgents($orderUid) {

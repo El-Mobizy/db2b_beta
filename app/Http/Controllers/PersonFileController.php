@@ -23,9 +23,9 @@ class PersonFileController extends Controller
 
             $personId = (new Service())->returnPersonIdAuth();
 
-            if($personFile->person_id != $personId){
-                return (new Service())->apiResponse(404, [], 'You cannot delete this file because it\'s not belonging to you.');
-            }
+            // if($personFile->person_id != $personId){
+            //     return (new Service())->apiResponse(404, [], 'You cannot delete this file because it\'s not belonging to you.');
+            // }
 
             $personFile->file = File::whereReferenceCode($personFile->filecode)->whereDeleted(false)->first()->location;
             $personFile->is_validated = ($personFile->validated_by != null && $personFile->validated_on != null) ? true : false;
@@ -44,8 +44,6 @@ class PersonFileController extends Controller
             'data.*.file_type_id' => 'required',
             'data.*.images' => 'required|file',
         ]);
-
-       
 
         $personId = (new Service())->returnPersonIdAuth();
 

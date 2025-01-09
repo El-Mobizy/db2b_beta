@@ -54,16 +54,22 @@ class AddressController extends Controller
         $user = Auth::user();
 
         if ($request->is_default) {
-            Address::where('user_id', $user->id)->update(['is_default' => false]);
+            Address::where('user_id', $user->id)
+                   ->where('is_default', true)
+                   ->update(['is_default' => false]);
         }
+        
 
         if(Address::whereUserId(Auth::user()->id)->whereName($request->name)->exists()){
             return (new Service())->apiResponse(404, [], 'Name already used');
         }
 
-        if(Address::whereUserId(Auth::user()->id)->wherePlaceId($request->place_id)->exists()){
-            return (new Service())->apiResponse(404, [], 'Place id already used');
+        if($request->place_id){
+            if(Address::whereUserId(Auth::user()->id)->wherePlaceId($request->place_id)->exists()){
+                return (new Service())->apiResponse(404, [], 'Place id already used');
+            }
         }
+
 
         if(Address::whereUserId(Auth::user()->id)->whereLatitude($request->latitude)->whereLongitude($request->longitude)->exists()){
             return (new Service())->apiResponse(404, [], 'You already have a registered address with the same longitude and the same attitude entered');
@@ -123,7 +129,11 @@ public function getAddress($addressUid)
         $address = Address::where('user_id', $user->id)->whereUid($addressUid)->first();
 
         if (!$address) {
-            return (new Service())->apiResponse(200, [], 'Address not found');
+            return (new Service())->apiResponse(404, [], 'Address not found');
+        }
+
+        if ($address->deleted) {
+            return (new Service())->apiResponse(404, [], 'Address deleted');
         }
 
         return (new Service())->apiResponse(200, $address, 'Detail of specific address');
@@ -196,7 +206,7 @@ public function getAllUserAddresses($userUid)
             return (new Service())->apiResponse(404, [], 'User not found');
         }
 
-        $addresses = Address::where('user_id', $user->id)->get();
+        $addresses = Address::where('user_id', $user->id)->whereDeleted(false)->get();
 
         return (new Service())->apiResponse(200, $addresses, 'Specific user addresses');
     } catch (Exception $e) {
@@ -262,6 +272,10 @@ public function updateAddress($addressUid, Request $request)
             return (new Service())->apiResponse(404, [], 'Address not found');
         }
 
+        if ($address->deleted) {
+            return (new Service())->apiResponse(404, [], 'Address deleted');
+        }
+
         if ($request->is_default) {
             Address::where('user_id', $user->id)->update(['is_default' => false]);
         }
@@ -283,16 +297,16 @@ public function updateAddress($addressUid, Request $request)
 
 /**
  * @OA\Post(
- *     path="/api/address/deleteAddress/{id}",
- *     summary="Delete a specific address by ID for the authenticated user",
+ *     path="/api/address/deleteAddress/{addressUid}",
+ *     summary="Delete a specific address by UID for the authenticated user",
  *     tags={"Address"},
  *     security={{"bearerAuth": {}}},
- *     @OA\Parameter(
- *         name="id",
+ *    @OA\Parameter(
+ *         name="addressUid",
  *         in="path",
  *         required=true,
- *         @OA\Schema(type="integer"),
- *         description="The ID of the address"
+ *         @OA\Schema(type="string"),
+ *         description="The UID of the address"
  *     ),
  *     @OA\Response(
  *         response=200,
@@ -308,17 +322,27 @@ public function updateAddress($addressUid, Request $request)
  *     )
  * )
  */
-public function deleteAddress($id)
+public function deleteAddress($uid)
 {
     try {
         $user = Auth::user();
-        $address = Address::where('user_id', $user->id)->where('id', $id)->first();
+        $address = Address::where('user_id', $user->id)->where('uid', $uid)->first();
 
         if (!$address) {
             return (new Service())->apiResponse(200, [], 'Address not found');
         }
 
-        $address->delete();
+        if ($address->is_default) {
+            return (new Service())->apiResponse(404, [], ' You cannot delete your active address, choose another active address so that you can delete that one.');
+        }
+
+        if ($address->deleted) {
+            return (new Service())->apiResponse(404, [], 'Address already deleted');
+        }
+
+        $address->deleted = true;
+
+        $address->save();
 
         return (new Service())->apiResponse(200, [], 'Address deleted successfully');
     } catch (Exception $e) {
@@ -363,6 +387,15 @@ public function activateAddress($addressUid)
         if (!$address) {
             return (new Service())->apiResponse(404, [], 'Address not found');
         }
+
+        if ($address->deleted) {
+            return (new Service())->apiResponse(404, [], 'Address deleted');
+        }
+
+        if ($address->is_default) {
+            return (new Service())->apiResponse(404, [], ' Address already active.');
+        }
+
 
         Address::where('user_id', $user->id)->update(['is_default' => false]);
 
@@ -409,6 +442,7 @@ public function getActiveService()
         $user = Auth::user();
         $activeService = Address::where('user_id', $user->id)
                                 ->where('is_default', true)
+                                ->whereDeleted(false)
                                 ->first();
 
         if (!$activeService) {
@@ -468,6 +502,7 @@ public function getUserActiveService($userUid)
 
         $activeService = Address::where('user_id', $user->id)
                                 ->where('is_default', true)
+                                ->whereDeleted(false)
                                 ->first();
 
         if (!$activeService) {

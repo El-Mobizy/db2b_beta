@@ -1601,21 +1601,21 @@
                 ]
             }
         },
-        "/api/address/deleteAddress/{id}": {
+        "/api/address/deleteAddress/{addressUid}": {
             "post": {
                 "tags": [
                     "Address"
                 ],
-                "summary": "Delete a specific address by ID for the authenticated user",
-                "operationId": "133c3ebc59d61b8c1a27f2f0f269cc9f",
+                "summary": "Delete a specific address by UID for the authenticated user",
+                "operationId": "884963ce8976c0e0817edb237869f93e",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "addressUid",
                         "in": "path",
-                        "description": "The ID of the address",
+                        "description": "The UID of the address",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -4118,51 +4118,44 @@
                 ]
             }
         },
-        "/api/deliveryAgency/acceptOrder/{orderUid}": {
+        "/api/deliveryAgency/acceptOrder": {
             "post": {
                 "tags": [
                     "Delivery Agencies"
                 ],
-                "summary": "Accept an order",
-                "description": "Allows a delivery person to accept an order after validating wallet balance and reserving the amount.",
-                "operationId": "2d0a497f28c67aa6e58f9c549234a73b",
-                "parameters": [
-                    {
-                        "name": "orderUid",
-                        "in": "path",
-                        "description": "ID of the order to accept",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                "summary": "Accept order details",
+                "description": "Allows a delivery person to accept order details after validating wallet balance and reserving the amount.",
+                "operationId": "e51f6cac1058b2f51762d1c509706ef6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "orderDetailUids": {
+                                        "description": "Array of order detail UIDs",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": "[1, 2, 3]"
+                                    }
+                                },
+                                "type": "object"
+                            }
                         }
                     }
-                ],
+                },
                 "responses": {
                     "200": {
-                        "description": "Order accepted successfully",
+                        "description": "Order details accepted successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Order accepted successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Error: Only delivery people can accept orders",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Only delivery people can accept orders"
+                                            "example": "Order details accepted successfully"
                                         }
                                     },
                                     "type": "object"
@@ -4171,14 +4164,46 @@
                         }
                     },
                     "400": {
-                        "description": "Error: Wallet balance insufficient",
+                        "description": "Bad request",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Wallet balance insufficient"
+                                            "example": "Invalid order details provided"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Only delivery agents can accept deliveries"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Order not found"
                                         }
                                     },
                                     "type": "object"
