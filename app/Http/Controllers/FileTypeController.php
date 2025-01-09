@@ -13,54 +13,146 @@ class FileTypeController extends Controller
     private $validTypePersons = ['Merchant', 'Client', 'DeliveryAgent'];
 
     /**
-     * @OA\Get(
-     *     path="/api/fileType/index/{typePerson}",
-     *     summary="Liste des fichiers actifs disponibles pour un type de personne",
-     *     tags={"File Type"},
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="typePerson",
-     *         in="path",
-     *         required=true,
-     *         description="Type de personne (Merchant, Client, DeliveryAgent)",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Liste des fichiers actifs",
-     *         @OA\JsonContent(type="array", @OA\Items(ref=""))
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Erreur serveur"
-     *     )
-     * )
-     */
+ * @OA\Get(
+ *     path="/api/file/type/index/{typePerson}",
+ *     summary="Liste des fichiers disponibles pour un type de personne avec un filtre de statut",
+ *     tags={"File Type"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="typePerson",
+ *         in="path",
+ *         required=true,
+ *         description="Type de personne (Merchant, Client, DeliveryAgent)",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Parameter(
+ *         name="status",
+ *         in="query",
+ *         required=true,
+ *         description="Statut des fichiers (all, active, inactive)",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Liste des fichiers filtrés",
+ *         @OA\JsonContent(type="array", @OA\Items(ref=""))
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur"
+ *     )
+ * )
+ */
+public function index($typePerson, Request $request)
+{
+    try {
+        $status = $request->query('status');
 
-    public function index($typePerson)
-    {
-        try{
-            $fileTypes = FileType::whereDeleted(0)->whereTypePerson($typePerson)->whereIsActif(true)->get();
+        $validStatuses = ['all', 'active', 'inactive'];
 
-            return (new Service())->apiResponse(200, $fileTypes, 'Liste des fichiers actif disponible pour un type de personne');
-        }catch(Exception $e){
-            return (new Service())->apiResponse(500, [], $e->getMessage());
+        if (!in_array($status, $validStatuses)) {
+            return (new Service())->apiResponse(404, [], 'Invalid status value. Allowed values are: all, active, inactive.');
         }
-        
+
+        if ($status == 'active') {
+            $fileTypes = FileType::whereDeleted(0)
+                ->whereTypePerson($typePerson)
+                ->whereIsActif(true)
+                ->get();
+        } elseif ($status == 'inactive') {
+            $fileTypes = FileType::whereDeleted(0)
+                ->whereTypePerson($typePerson)
+                ->whereIsActif(false)
+                ->get();
+        } else {
+            $fileTypes = FileType::whereDeleted(0)
+                ->whereTypePerson($typePerson)
+                ->get();
+        }
+
+        if (count($fileTypes) == 0) {
+            return (new Service())->apiResponse(404, [], 'No file type found for this category of person');
+        }
+
+        return (new Service())->apiResponse(200, $fileTypes, 'List of file types for this category of person');
+    } catch (Exception $e) {
+        return (new Service())->apiResponse(500, [], $e->getMessage());
     }
+}
+
+
+
+     /**
+ * @OA\Get(
+ *     path="/api/file/type/index",
+ *     summary="Liste des fichiers disponibles avec un filtre de statut",
+ *     tags={"File Type"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="status",
+ *         in="query",
+ *         required=true,
+ *         description="Statut des fichiers (all, active, inactive)",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Liste des fichiers filtrés",
+ *         @OA\JsonContent(type="array", @OA\Items(ref=""))
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur"
+ *     )
+ * )
+ */
+public function list(Request $request)
+{
+    try {
+        $status = $request->query('status');
+
+        $validStatuses = ['all', 'active', 'inactive'];
+
+        if (!in_array($status, $validStatuses)) {
+            return (new Service())->apiResponse(404, [], 'Invalid status value. Allowed values are: all, active, inactive.');
+        }
+
+        if ($status == 'active') {
+            $fileTypes = FileType::whereDeleted(0)
+                ->whereIsActif(true)
+                ->get();
+        } elseif ($status == 'inactive') {
+            $fileTypes = FileType::whereDeleted(0)
+                ->whereIsActif(false)
+                ->get();
+        } else {
+            $fileTypes = FileType::whereDeleted(0)
+                ->get();
+        }
+
+        if (count($fileTypes) == 0) {
+            return (new Service())->apiResponse(404, [], 'No file type found');
+        }
+
+        return (new Service())->apiResponse(200, $fileTypes, 'List of file types');
+    } catch (Exception $e) {
+        return (new Service())->apiResponse(500, [], $e->getMessage());
+    }
+}
+
 
     /**
      * @OA\Get(
-     *     path="/api/fileType/show/{id}",
+     *     path="/api/file/type/show/{uid}",
      *     summary="Détail d'un type de fichier",
      *     tags={"File Type"},
      *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="id",
+     *    @OA\Parameter(
+     *         name="uid",
      *         in="path",
      *         required=true,
-     *         description="ID du type de fichier",
-     *         @OA\Schema(type="integer")
+     *         description="UID du type de fichier",
+     *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -78,10 +170,10 @@ class FileTypeController extends Controller
      * )
      */
 
-    public function show($id)
+    public function show($uid)
     {
         try{
-            $fileType = FileType::whereId($id)->first();
+            $fileType = FileType::whereUid($uid)->first();
 
             if (!$fileType) {
                 return (new Service())->apiResponse(404, [], 'File type not found');
@@ -91,9 +183,6 @@ class FileTypeController extends Controller
                 return (new Service())->apiResponse(404, [], 'File type already deleted');
             }
 
-            if (!$fileType->is_actif) {
-                return (new Service())->apiResponse(404, [], 'File type not actif');
-            }
 
             return (new Service())->apiResponse(200, $fileType, 'File type detail');
 
@@ -105,7 +194,7 @@ class FileTypeController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/fileType/store",
+     *     path="/api/file/type/store",
      *     summary="Création d'un type de fichier",
      *     tags={"File Type"},
      *     security={{"bearerAuth": {}}},
@@ -143,24 +232,25 @@ class FileTypeController extends Controller
                 'is_actif' => 'nullable|boolean',
             ]);
 
-           
-            if(FileType::whereName($request->name)->exists()){
-                return (new Service())->apiResponse(404, [], 'Name already exist');
-            } 
+            if(FileType::whereName($request->name)->whereTypePerson($request->type_person)->exists()){
+                return (new Service())->apiResponse(404, [], 'This name of file type already exist for this type of person');
+            }
 
             if(!in_array($request->type_person,$this->validTypePersons)){
                 return (new Service())->apiResponse(404, [], 'Invalid type person. Type person should be one of: ' . implode(', ', $this->validTypePersons));
             }
 
             $defaultFormat =["image", "doc", "image/doc"];
-            
+
+            $encodedFormat = json_encode($defaultFormat);
+
             $fileType = new FileType();
             $fileType->name = $request->name;
-            $fileType->format = $defaultFormat;
+            $fileType->format = $encodedFormat;
             $fileType->type_person = $request->type_person;
             $fileType->is_actif = $request->is_actif ?? true;
             $fileType->uid = $service->generateUid($fileType);
-            
+
             $fileType->save();
 
             return (new Service())->apiResponse(200, $fileType, 'Document créé avec succès');
@@ -172,16 +262,16 @@ class FileTypeController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/fileType/update/{id}",
+     *     path="/api/file/type/update/{uid}",
      *     summary="Mise à jour d'un type de fichier",
      *     tags={"File Type"},
      *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="id",
+     *   @OA\Parameter(
+     *         name="uid",
      *         in="path",
      *         required=true,
-     *         description="ID du type de fichier",
-     *         @OA\Schema(type="integer")
+     *         description="UID du type de fichier",
+     *         @OA\Schema(type="string")
      *     ),
      *     @OA\RequestBody(
      *         required=true,
@@ -209,16 +299,15 @@ class FileTypeController extends Controller
      * )
      */
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $uid)
     {
         try{
-            // return $request->format;
-            $fileType = FileType::whereId($id)->first();
-            
+            $fileType = FileType::whereUid($uid)->first();
+
             if (!$fileType) {
                 return (new Service())->apiResponse(404, [], 'File type not found');
             }
-            
+
             if($request->type_person){
                 if(!in_array($request->type_person,$this->validTypePersons)){
                     return (new Service())->apiResponse(404, [], 'Invalid type person. Type person should be one of: ' . implode(', ', $this->validTypePersons));
@@ -228,7 +317,6 @@ class FileTypeController extends Controller
             if($request->format){
                 if(!is_array($request->format)){
                     return (new Service())->apiResponse(404, [], 'Invalid format. Format should be an array');
-
                 }
             }
 
@@ -251,16 +339,16 @@ class FileTypeController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/fileType/destroy/{id}",
+     *     path="/api/file/type/destroy/{uid}",
      *     summary="Suppression logique d'un type de fichier",
      *     tags={"File Type"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
-     *         name="id",
+     *         name="uid",
      *         in="path",
      *         required=true,
-     *         description="ID du type de fichier",
-     *         @OA\Schema(type="integer")
+     *         description="UID du type de fichier",
+     *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -278,24 +366,125 @@ class FileTypeController extends Controller
      * )
      */
 
-    public function destroy($id)
+    public function destroy($uid)
     {
         try{
+            $fileType = FileType::whereUid($uid)->first();
 
-        }catch(Exception $e){
+            if (!$fileType) {
+                return (new Service())->apiResponse(404, [], 'File type not found');
+            }
+    
+            $fileType->deleted = true;
+            $fileType->save();
+
+            return (new Service())->apiResponse(404, [], 'File type delete successfully');
+
+            }catch(Exception $e){
             return (new Service())->apiResponse(500, [], $e->getMessage());
         }
-        $fileType = FileType::find($id);
+    }
+
+    /**
+ * @OA\Post(
+ *     path="/api/file/type/deactivate/{uid}",
+ *     summary="Désactiver un type de fichier",
+ *     tags={"File Type"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="uid",
+ *         in="path",
+ *         required=true,
+ *         description="UID du type de fichier",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Type de fichier désactivé avec succès",
+ *         @OA\JsonContent(ref="")
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Type de fichier non trouvé ou déjà supprimé"
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur"
+ *     )
+ * )
+ */
+public function deactivate($uid)
+{
+    try {
+        $fileType = FileType::whereUid($uid)->first();
 
         if (!$fileType) {
-            return response()->json(['message' => 'Enregistrement non trouvé'], 404);
+            return (new Service())->apiResponse(404, [], 'File type not found');
         }
 
-        $fileType->deleted = true;
+        if ($fileType->deleted) {
+            return (new Service())->apiResponse(404, [], 'File type already deleted');
+        }
+
+        $fileType->is_actif = false;
         $fileType->save();
 
-        return response()->json(['message' => 'Document supprimé avec succès']);
+        return (new Service())->apiResponse(200, $fileType, 'File type deactivated successfully');
+    } catch (Exception $e) {
+        return (new Service())->apiResponse(500, [], $e->getMessage());
     }
+}
+
+/**
+ * @OA\Post(
+ *     path="/api/file/type/activate/{uid}",
+ *     summary="Activer un type de fichier",
+ *     tags={"File Type"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="uid",
+ *         in="path",
+ *         required=true,
+ *         description="UID du type de fichier",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Type de fichier activé avec succès",
+ *         @OA\JsonContent(ref="")
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Type de fichier non trouvé ou déjà supprimé"
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur"
+ *     )
+ * )
+ */
+public function activate($uid)
+{
+    try {
+        $fileType = FileType::whereUid($uid)->first();
+
+        if (!$fileType) {
+            return (new Service())->apiResponse(404, [], 'File type not found');
+        }
+
+        if ($fileType->deleted) {
+            return (new Service())->apiResponse(404, [], 'File type already deleted');
+        }
+
+        $fileType->is_actif = true;
+        $fileType->save();
+
+        return (new Service())->apiResponse(200, $fileType, 'File type activated successfully');
+    } catch (Exception $e) {
+        return (new Service())->apiResponse(500, [], $e->getMessage());
+    }
+}
+
 }
 
 

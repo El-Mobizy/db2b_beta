@@ -401,12 +401,15 @@ Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::cl
 
 
                 //FileType
-                Route::prefix('fileType')->group(function () {
+                Route::prefix('file/type')->group(function () {
                     Route::get('/index/{typePerson}', [FileTypeController::class, 'index'])->name('fileType.index');
-                    Route::get('/show/{id}', [FileTypeController::class, 'show'])->name('fileType.show');
+                    Route::get('/index', [FileTypeController::class, 'list'])->name('fileType.index');
+                    Route::get('/show/{uid}', [FileTypeController::class, 'show'])->name('fileType.show');
+                    Route::post('/activate/{uid}', [FileTypeController::class, 'activate'])->name('fileType.activate');
+                    Route::post('/show/{uid}', [FileTypeController::class, 'show'])->name('fileType.show');
                     Route::post('/store', [FileTypeController::class, 'store'])->name('fileType.store');
-                    Route::post('/update/{id}', [FileTypeController::class, 'update'])->name('fileType.update');
-                    Route::post('/destroy/{id}', [FileTypeController::class, 'destroy'])->name('fileType.destroy');
+                    Route::post('/update/{uid}', [FileTypeController::class, 'update'])->name('fileType.update');
+                    Route::post('/destroy/{uid}', [FileTypeController::class, 'destroy'])->name('fileType.destroy');
                 });
 
 

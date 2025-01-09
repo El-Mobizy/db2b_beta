@@ -5130,13 +5130,13 @@
                 }
             }
         },
-        "/api/fileType/index/{typePerson}": {
+        "/api/file/type/index/{typePerson}": {
             "get": {
                 "tags": [
                     "File Type"
                 ],
-                "summary": "Liste des fichiers actifs disponibles pour un type de personne",
-                "operationId": "61603364cd2a681f1db34a8360cf6395",
+                "summary": "Liste des fichiers disponibles pour un type de personne avec un filtre de statut",
+                "operationId": "9bc36cb5db616afab31a309786c9d008",
                 "parameters": [
                     {
                         "name": "typePerson",
@@ -5146,11 +5146,20 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Statut des fichiers (all, active, inactive)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Liste des fichiers actifs",
+                        "description": "Liste des fichiers filtrés",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -5173,21 +5182,64 @@
                 ]
             }
         },
-        "/api/fileType/show/{id}": {
+        "/api/file/type/index": {
+            "get": {
+                "tags": [
+                    "File Type"
+                ],
+                "summary": "Liste des fichiers disponibles avec un filtre de statut",
+                "operationId": "754768d41e14471052f635df0ea320d2",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Statut des fichiers (all, active, inactive)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des fichiers filtrés",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": ""
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/file/type/show/{uid}": {
             "get": {
                 "tags": [
                     "File Type"
                 ],
                 "summary": "Détail d'un type de fichier",
-                "operationId": "f2f155f03c00640de5f1b78b44cab258",
+                "operationId": "907c19ebf4ce19a23ef4b48b044ab273",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "uid",
                         "in": "path",
-                        "description": "ID du type de fichier",
+                        "description": "UID du type de fichier",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5216,13 +5268,13 @@
                 ]
             }
         },
-        "/api/fileType/store": {
+        "/api/file/type/store": {
             "post": {
                 "tags": [
                     "File Type"
                 ],
                 "summary": "Création d'un type de fichier",
-                "operationId": "c1334d3befd296169298f626d8a184e1",
+                "operationId": "cc88edb2bea62a57815d39ea15cab2ca",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -5277,21 +5329,21 @@
                 ]
             }
         },
-        "/api/fileType/update/{id}": {
+        "/api/file/type/update/{uid}": {
             "post": {
                 "tags": [
                     "File Type"
                 ],
                 "summary": "Mise à jour d'un type de fichier",
-                "operationId": "457f7a0f9a35c450294cb0fc940843d8",
+                "operationId": "4559958af2ba0a13789879d217cf9c9e",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "uid",
                         "in": "path",
-                        "description": "ID du type de fichier",
+                        "description": "UID du type de fichier",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5352,21 +5404,21 @@
                 ]
             }
         },
-        "/api/fileType/destroy/{id}": {
+        "/api/file/type/destroy/{uid}": {
             "post": {
                 "tags": [
                     "File Type"
                 ],
                 "summary": "Suppression logique d'un type de fichier",
-                "operationId": "6d1cd473ac0b37c0259023f708509f42",
+                "operationId": "779981e76113eba1ae422fac25679935",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "uid",
                         "in": "path",
-                        "description": "ID du type de fichier",
+                        "description": "UID du type de fichier",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5389,6 +5441,92 @@
                     },
                     "404": {
                         "description": "Enregistrement non trouvé"
+                    },
+                    "500": {
+                        "description": "Erreur serveur"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/file/type/deactivate/{uid}": {
+            "post": {
+                "tags": [
+                    "File Type"
+                ],
+                "summary": "Désactiver un type de fichier",
+                "operationId": "e8c813568e0b5fe97a7d3aa524d2c08e",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "UID du type de fichier",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Type de fichier désactivé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": ""
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Type de fichier non trouvé ou déjà supprimé"
+                    },
+                    "500": {
+                        "description": "Erreur serveur"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/file/type/activate/{uid}": {
+            "post": {
+                "tags": [
+                    "File Type"
+                ],
+                "summary": "Activer un type de fichier",
+                "operationId": "1950bb19bc4fbaa53a26d19674434cea",
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "path",
+                        "description": "UID du type de fichier",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Type de fichier activé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": ""
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Type de fichier non trouvé ou déjà supprimé"
                     },
                     "500": {
                         "description": "Erreur serveur"
