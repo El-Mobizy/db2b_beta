@@ -20,11 +20,7 @@ class FedapayController extends Controller
         $this->person =Person::whereId(Auth::user()->id)->first() ;
     }
 
-   
-
-
-    public function process($amount,$number_phone, $country_code='bj')
-    {
+    public function processPackage($amount,$number_phone, $country_code='bj',$mode='mtn_open'){
         try {
 
             $customer = [
@@ -36,46 +32,25 @@ class FedapayController extends Controller
                     'country' => $country_code
                 ]
             ];
-            // https://sandbox-api.fedapay.com
-            // https://api.fedapay.com/v1/transactions/ID
-
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer '.env('FEDAPAY_SECRET_KEY'),
-                'Content-Type' => 'application/json',
-            ])->post('https://api.fedapay.com/v1/transactions', [
-                'description' => 'Transaction for john.doe@example.com',
-                'amount' =>$amount,
-                'currency' => [
-                    'iso' => 'XOF',
-                ],
-                'callback_url' => 'https://mywebsite.com/callback',
-                'customer' => $customer,
-            ]);
-             // return redirect()->away($token->url);
-
-            $transactionId = 'ID'; 
-            $apiKey = 'VOTRE_CLE_API_SECRETE'; 
-
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $apiKey,
-                'Content-Type' => 'application/json',
-            ])->post("https://sandbox-api.fedapay.com/v1/transactions/{$transactionId}/token");
-
-            return $response->json();
 
 
-            // return $response = \FedaPay\Customer::all();
-            // return $this->fedapayTransactionData($amount,$number_phone, $country_code);
-         
-            // $transaction =  Payout::create(
-            //     $this->fedapayTransactionData($amount,$number_phone, $country_code)
-            // );
+            $transaction = \FedaPay\Transaction::create(
+                [
+                    'description' => 'Transaction for john.doe@example.com',
+                    'amount' =>$amount,
+                    'currency' => [
+                        'iso' => 'XOF',
+                    ],
+                    'callback_url' => 'https://mywebsite.com/callback',
+                    'customer' => $customer,
+                ]);
 
+                $token = $transaction->generateToken()->token;
 
+                $result = $transaction->sendNowWithToken($mode,$token);
 
-            // return $token;
+                return $result;
 
-            // return redirect()->away($token->url);
         } catch(\Exception $e) {
             return (new Service())->apiResponse(500,[], $e->getMessage());
         }

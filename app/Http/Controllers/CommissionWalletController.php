@@ -434,7 +434,8 @@ class CommissionWalletController extends Controller
         $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
 
 
-        return (new FedapayController())->process($request->amount,$request->phone);
+        // return (new FedapayController())->process($request->amount,$request->phone);
+        return (new FedapayController())->processPackage($request->amount,$request->phone);
 
         // $statusPayement =  $request->status;
 
