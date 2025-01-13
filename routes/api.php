@@ -406,7 +406,7 @@ Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::cl
                     Route::get('/index', [FileTypeController::class, 'list'])->name('fileType.index');
                     Route::get('/show/{uid}', [FileTypeController::class, 'show'])->name('fileType.show');
                     Route::post('/activate/{uid}', [FileTypeController::class, 'activate'])->name('fileType.activate');
-                    Route::post('/show/{uid}', [FileTypeController::class, 'show'])->name('fileType.show');
+                    Route::post('/deactivate/{uid}', [FileTypeController::class, 'deactivate'])->name('fileType.deactivate');
                     Route::post('/store', [FileTypeController::class, 'store'])->name('fileType.store');
                     Route::post('/update/{uid}', [FileTypeController::class, 'update'])->name('fileType.update');
                     Route::post('/destroy/{uid}', [FileTypeController::class, 'destroy'])->name('fileType.destroy');

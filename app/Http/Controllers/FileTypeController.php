@@ -280,7 +280,7 @@ public function list(Request $request)
      *             @OA\Property(property="name", type="string", example="Identity Card"),
      *             @OA\Property(property="type_person", type="string", example="Client"),
      *            @OA\Property(property="format", type="string", example="[gagaqssds]"),
-     *             @OA\Property(property="is_actif", type="boolean", example=true)
+
      *         )
      *     ),
      *     @OA\Response(
@@ -318,14 +318,13 @@ public function list(Request $request)
                 if(!is_array($request->format)){
                     return (new Service())->apiResponse(404, [], 'Invalid format. Format should be an array');
                 }
+                $encodedFormat = json_encode($request->format);
+                $fileType->format = $encodedFormat;
             }
 
             $fileType->name = $request->name?? $fileType->name;
 
-            $fileType->format = $request->format?? $fileType->format;
-
             $fileType->type_person = $request->type_person??$fileType->type_person;
-            $fileType->is_actif = $request->is_actif ?? $fileType->is_actif;
 
             $fileType->save();
 
@@ -374,6 +373,10 @@ public function list(Request $request)
             if (!$fileType) {
                 return (new Service())->apiResponse(404, [], 'File type not found');
             }
+
+            if ($fileType->deleted) {
+                return (new Service())->apiResponse(404, [], 'File type already deleted');
+            }
     
             $fileType->deleted = true;
             $fileType->save();
@@ -396,7 +399,7 @@ public function list(Request $request)
  *         in="path",
  *         required=true,
  *         description="UID du type de fichier",
- *         @OA\Schema(type="integer")
+ *         @OA\Schema(type="string")
  *     ),
  *     @OA\Response(
  *         response=200,
@@ -426,6 +429,10 @@ public function deactivate($uid)
             return (new Service())->apiResponse(404, [], 'File type already deleted');
         }
 
+        if (!$fileType->is_actif) {
+            return (new Service())->apiResponse(404, [], 'File type already deactivated');
+        }
+
         $fileType->is_actif = false;
         $fileType->save();
 
@@ -446,7 +453,7 @@ public function deactivate($uid)
  *         in="path",
  *         required=true,
  *         description="UID du type de fichier",
- *         @OA\Schema(type="integer")
+ *         @OA\Schema(type="string")
  *     ),
  *     @OA\Response(
  *         response=200,
@@ -474,6 +481,10 @@ public function activate($uid)
 
         if ($fileType->deleted) {
             return (new Service())->apiResponse(404, [], 'File type already deleted');
+        }
+
+        if ($fileType->is_actif) {
+            return (new Service())->apiResponse(404, [], 'File type already activated');
         }
 
         $fileType->is_actif = true;

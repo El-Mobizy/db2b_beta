@@ -258,9 +258,7 @@ class DeliveryAgencyController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    
 
-    
 
 
   /**
@@ -384,7 +382,6 @@ class DeliveryAgencyController extends Controller
         if ($errorCheckWalletBalance) {
             return $errorCheckWalletBalance;
         }
-
 
         foreach ($orderDetails as $orderDetail) {
             $exists = EscrowDelivery::where('order_detail_uid', $orderDetail->uid)

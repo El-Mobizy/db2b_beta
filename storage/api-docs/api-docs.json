@@ -1549,26 +1549,6 @@
                                     "name": {
                                         "type": "string",
                                         "example": "Home"
-                                    },
-                                    "latitude": {
-                                        "type": "number",
-                                        "example": "40.712776"
-                                    },
-                                    "longitude": {
-                                        "type": "number",
-                                        "example": "-74.005974"
-                                    },
-                                    "formatted_address": {
-                                        "type": "string",
-                                        "example": "New York, NY, USA"
-                                    },
-                                    "place_id": {
-                                        "type": "string",
-                                        "example": "ChIJrTLr-GyuEmsRBfy61i59si0"
-                                    },
-                                    "is_default": {
-                                        "type": "boolean",
-                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -3860,6 +3840,10 @@
                                         "type": "string",
                                         "example": "za_i42jlk"
                                     },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "za_i42jlk"
+                                    },
                                     "status": {
                                         "type": "number",
                                         "example": 1
@@ -5368,10 +5352,6 @@
                                     "format": {
                                         "type": "string",
                                         "example": "[gagaqssds]"
-                                    },
-                                    "is_actif": {
-                                        "type": "boolean",
-                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -5467,7 +5447,7 @@
                         "description": "UID du type de fichier",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -5510,7 +5490,7 @@
                         "description": "UID du type de fichier",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],

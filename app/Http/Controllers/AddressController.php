@@ -231,11 +231,6 @@ public function getAllUserAddresses($userUid)
  *         required=true,
  *         @OA\JsonContent(
  *             @OA\Property(property="name", type="string", example="Home"),
- *             @OA\Property(property="latitude", type="number", example="40.712776"),
- *             @OA\Property(property="longitude", type="number", example="-74.005974"),
- *             @OA\Property(property="formatted_address", type="string", example="New York, NY, USA"),
- *             @OA\Property(property="place_id", type="string", example="ChIJrTLr-GyuEmsRBfy61i59si0"),
- *             @OA\Property(property="is_default", type="boolean", example=true),
  *         )
  *     ),
  *     @OA\Response(
@@ -258,11 +253,6 @@ public function updateAddress($addressUid, Request $request)
     try {
         $request->validate([
             'name' => 'nullable|string',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'formatted_address' => 'nullable|string',
-            'place_id' => 'nullable|string',
-            'is_default' => 'nullable|boolean',
         ]);
 
         $user = Auth::user();
@@ -276,16 +266,7 @@ public function updateAddress($addressUid, Request $request)
             return (new Service())->apiResponse(404, [], 'Address deleted');
         }
 
-        if ($request->is_default) {
-            Address::where('user_id', $user->id)->update(['is_default' => false]);
-        }
-
         $address->name = $request->name ?? $address->name;
-        $address->latitude = $request->latitude ?? $address->latitude;
-        $address->longitude = $request->longitude ?? $address->longitude;
-        $address->formatted_address = $request->formatted_address ?? $address->formatted_address;
-        $address->place_id = $request->place_id ?? $address->place_id;
-        $address->is_default = $request->is_default ?? $address->is_default;
         $address->save();
 
         return (new Service())->apiResponse(200, $address, 'Address updated successfully');
@@ -440,16 +421,16 @@ public function getActiveService()
 {
     try {
         $user = Auth::user();
-        $activeService = Address::where('user_id', $user->id)
+        $activeAddress = Address::where('user_id', $user->id)
                                 ->where('is_default', true)
                                 ->whereDeleted(false)
                                 ->first();
 
-        if (!$activeService) {
+        if (!$activeAddress) {
             return (new Service())->apiResponse(404, [], 'No active service found');
         }
 
-        return (new Service())->apiResponse(200, $activeService, 'Active service retrieved successfully');
+        return (new Service())->apiResponse(200, ["activeAddress" => $activeAddress], 'Active service retrieved successfully');
     } catch (Exception $e) {
         return (new Service())->apiResponse(500, [], $e->getMessage());
     }

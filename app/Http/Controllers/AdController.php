@@ -573,6 +573,7 @@ public function getRecentAdd(Request $request,$perpage)
      try {
 
         // return $request;
+        DB::beginTransaction();
 
         $service = new Service();
 
@@ -667,7 +668,7 @@ public function getRecentAdd(Request $request,$perpage)
 
         (new MailController())->sendNotification(Auth::user()->id,$title,$body,2);
 
-        // DB::commit();
+        DB::commit();
 
 
     //   dispatch(new SendEmail(Auth::user()->id,$title,$body,2));
@@ -675,7 +676,7 @@ public function getRecentAdd(Request $request,$perpage)
       return (new Service())->apiResponse(200,[],'ad added successfully !');
 
     } catch (Exception $e) {
-        // DB::rollBack();
+        DB::rollBack();
         return  (new Service())->apiResponse(500,[],$e->getMessage());
     }
 }

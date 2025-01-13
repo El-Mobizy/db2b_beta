@@ -374,6 +374,7 @@ class CommissionWalletController extends Controller
  *             @OA\Property(property="amount", type="number", example=100.00),
  *              @OA\Property(property="type", type="string", example="kkiapay"),
  *              @OA\Property(property="transaction_id", type="string", example="za_i42jlk"),
+ * @OA\Property(property="phone", type="string", example="za_i42jlk"),
  *              @OA\Property(property="status", type="number", example=1)
  *         )
  *     ),
@@ -407,15 +408,15 @@ class CommissionWalletController extends Controller
             'amount' => 'required',
             'type' => 'required|string',
             'transaction_id' => 'required|string',
-            'status' => 'nullable|boolean'
+            'status' => 'nullable|boolean',
+            'phone' => 'required'
         ]);
 
-        $typeRequired = ['kkiapay', 'mtn'];
+        $typeRequired = ['kkiapay', 'mtn','fedapay'];
 
         if (!in_array($request->type, $typeRequired)) {
             return (new Service())->apiResponse(404,[],"La valeur de 'type' doit être l'une des suivantes : " . implode(', ', $typeRequired));
         }
-
 
         if ($request->status != '0' && $request->status != '1') {
             return (new Service())->apiResponse(404,[], "La valeur de 'status' doit être soit '0', soit '1'.");
@@ -432,32 +433,37 @@ class CommissionWalletController extends Controller
 
         $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
 
-        $statusPayement =  $request->status;
 
-           $status = (new PaiementService())->verifyFundWalletTransaction($request->type,$request->transaction_id);
+        return (new FedapayController())->process($request->amount,$request->phone);
 
+        // $statusPayement =  $request->status;
 
-
-            if($status['status'] == 'ERROR'){
-                return (new Service())->apiResponse(404, [], $status['message'] );
-            }
+        //    $status = (new PaiementService())->verifyFundWalletTransaction($request->type,$request->transaction_id);
 
 
-            if($status['status'] == 'FAILED'){
-                $motif = $status['message'];
-                if($request->status == 1){
-                    return (new Service())->apiResponse(404, [], "Vérifiez bien le statut de paiement que vous retourné. Dans ce cas, le paiement a échoué et vous nous envoyé un statut qui a pour valeur  ".$request->status);
-                }
-                $statusPayement = 0;
-            }
 
-            if($status['status'] == 'SUCCESS'){
-                $motif =  "Recharge de portefeuille";
-                if($request->status == 0){
-                    return (new Service())->apiResponse(404, [], "Vérifiez bien le statut de paiement que vous retourné. Dans ce cas, le paiement a réussi et vous nous envoyé un statut qui a pour valeur  ".$request->status);
-                }
-                $statusPayement = 1;
-            }
+        //     if($status['status'] == 'ERROR'){
+        //         return (new Service())->apiResponse(404, [], $status['message'] );
+        //     }
+
+
+        //     if($status['status'] == 'FAILED'){
+        //         $motif = $status['message'];
+        //         if($request->status == 1){
+        //             return (new Service())->apiResponse(404, [], "Vérifiez bien le statut de paiement que vous retourné. Dans ce cas, le paiement a échoué et vous nous envoyé un statut qui a pour valeur  ".$request->status);
+        //         }
+        //         $statusPayement = 0;
+        //     }
+
+        //     if($status['status'] == 'SUCCESS'){
+        //         $motif =  "Recharge de portefeuille";
+        //         if($request->status == 0){
+        //             return (new Service())->apiResponse(404, [], "Vérifiez bien le statut de paiement que vous retourné. Dans ce cas, le paiement a réussi et vous nous envoyé un statut qui a pour valeur  ".$request->status);
+        //         }
+        //         $statusPayement = 1;
+        //     }
+        
+        $statusPayement = 1;
 
             if($statusPayement == 1){
                 (new PayementController())->storePayement(
@@ -475,14 +481,14 @@ class CommissionWalletController extends Controller
                     $request->type,
                     $request->amount,
                     "FAILED",
-                    $motif
+                    $motif??''
                 );
             }
 
-            if($status['status'] == 'FAILED'){
-                $motif = $status['message'];
-                return (new Service())->apiResponse(404, [],$motif);
-            }
+            // if($status['status'] == 'FAILED'){
+            //     $motif = $status['message'];
+            //     return (new Service())->apiResponse(404, [],$motif);
+            // }
 
         $credit =  $request->amount + CommissionWallet::where('person_id',$personId)->first()->balance;
 
@@ -498,3 +504,5 @@ class CommissionWalletController extends Controller
 }
 
 }
+
+

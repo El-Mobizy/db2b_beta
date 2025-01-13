@@ -565,9 +565,9 @@ class UserController extends Controller
 
           $test = $testEmail->verifyEmail($request->email);
      
-          if($test == 'undeliverable'){
-            return (new Service())->apiResponse(404, [], 'Please enter a functional email address');
-          }
+        //   if($test == 'undeliverable'){
+        //     return (new Service())->apiResponse(404, [], 'Please enter a functional email address');
+        //   }
 
           $query = "INSERT INTO users (email, phone, password,uid,last_ip_login,created_at,updated_at,code_user) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
 
@@ -757,7 +757,8 @@ class UserController extends Controller
              'client_detail' => $client,
              'delivery_agency_detail' => $deliveryAgency,
              'role' => $roles,
-             'file' => $user->person->file!=null? $user->person->file->location:null
+             'file' => $user->person->file!=null? $user->person->file->location:null,
+            'activeAddress' => (new AddressController())->getActiveService()->original['status_code']==200 ? (new AddressController())->getActiveService()->original['data']['activeAddress']:'No active service found',
          ];
 
          return (new Service())->apiResponse(200, $data, 'Authentificated user detail');
