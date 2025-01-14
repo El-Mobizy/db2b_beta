@@ -19,7 +19,6 @@ class FedapayController extends Controller
     {
         FedaPay::setApiKey(env('FEDAPAY_SECRET_KEY'));
         FedaPay::setEnvironment(env('FEDAPAY_ENVIRONMENT'));
-        $this->person =Person::whereId(Auth::user()->id)->first() ;
     }
 
     public function processPackage($amount,$number_phone, $country_code='bj',$mode='mtn_open'){
@@ -97,20 +96,8 @@ class FedapayController extends Controller
 
     protected function handleTransactionCreated($data)
     {
-
-        // $typeId = Commission::whereShort('STD')->first()->id;
-        // $service = new Service();
-        // $personId = $service->returnPersonIdAuth();
-        // $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
-
-        // if(!$wallet){
-        //     (new CommissionWalletController())->generateStandardWallet();
-        // }
-
-        // $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
-
         (new PayementController())->storePayement(
-            1,
+            $data['customer']['email'],
             $data['id'],
             $data['currency']['code'],
             $data['amount'],

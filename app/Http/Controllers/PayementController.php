@@ -6,12 +6,14 @@ use App\Exceptions\errorException;
 use App\Models\Commission;
 use App\Models\CommissionWallet;
 use App\Models\Payement;
+use App\Models\Person;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 
 class PayementController extends Controller
 {
-    function storePayement($commission_wallet_id = null, $transaction_id = null, $payement_type = null, $amount = null, $statut = null,$motif=null)
+    function storePayement($user_email, $transaction_id = null, $payement_type = null, $amount = null, $statut = null,$motif=null)
     {
         try {
 
@@ -19,9 +21,13 @@ class PayementController extends Controller
                 throw new errorException("This transaction ID already exists");
             }
 
+            $userId = User::whereEmail($user_email)->first()->id;
+            $personId = Person::whereUserId($userId)->first()->id;
+            $commissionWalletId = CommissionWallet::wherePersonId($personId)->first()->id;
+
             $payement = new Payement();
             $payement->uid =(new Service())->generateUid($payement);
-            $payement->commission_wallet_id = $commission_wallet_id;
+            $payement->commission_wallet_id = $commissionWalletId;
             $payement->transaction_id = $transaction_id;
             $payement->payement_type = $payement_type;
             $payement->amount = $amount;
