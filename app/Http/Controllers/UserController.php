@@ -1448,7 +1448,7 @@ public function new_code($id) {
             if($user->code !== null) {
                 $user->code = $codes;
                 $user->save();
-            
+
             $title=  'Help us protect your account';
             $body =$user->code;
             $mail = new MailController();

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Commission;
 use App\Models\CommissionWallet;
 use App\Models\Person;
+use App\Models\User;
+use App\Services\WalletService;
 use Illuminate\Http\Request;
 use  FedaPay\FedaPay;
 use \FedaPay\Payout;
@@ -73,19 +75,19 @@ class FedapayController extends Controller
             return response()->json(['error' => 'Invalid signature'.$e], 400);
         }
 
-        $eventData = $event->data['object'];
+        // $eventData = $event->data['object'];
 
         switch ($event->name) {
             case 'transaction.created':
-                $this->handleTransactionCreated($eventData);
+                $this->handleTransactionCreated($event);
                 break;
 
             case 'transaction.approved':
-                $this->handleTransactionApproved($eventData);
+                $this->handleTransactionApproved($event);
                 break;
 
             case 'transaction.canceled':
-                $this->handleTransactionCanceled($eventData);
+                $this->handleTransactionCanceled($event);
                 break;
 
             default:
@@ -98,28 +100,41 @@ class FedapayController extends Controller
     protected function handleTransactionCreated($data)
     {
         (new PayementController())->storePayement(
-            $data['customer']['email'],
-            $data['id'],
+            $data['entity']['customer']['email'],
+            $data['entity']['id'],
             $data['currency']['code'],
-            $data['amount'],
-            $data['status'],
-            $data['description'],
+            $data['entity']['amount'],
+            $data['entity']['status'],
+            $data['entity']['description'],
+            'bj'
         );
     }
 
+    // $transactionId = $event['entity']['id'];
+    // $customerEmail = $event['entity']['customer']['email'];
+    // $amount = $event['entity']['amount'];
+    // $status = $event['entity']['status'];
+
     protected function handleTransactionApproved($data)
     {
-        (new PayementController())->updatePayementStatus($data['id'],'approved');
+        (new PayementController())->updatePayementStatus($data['entity']['id'],'approved');
+            $email = $data['entity']['customer']['email'];
+            $amount = $data['entity']['amount'];
+            $userId = User::whereEmail($email)->first()->id;
+            $personId = User::whereUserId($userId)->first()->id;
+            $credit =  $amount + CommissionWallet::where('person_id',$personId)->first()->balance;
+
+        (new WalletService())->updateUserWallet($personId,$credit);
     }
 
     protected function handleTransactionCanceled($data)
     {
-        (new PayementController())->updatePayementStatus($data['id'],'canceled');
+        (new PayementController())->updatePayementStatus($data['entity']['id'],'canceled');
     }
 
     protected function handleTransactionDeclined($data)
     {
-        (new PayementController())->updatePayementStatus($data['id'],'declined');
+        (new PayementController())->updatePayementStatus($data['entity']['id'],'declined');
     }
 
 }

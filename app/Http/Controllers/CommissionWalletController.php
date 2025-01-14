@@ -379,10 +379,9 @@ class CommissionWalletController extends Controller
  *         required=true,
  *         @OA\JsonContent(
  *             @OA\Property(property="amount", type="number", example=100.00),
- *              @OA\Property(property="type", type="string", example="kkiapay"),
- *              @OA\Property(property="transaction_id", type="string", example="za_i42jlk"),
- * @OA\Property(property="phone", type="string", example="za_i42jlk"),
- *              @OA\Property(property="status", type="number", example=1)
+ *              @OA\Property(property="type", type="string", example="mtn_open"),
+ * @OA\Property(property="phone", type="string", example="2290197546933"),
+ * @OA\Property(property="country", type="string", example="bj")
  *         )
  *     ),
  *     @OA\Response(
@@ -414,20 +413,8 @@ class CommissionWalletController extends Controller
         $request->validate([
             'amount' => 'required',
             'type' => 'required|string',
-            'transaction_id' => 'required|string',
-            'status' => 'nullable|boolean',
             'phone' => 'required'
         ]);
-
-        $typeRequired = ['kkiapay', 'mtn','fedapay'];
-
-        if (!in_array($request->type, $typeRequired)) {
-            return (new Service())->apiResponse(404,[],"La valeur de 'type' doit être l'une des suivantes : " . implode(', ', $typeRequired));
-        }
-
-        if ($request->status != '0' && $request->status != '1') {
-            return (new Service())->apiResponse(404,[], "La valeur de 'status' doit être soit '0', soit '1'.");
-        }
 
         $typeId = Commission::whereShort('STD')->first()->id;
         $service = new Service();
@@ -442,68 +429,23 @@ class CommissionWalletController extends Controller
         $person = Person::whereId($personId)->first();
 
 
-        // return (new FedapayController())->process($request->amount,$request->phone);
-        return (new FedapayController())->processPackage($person,$request->amount,$request->phone);
+        $response = (new FedapayController())->processPackage($person,$request->amount,$request->phone);
 
-        // $statusPayement =  $request->status;
+        $transactionId = $response['payment_intent']['id'];
+        $amount = $response['payment_intent']['amount'];
+        $payementType = $response['payment_intent']['mode'];
+        $statut = $response['payment_intent']['status'];
+        $userEmail = $response['payment_intent']['metadata']['paid_customer']['email'];
+        $motif = 'Credit account';
 
-        //    $status = (new PaiementService())->verifyFundWalletTransaction($request->type,$request->transaction_id);
-
-
-
-        //     if($status['status'] == 'ERROR'){
-        //         return (new Service())->apiResponse(404, [], $status['message'] );
-        //     }
-
-
-        //     if($status['status'] == 'FAILED'){
-        //         $motif = $status['message'];
-        //         if($request->status == 1){
-        //             return (new Service())->apiResponse(404, [], "Vérifiez bien le statut de paiement que vous retourné. Dans ce cas, le paiement a échoué et vous nous envoyé un statut qui a pour valeur  ".$request->status);
-        //         }
-        //         $statusPayement = 0;
-        //     }
-
-        //     if($status['status'] == 'SUCCESS'){
-        //         $motif =  "Recharge de portefeuille";
-        //         if($request->status == 0){
-        //             return (new Service())->apiResponse(404, [], "Vérifiez bien le statut de paiement que vous retourné. Dans ce cas, le paiement a réussi et vous nous envoyé un statut qui a pour valeur  ".$request->status);
-        //         }
-        //         $statusPayement = 1;
-        //     }
-        
-        $statusPayement = 1;
-
-            if($statusPayement == 1){
-                (new PayementController())->storePayement(
-                    $wallet->id,
-                    $request->transaction_id,
-                    $request->type,
-                    $request->amount,
-                    "SUCCESS",
-                    null
-                );
-            }else{
-                (new PayementController())->storePayement(
-                    $wallet->id,
-                    $request->transaction_id,
-                    $request->type,
-                    $request->amount,
-                    "FAILED",
-                    $motif??''
-                );
-            }
-
-            // if($status['status'] == 'FAILED'){
-            //     $motif = $status['message'];
-            //     return (new Service())->apiResponse(404, [],$motif);
-            // }
+        (new PayementController())->storePayement($userEmail, $transactionId, $payementType, $amount, $statut, $motif,$request->country);
 
         $credit =  $request->amount + CommissionWallet::where('person_id',$personId)->first()->balance;
 
         (new WalletService())->updateUserWallet($personId,$credit);
 
-        return (new Service())->apiResponse(200,[],'Successfully credited wallet');
+        return (new Service())->apiResponse(200, [], 'Your payment is being processed. The status of your transaction will be updated once the payment is successfully confirmed.');
+
 
     } catch (errorException $e) {
         return (new Service())->apiResponse(404, [], $e->getMessage());
