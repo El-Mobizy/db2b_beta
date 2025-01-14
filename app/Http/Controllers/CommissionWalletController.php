@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\errorException;
 use App\Models\Commission;
 use App\Models\CommissionWallet;
+use App\Models\Person;
 use App\Services\PaiementService;
 use App\Services\WalletService;
 use Exception;
@@ -432,10 +433,11 @@ class CommissionWalletController extends Controller
         }
 
         $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
+        $person = Person::whereId($personId)->first();
 
 
         // return (new FedapayController())->process($request->amount,$request->phone);
-        return (new FedapayController())->processPackage($request->amount,$request->phone);
+        return (new FedapayController())->processPackage($person,$request->amount,$request->phone);
 
         // $statusPayement =  $request->status;
 

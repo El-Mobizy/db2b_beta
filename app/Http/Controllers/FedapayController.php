@@ -21,12 +21,12 @@ class FedapayController extends Controller
         FedaPay::setEnvironment(env('FEDAPAY_ENVIRONMENT'));
     }
 
-    public function processPackage($amount,$number_phone, $country_code='bj',$mode='mtn_open'){
+    public function processPackage($person,$amount,$number_phone, $country_code='bj',$mode='mtn_open'){
         try {
 
             $customer = [
-                'firstname' => $this->person->first_name,
-                'lastname' => $this->person->last_name,
+                'firstname' => $person->first_name,
+                'lastname' => $person->last_name,
                 'email' =>Auth::user()->email,
                 'phone_number' => [
                     'number'  => $number_phone,
