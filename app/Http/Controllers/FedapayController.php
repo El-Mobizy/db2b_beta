@@ -66,7 +66,7 @@ class FedapayController extends Controller
 
         try {
             $event = \FedaPay\Webhook::constructEvent($payload, $sigHeader, $endpointSecret);
-            (new MailController())->sendNotification(Auth::user()->id,$event ,$event ,2);
+            (new MailController())->sendNotification(1,$event ,$event ,2);
         } catch (\UnexpectedValueException $e) {
             return response()->json(['error' => 'Invalid payload'.$e], 400);
         } catch (\FedaPay\Error\SignatureVerification $e) {
