@@ -431,7 +431,7 @@ class CommissionWalletController extends Controller
 
         $response = (new FedapayController())->processPackage($person,$request->amount,$request->phone);
 
-        $transactionId = $response['payment_intent']['id'];
+        $transactionId = $response['payment_intent']['intentable_id'];
         $amount = $response['payment_intent']['amount'];
         $payementType = $response['payment_intent']['mode'];
         $statut = $response['payment_intent']['status'];
@@ -444,7 +444,7 @@ class CommissionWalletController extends Controller
 
         (new WalletService())->updateUserWallet($personId,$credit);
 
-        return (new Service())->apiResponse(200, [], 'Your payment is being processed. The status of your transaction will be updated once the payment is successfully confirmed.');
+        return (new Service())->apiResponse(200, [$response], 'Your payment is being processed. The status of your transaction will be updated once the payment is successfully confirmed.');
 
 
     } catch (errorException $e) {
