@@ -59,9 +59,9 @@ class FedapayController extends Controller
 
     public function handleFedapayPackageWebhook(Request $request)
     {
-        $endpointSecret = env('FEDAPAY_ENDPOINT_SECRET');
+        $endpointSecret = env('FEDAPAY_WEBHOOK_SECRET');
         $payload = $request->getContent();
-        $sigHeader = $request->header('x_fedapay_signature'); 
+        $sigHeader = $request->header('x_fedapay_signature');
         $event = null;
 
         try {
