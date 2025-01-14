@@ -61,7 +61,7 @@ class FedapayController extends Controller
     {
         $endpointSecret = env('FEDAPAY_ENDPOINT_SECRET');
         $payload = $request->getContent();
-        $sigHeader = $request->header('X-FEDAPAY-SIGNATURE'); 
+        $sigHeader = $request->header('x_fedapay_signature'); 
         $event = null;
 
         try {
