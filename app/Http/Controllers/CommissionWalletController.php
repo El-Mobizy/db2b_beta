@@ -57,9 +57,15 @@ class CommissionWalletController extends Controller
      *     )
      * )
      */
-    public function createWallet($personId,$commissionId){
+    public function createWallet(Request $request){
         try {
             $service = new Service();
+            $personId = $request->personId;
+            $commissionId = $request->commissionId;
+
+            if(CommissionWallet::wherePersonId($personId)->whereCommissionId($commissionId)->exists()){
+                return(new Service())->apiResponse(404,(object)[],"You already own this wallet !");
+            }
 
             $wallet = new CommissionWallet();
             $wallet->balance = 0;

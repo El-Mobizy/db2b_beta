@@ -71,6 +71,12 @@ class FavoriteController extends Controller
     
             $user_id = Auth::user()->id;
             $exist = Favorite::where('ad_id', $adId)->where('user_id', $user_id)->where('deleted', false)->exists();
+
+
+ 
+            if ($exist) {
+                return(new Service())->apiResponse(404,(object)[],"Product already exist in your wishlist !");
+            }
     
             // if ($exist) {
             //     Favorite::where('user_id', $user_id)->where('ad_id', $adId)->first()->delete();
@@ -404,42 +410,47 @@ $page = max(1, intval($request->query('page')));
  * )
  */
 
-    public function RemoveAdFromFavoriteList($id)
-    {
-        try {
-            $db = DB::connection()->getPdo();
-            $user_id = Auth::user()->id;
-            $blur = Ad::find($id);
+ public function RemoveAdFromFavoriteList($id)
+ {
+     try {
+         $db = DB::connection()->getPdo();
+         $user_id = Auth::user()->id;
+         $blur = Ad::find($id);
 
-            // return [Auth::user()->id, ]
 
-            if(!$blur){
-                return response()->json([
-                    'message' => "Not found"
-                ]);
-            }
+         if(!$blur){
+             return response()->json([
+                 'message' => "Not found"
+             ]);
+         }
 
-            if( Favorite::where('user_id',$user_id)->where('ad_id',$blur->id)->first()->user_id != $user_id){
-                return response()->json([
-                    'message' => "You can't remove an ad from another favorite list"
-                ]);
-            }
+         $exist = Favorite::where('ad_id', $id)->where('user_id', $user_id)->where('deleted', false)->exists();
+ 
+         if (!$exist) {
+             return(new Service())->apiResponse(404,(object)[],"Product dosn't exist in your wishlist !");
+         }
 
-         Favorite::where('user_id',$user_id)->where('ad_id',$blur->id)->first()->delete();
+         if(Favorite::where('user_id',$user_id)->where('ad_id',$blur->id)->first()->user_id != $user_id){
+             return response()->json([
+                 'message' => "You can't remove an ad from another favorite list"
+             ]);
+         }
 
-         return(new Service())->apiResponse(200,(new AdController())->getAllAd(),"Product added to wishlist successfully!");
+      Favorite::where('user_id',$user_id)->where('ad_id',$blur->id)->first()->delete();
 
-        //  return $this->returnFavoritesList($user_id, 'ad remove from favorite successfully !');
-            // return response()->json([
-            //     'message' => 'ad remove from favorite successfully !'
-            // ]);
+      return(new Service())->apiResponse(200,(new AdController())->getAllAd()->original['data'],"Product removed to wishlist successfully!");
 
-        } catch (Exception $e) {
-           return response()->json([
-            'error' => $e->getMessage()
-           ]);
-        }
-    }
+     //  return $this->returnFavoritesList($user_id, 'ad remove from favorite successfully !');
+         // return response()->json([
+         //     'message' => 'ad remove from favorite successfully !'
+         // ]);
+
+     } catch (Exception $e) {
+        return response()->json([
+         'error' => $e->getMessage()
+        ]);
+     }
+ }
 
    
 }
