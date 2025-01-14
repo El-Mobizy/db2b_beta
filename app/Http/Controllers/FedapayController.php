@@ -98,19 +98,19 @@ class FedapayController extends Controller
     protected function handleTransactionCreated($data)
     {
 
-        $typeId = Commission::whereShort('STD')->first()->id;
-        $service = new Service();
-        $personId = $service->returnPersonIdAuth();
-        $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
+        // $typeId = Commission::whereShort('STD')->first()->id;
+        // $service = new Service();
+        // $personId = $service->returnPersonIdAuth();
+        // $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
 
-        if(!$wallet){
-            (new CommissionWalletController())->generateStandardWallet();
-        }
+        // if(!$wallet){
+        //     (new CommissionWalletController())->generateStandardWallet();
+        // }
 
-        $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
+        // $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
 
         (new PayementController())->storePayement(
-            $wallet->id,
+            1,
             $data['id'],
             $data['currency']['code'],
             $data['amount'],
@@ -133,7 +133,6 @@ class FedapayController extends Controller
     {
         (new PayementController())->updatePayementStatus($data['id'],'declined');
     }
-
 
 }
 
