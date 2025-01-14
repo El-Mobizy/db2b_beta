@@ -17,6 +17,7 @@ use App\Http\Controllers\DeliveryAgencyController;
 use App\Http\Controllers\DeliveryAgentZoneController;
 use App\Http\Controllers\EscrowController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\FedapayController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FileTypeController;
 use App\Http\Controllers\GoogleLoginController;
@@ -390,14 +391,6 @@ Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::cl
                     Route::get('/getUserTransactions', [TransactionController::class, 'getUserTransactions'])->name('transaction.getUserTransactions');
                 });
 
-                 //Zone
-                 Route::prefix('zone')->group(function () {
-                    Route::get('/index/{paginate}', [ZoneController::class, 'index'])->name('zone.index');
-                    Route::post('/store', [ZoneController::class, 'store'])->name('zone.store');
-                    Route::post('/destroy/{uid}', [ZoneController::class, 'destroy'])->name('zone.destroy');
-                    Route::post('/makeZoneActiveOrNot/{uid}', [ZoneController::class, 'makeZoneActiveOrNot'])->name('zone.makeZoneActiveOrNot');
-                    Route::post('/update/{uid}', [ZoneController::class, 'update'])->name('zone.update');
-                });
 
 
                 //FileType
@@ -419,12 +412,6 @@ Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::cl
                     Route::post('/store', [PersonFileController::class, 'store'])->name('personFile.store');
                 });
 
-                  //deliveryzone
-                  Route::prefix('deliveryzone')->group(function () {
-                    Route::post('/addZone/{zoneUid}', [DeliveryAgentZoneController::class, 'addZone'])->name('deliveryzone.addZone');
-                    Route::post('/removeZone/{zoneUid}', [DeliveryAgentZoneController::class, 'removeZone'])->name('deliveryzone.removeZone');
-                    Route::get('/DeliveryAgentZones', [DeliveryAgentZoneController::class, 'DeliveryAgentZones'])->name('deliveryzone.DeliveryAgentZones');
-                });
 
                 //Address
 
@@ -540,9 +527,6 @@ Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::cl
     });
 
 
-    Route::get('isWithinDeliveryZone/{longitude}/{latitude}', [ZoneController::class, 'isWithinDeliveryZone'])->name('deliveryAgency.isWithinDeliveryZone');
-
-    Route::get('isWithinDeliveryZoneO/{longitude}/{latitude}', [ZoneController::class, 'isWithinDeliveryZoneO'])->name('deliveryAgency.isWithinDeliveryZoneO');
 
     Route::post('/notifyParty/{orderId}/{longitue}/{latitude}', [OrderController::class, 'notifyParty'])->name('order.notifyParty');
 
@@ -580,3 +564,8 @@ Route::post('kkiapay/verifyTransaction/{transaction_id}', [KkiapayController::cl
     Route::post('/TestCrypto', [Service::class, 'TestCrypto'])->name("file.TestCrypto");
 
     Route::post('/updateUserEmail', [UserController::class, 'updateUserEmail']);
+
+    Route::post('/webhook/fedapay/handle', [FedapayController::class, 'handleFedapayPackageWebhook']);
+
+
+

@@ -131,6 +131,23 @@ class PayementController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    public function updatePayementStatus($transaction_id, $status)
+{
+    try {
+        $payement = Payement::where('transaction_id', $transaction_id)->first();
+        
+        if (!$payement) {
+            throw new \Exception("This payment does not exist.");
+        }
+
+        $payement->statut = $status;
+        $payement->save();
+    } catch (\Exception $e) {
+        throw new \Exception($e->getMessage());
+    }
 }
 
 
+
+}

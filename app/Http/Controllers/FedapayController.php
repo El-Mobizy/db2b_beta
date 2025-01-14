@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Commission;
+use App\Models\CommissionWallet;
 use App\Models\Person;
 use Illuminate\Http\Request;
 use  FedaPay\FedaPay;
@@ -41,7 +43,7 @@ class FedapayController extends Controller
                     'currency' => [
                         'iso' => 'XOF',
                     ],
-                    'callback_url' => 'https://mywebsite.com/callback',
+                    // 'callback_url' => 'https://mywebsite.com/callback',
                     'customer' => $customer,
                 ]);
 
@@ -56,56 +58,82 @@ class FedapayController extends Controller
         }
     }
 
-    private function fedapayTransactionData($amount,$number_phone, $country_code='bj')
+    public function handleFedapayPackageWebhook(Request $request)
     {
-        $customer_data = [
-            'firstname' => $this->person->first_name,
-            'lastname' => $this->person->last_name,
-            'email' =>Auth::user()->email,
-            'phone_number' => [
-                'number'  => $number_phone,
-                'country' => $country_code
-            ]
-        ];
-
-        //  \FedaPay\Customer::create($customer_data);
-
-        return [
-            'description' => "wallet approvisionning",
-            'amount' => $amount,
-            'currency' => ['iso' => 'XOF'],
-            'callback_url' => url('callback'),
-            'mode' => 'mtn',
-            'customer' => $customer_data
-        ];
-    }
-
-    public function callback($id)
-    {
-        $transaction_id = $id;
-        $message = '';
+        $endpointSecret = env('FEDAPAY_ENDPOINT_SECRET');
+        $payload = $request->getContent();
+        $sigHeader = $request->header('X-FEDAPAY-SIGNATURE'); 
+        $event = null;
 
         try {
-            $transaction = Payout::retrieve($transaction_id);
-            switch($transaction->status) {
-                case 'approved':
-                    $message = 'Transaction approuvée.';
-                break;
-                case 'canceled':
-                    $message = 'Transaction annulée.';
-                break;
-                case 'declined':
-                    $message = 'Transaction déclinée.';
-                break;
-            }
-
-            return $message;
-
-        } catch(\Exception $e) {
-            $message = $e->getMessage();
+            $event = \FedaPay\Webhook::constructEvent($payload, $sigHeader, $endpointSecret);
+        } catch (\UnexpectedValueException $e) {
+            return response()->json(['error' => 'Invalid payload'.$e], 400);
+        } catch (\FedaPay\Error\SignatureVerification $e) {
+            return response()->json(['error' => 'Invalid signature'.$e], 400);
         }
 
+        $eventData = $event->data['object'];
+
+        switch ($event->name) {
+            case 'transaction.created':
+                $this->handleTransactionCreated($eventData);
+                break;
+
+            case 'transaction.approved':
+                $this->handleTransactionApproved($eventData);
+                break;
+
+            case 'transaction.canceled':
+                $this->handleTransactionCanceled($eventData);
+                break;
+
+            default:
+                return response()->json(['error' => 'Unhandled event'], 400);
+        }
+
+        return response()->json(['message' => 'Event handled'], 200);
     }
+
+    protected function handleTransactionCreated($data)
+    {
+
+        $typeId = Commission::whereShort('STD')->first()->id;
+        $service = new Service();
+        $personId = $service->returnPersonIdAuth();
+        $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
+
+        if(!$wallet){
+            (new CommissionWalletController())->generateStandardWallet();
+        }
+
+        $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
+
+        (new PayementController())->storePayement(
+            $wallet->id,
+            $data['id'],
+            $data['currency']['code'],
+            $data['amount'],
+            $data['status'],
+            $data['description'],
+        );
+    }
+
+    protected function handleTransactionApproved($data)
+    {
+        (new PayementController())->updatePayementStatus($data['id'],'approved');
+    }
+
+    protected function handleTransactionCanceled($data)
+    {
+        (new PayementController())->updatePayementStatus($data['id'],'canceled');
+    }
+
+    protected function handleTransactionDeclined($data)
+    {
+        (new PayementController())->updatePayementStatus($data['id'],'declined');
+    }
+
 
 }
 
