@@ -72,11 +72,8 @@ class FedapayController extends Controller
             return response()->json(['error' => 'Invalid signature'.$e], 400);
         }
 
-
+        
         switch ($event->name) {
-            // case 'transaction.created':
-            //     $this->handleTransactionCreated($event);
-            //     break;
 
             case 'transaction.approved':
                 $this->handleTransactionApproved($event);
@@ -86,6 +83,10 @@ class FedapayController extends Controller
                 $this->handleTransactionCanceled($event);
                 break;
 
+            case 'transaction.declined':
+                $this-> handleTransactionDeclined($event);
+                break;
+
             default:
                 return response()->json(['error' => 'Unhandled event'], 400);
         }
@@ -93,23 +94,9 @@ class FedapayController extends Controller
         return response()->json(['message' => 'Event handled'], 200);
     }
 
-    // protected function handleTransactionCreated($data)
-    // {
-    //     (new PayementController())->storePayement(
-    //         $data['entity']['customer']['email'],
-    //         $data['entity']['id'],
-    //         $data['currency']['code'],
-    //         $data['entity']['amount'],
-    //         $data['entity']['status'],
-    //         $data['entity']['description'],
-    //         'bj'
-    //     );
-    // }
 
     protected function handleTransactionApproved($data)
     {
-        (new PayementController())->updatePayementStatus($data['entity']['id'],'approved');
-        (new MailController())->sendNotification(1,$data['entity']['customer']['email'], $data['entity']['metadata']['paid_customer']['email'] ,2);
 
             $email = $data['entity']['customer']['email'];
             if (!$email) {
@@ -133,7 +120,7 @@ class FedapayController extends Controller
                 throw new \Exception("No user found with email: $email");
             }
             $userId = $user->id;
-            $person = User::whereUserId($userId)->first();
+            $person = Person::whereUserId($userId)->first();
             if (!$person) {
                 throw new \Exception("No person found with user ID: $userId");
             }
@@ -145,6 +132,7 @@ class FedapayController extends Controller
             $credit = $amount + $commissionWallet->balance;
 
         (new WalletService())->updateUserWallet($personId,$credit);
+        (new PayementController())->updatePayementStatus($data['entity']['id'],'approved');
     }
 
     protected function handleTransactionCanceled($data)
