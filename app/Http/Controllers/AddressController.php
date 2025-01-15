@@ -24,6 +24,8 @@ class AddressController extends Controller
  *             @OA\Property(property="latitude", type="number", example="40.712776"),
  *             @OA\Property(property="longitude", type="number", example="-74.005974"),
  *             @OA\Property(property="formatted_address", type="string", example="New York, NY, USA"),
+ * @OA\Property(property="country_id", type="integer", example=1),
+ * @OA\Property(property="phone", type="integer", example=2290197546933),
  *             @OA\Property(property="place_id", type="string", example="ChIJrTLr-GyuEmsRBfy61i59si0"),
  *             @OA\Property(property="is_default", type="boolean", example=true),
  *         )
@@ -45,6 +47,9 @@ class AddressController extends Controller
         $request->validate([
             'name' => 'required|string',
             'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'country_id' => 'required|integer|exists:countries,id',
+            'phone' => 'required|integer',
             'longitude' => 'required|numeric',
             'formatted_address' => 'nullable|string',
             'place_id' => 'nullable|string',
@@ -78,12 +83,14 @@ class AddressController extends Controller
         $address = new Address();
         $address->user_id = $user->id;
         $address->name = $request->name;
+        $address->phone = $request->phone;
         $address->latitude = $request->latitude;
-        $address->longitude = $request->longitude;
-        $address->formatted_address = $request->formatted_address;
         $address->place_id = $request->place_id;
+        $address->longitude = $request->longitude;
         $address->is_default = $request->is_default ;
+        $address->country_id = $request->country_id;
         $address->uid =(new Service())->generateUid($address);
+        $address->formatted_address = $request->formatted_address;
         $address->save();
 
         return (new Service())->apiResponse(200, $address, 'Address created successfully');
@@ -231,6 +238,8 @@ public function getAllUserAddresses($userUid)
  *         required=true,
  *         @OA\JsonContent(
  *             @OA\Property(property="name", type="string", example="Home"),
+ * @OA\Property(property="country_id", type="integer", example=1),
+ * @OA\Property(property="phone", type="integer", example=2290197546933),
  *         )
  *     ),
  *     @OA\Response(
@@ -253,6 +262,8 @@ public function updateAddress($addressUid, Request $request)
     try {
         $request->validate([
             'name' => 'nullable|string',
+            'country_id' => 'nullable|integer|exists:countries,id',
+            'phone' => 'nullable|integer'
         ]);
 
         $user = Auth::user();
@@ -267,6 +278,8 @@ public function updateAddress($addressUid, Request $request)
         }
 
         $address->name = $request->name ?? $address->name;
+        $address->phone = $request->phone ?? $address->phone;
+        $address->country_id = $request->country_id ?? $address->country_id;
         $address->save();
 
         return (new Service())->apiResponse(200, $address, 'Address updated successfully');
@@ -427,7 +440,7 @@ public function getActiveService()
                                 ->first();
 
         if (!$activeAddress) {
-            return (new Service())->apiResponse(404, [], 'No active service found');
+            return (new Service())->apiResponse(404, (object)[], 'No active service found');
         }
 
         return (new Service())->apiResponse(200, ["activeAddress" => $activeAddress], 'Active service retrieved successfully');

@@ -9,9 +9,7 @@ use App\Models\User;
 use App\Services\WalletService;
 use Illuminate\Http\Request;
 use  FedaPay\FedaPay;
-use \FedaPay\Payout;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 
 class FedapayController extends Controller
 {
@@ -68,19 +66,17 @@ class FedapayController extends Controller
 
         try {
             $event = \FedaPay\Webhook::constructEvent($payload, $sigHeader, $endpointSecret);
-            (new MailController())->sendNotification(1,$event ,$event ,2);
         } catch (\UnexpectedValueException $e) {
             return response()->json(['error' => 'Invalid payload'.$e], 400);
         } catch (\FedaPay\Error\SignatureVerification $e) {
             return response()->json(['error' => 'Invalid signature'.$e], 400);
         }
 
-        // $eventData = $event->data['object'];
 
         switch ($event->name) {
-            case 'transaction.created':
-                $this->handleTransactionCreated($event);
-                break;
+            // case 'transaction.created':
+            //     $this->handleTransactionCreated($event);
+            //     break;
 
             case 'transaction.approved':
                 $this->handleTransactionApproved($event);
@@ -97,32 +93,44 @@ class FedapayController extends Controller
         return response()->json(['message' => 'Event handled'], 200);
     }
 
-    protected function handleTransactionCreated($data)
-    {
-        (new PayementController())->storePayement(
-            $data['entity']['customer']['email'],
-            $data['entity']['id'],
-            $data['currency']['code'],
-            $data['entity']['amount'],
-            $data['entity']['status'],
-            $data['entity']['description'],
-            'bj'
-        );
-    }
-
-    // $transactionId = $event['entity']['id'];
-    // $customerEmail = $event['entity']['customer']['email'];
-    // $amount = $event['entity']['amount'];
-    // $status = $event['entity']['status'];
+    // protected function handleTransactionCreated($data)
+    // {
+    //     (new PayementController())->storePayement(
+    //         $data['entity']['customer']['email'],
+    //         $data['entity']['id'],
+    //         $data['currency']['code'],
+    //         $data['entity']['amount'],
+    //         $data['entity']['status'],
+    //         $data['entity']['description'],
+    //         'bj'
+    //     );
+    // }
 
     protected function handleTransactionApproved($data)
     {
         (new PayementController())->updatePayementStatus($data['entity']['id'],'approved');
+        (new MailController())->sendNotification(1,$data['entity']['customer']['email'], $data['entity']['metadata']['paid_customer']['email'] ,2);
+
             $email = $data['entity']['customer']['email'];
+            if (!$email) {
+                throw new \Exception("Email is missing in the customer data.");
+            }
             $amount = $data['entity']['amount'];
-            $userId = User::whereEmail($email)->first()->id;
-            $personId = User::whereUserId($userId)->first()->id;
-            $credit =  $amount + CommissionWallet::where('person_id',$personId)->first()->balance;
+            $user = User::whereEmail($email)->first();
+            if (!$user) {
+                throw new \Exception("No user found with email: $email");
+            }
+            $userId = $user->id;
+            $person = User::whereUserId($userId)->first();
+            if (!$person) {
+                throw new \Exception("No person found with user ID: $userId");
+            }
+            $personId = $person->id;
+            $commissionWallet = CommissionWallet::where('person_id', $personId)->first();
+            if (!$commissionWallet) {
+                throw new \Exception("No commission wallet found for person ID: $personId");
+            }
+            $credit = $data['entity']['amount'] + $commissionWallet->balance;
 
         (new WalletService())->updateUserWallet($personId,$credit);
     }

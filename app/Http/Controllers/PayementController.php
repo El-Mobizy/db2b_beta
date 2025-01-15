@@ -143,7 +143,7 @@ class PayementController extends Controller
 {
     try {
         $payement = Payement::where('transaction_id', $transaction_id)->first();
-        
+
         if (!$payement) {
             throw new \Exception("This payment does not exist.");
         }

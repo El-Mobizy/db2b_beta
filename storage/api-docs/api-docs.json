@@ -1365,6 +1365,14 @@
                                         "type": "string",
                                         "example": "New York, NY, USA"
                                     },
+                                    "country_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "phone": {
+                                        "type": "integer",
+                                        "example": 2290197546933
+                                    },
                                     "place_id": {
                                         "type": "string",
                                         "example": "ChIJrTLr-GyuEmsRBfy61i59si0"
@@ -1549,6 +1557,14 @@
                                     "name": {
                                         "type": "string",
                                         "example": "Home"
+                                    },
+                                    "country_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "phone": {
+                                        "type": "integer",
+                                        "example": 2290197546933
                                     }
                                 },
                                 "type": "object"
@@ -3835,14 +3851,6 @@
                                     "type": {
                                         "type": "string",
                                         "example": "mtn_open"
-                                    },
-                                    "phone": {
-                                        "type": "string",
-                                        "example": "2290197546933"
-                                    },
-                                    "country": {
-                                        "type": "string",
-                                        "example": "bj"
                                     }
                                 },
                                 "type": "object"

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\errorException;
 use App\Models\Commission;
 use App\Models\CommissionWallet;
+use App\Models\Country;
 use App\Models\Person;
 use App\Services\PaiementService;
 use App\Services\WalletService;
@@ -380,8 +381,6 @@ class CommissionWalletController extends Controller
  *         @OA\JsonContent(
  *             @OA\Property(property="amount", type="number", example=100.00),
  *              @OA\Property(property="type", type="string", example="mtn_open"),
- * @OA\Property(property="phone", type="string", example="2290197546933"),
- * @OA\Property(property="country", type="string", example="bj")
  *         )
  *     ),
  *     @OA\Response(
@@ -411,15 +410,15 @@ class CommissionWalletController extends Controller
  public function addFund(Request $request){
     try{
         $request->validate([
-            'amount' => 'required',
+            'amount' => 'required|numeric',
             'type' => 'required|string',
-            'phone' => 'required'
         ]);
 
         $typeId = Commission::whereShort('STD')->first()->id;
         $service = new Service();
         $personId = $service->returnPersonIdAuth();
         $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
+        $activeAddress = (new AddressController())->getActiveService()->original['data']['activeAddress'];
 
         if(!$wallet){
             $this->generateStandardWallet();
@@ -427,22 +426,19 @@ class CommissionWalletController extends Controller
 
         $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
         $person = Person::whereId($personId)->first();
+        $country = Country::whereId($activeAddress->country_id)->first()->shortcode;
 
 
-        $response = (new FedapayController())->processPackage($person,$request->amount,$request->phone);
+        $response = (new FedapayController())->processPackage($person,$request->amount,$activeAddress->phone,'bj',$request->type);
 
         $transactionId = $response['payment_intent']['intentable_id'];
-        $amount = $response['payment_intent']['amount'];
+        $amount = $request->amount;
         $payementType = $response['payment_intent']['mode'];
         $statut = $response['payment_intent']['status'];
         $userEmail = $response['payment_intent']['metadata']['paid_customer']['email'];
         $motif = 'Credit account';
 
         (new PayementController())->storePayement($userEmail, $transactionId, $payementType, $amount, $statut, $motif,$request->country);
-
-        $credit =  $request->amount + CommissionWallet::where('person_id',$personId)->first()->balance;
-
-        (new WalletService())->updateUserWallet($personId,$credit);
 
         return (new Service())->apiResponse(200, [$response], 'Your payment is being processed. The status of your transaction will be updated once the payment is successfully confirmed.');
 
