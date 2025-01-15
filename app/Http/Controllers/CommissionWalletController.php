@@ -418,6 +418,11 @@ class CommissionWalletController extends Controller
         $service = new Service();
         $personId = $service->returnPersonIdAuth();
         $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
+
+        if((new AddressController())->getActiveService()->original['status_code'] !==200){
+            $message = (new AddressController())->getActiveService()->original['message'];
+            return (new Service())->apiResponse(404, (object)[], $message);
+        }
         $activeAddress = (new AddressController())->getActiveService()->original['data']['activeAddress'];
 
         if(!$wallet){

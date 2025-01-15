@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Commission;
 use App\Models\CommissionWallet;
+use App\Models\Payement;
 use App\Models\Person;
 use App\Models\User;
 use App\Services\WalletService;
@@ -72,7 +73,6 @@ class FedapayController extends Controller
             return response()->json(['error' => 'Invalid signature'.$e], 400);
         }
 
-        
         switch ($event->name) {
 
             case 'transaction.approved':
@@ -98,38 +98,48 @@ class FedapayController extends Controller
     protected function handleTransactionApproved($data)
     {
 
-            $email = $data['entity']['customer']['email'];
-            if (!$email) {
-                throw new \Exception("Email is missing in the customer data.");
-            }
-            $amount = $data['entity']['amount'];
-            if (!$amount) {
-                throw new \Exception("Amount is missing in transaction data.");
-            }
+        $payement = Payement::where('transaction_id', $data['entity']['id'])->first();
 
-            if (!is_numeric($amount)) {
-                throw new \Exception("Amount is not a valid number.");
-            }
+        if (!$payement) {
+            return (new Service())->apiResponse(404,$data,"This payment does not exist.");
+        }
 
-            if ($amount <= 0) {
-                throw new \Exception("Amount must be greater than zero.");
-            }
+        if ($payement->statut === 'approved') {
+            return (new Service())->apiResponse(404,$data,"Transaction already approved successfully.");
+        }
 
-            $user = User::whereEmail($email)->first();
-            if (!$user) {
-                throw new \Exception("No user found with email: $email");
-            }
-            $userId = $user->id;
-            $person = Person::whereUserId($userId)->first();
-            if (!$person) {
-                throw new \Exception("No person found with user ID: $userId");
-            }
-            $personId = $person->id;
-            $commissionWallet = CommissionWallet::where('person_id', $personId)->first();
-            if (!$commissionWallet) {
-                throw new \Exception("No commission wallet found for person ID: $personId");
-            }
-            $credit = $amount + $commissionWallet->balance;
+        $email = $data['entity']['customer']['email'];
+        if (!$email) {
+            throw new \Exception("Email is missing in the customer data.");
+        }
+        $amount = $data['entity']['amount'];
+        if (!$amount) {
+            throw new \Exception("Amount is missing in transaction data.");
+        }
+
+        if (!is_numeric($amount)) {
+            throw new \Exception("Amount is not a valid number.");
+        }
+
+        if ($amount <= 0) {
+            throw new \Exception("Amount must be greater than zero.");
+        }
+
+        $user = User::whereEmail($email)->first();
+        if (!$user) {
+            throw new \Exception("No user found with email: $email");
+        }
+        $userId = $user->id;
+        $person = Person::whereUserId($userId)->first();
+        if (!$person) {
+            throw new \Exception("No person found with user ID: $userId");
+        }
+        $personId = $person->id;
+        $commissionWallet = CommissionWallet::where('person_id', $personId)->first();
+        if (!$commissionWallet) {
+            throw new \Exception("No commission wallet found for person ID: $personId");
+        }
+        $credit = $amount + $commissionWallet->balance;
 
         (new WalletService())->updateUserWallet($personId,$credit);
         (new PayementController())->updatePayementStatus($data['entity']['id'],'approved');
