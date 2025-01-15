@@ -428,7 +428,6 @@ class CommissionWalletController extends Controller
         $person = Person::whereId($personId)->first();
         $country = Country::whereId($activeAddress->country_id)->first()->shortcode;
 
-
         $response = (new FedapayController())->processPackage($person,$request->amount,$activeAddress->phone,'bj',$request->type);
 
         $transactionId = $response['payment_intent']['intentable_id'];
@@ -441,7 +440,6 @@ class CommissionWalletController extends Controller
         (new PayementController())->storePayement($userEmail, $transactionId, $payementType, $amount, $statut, $motif,$request->country);
 
         return (new Service())->apiResponse(200, [$response], 'Your payment is being processed. The status of your transaction will be updated once the payment is successfully confirmed.');
-
 
     } catch (errorException $e) {
         return (new Service())->apiResponse(404, [], $e->getMessage());
