@@ -116,6 +116,18 @@ class FedapayController extends Controller
                 throw new \Exception("Email is missing in the customer data.");
             }
             $amount = $data['entity']['amount'];
+            if (!$amount) {
+                throw new \Exception("Amount is missing in transaction data.");
+            }
+
+            if (!is_numeric($amount)) {
+                throw new \Exception("Amount is not a valid number.");
+            }
+
+            if ($amount <= 0) {
+                throw new \Exception("Amount must be greater than zero.");
+            }
+
             $user = User::whereEmail($email)->first();
             if (!$user) {
                 throw new \Exception("No user found with email: $email");
@@ -130,7 +142,7 @@ class FedapayController extends Controller
             if (!$commissionWallet) {
                 throw new \Exception("No commission wallet found for person ID: $personId");
             }
-            $credit = $data['entity']['amount'] + $commissionWallet->balance;
+            $credit = $amount + $commissionWallet->balance;
 
         (new WalletService())->updateUserWallet($personId,$credit);
     }
