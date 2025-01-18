@@ -423,6 +423,7 @@ class CommissionWalletController extends Controller
             $message = (new AddressController())->getActiveService()->original['message'];
             return (new Service())->apiResponse(404, (object)[], $message);
         }
+
         $activeAddress = (new AddressController())->getActiveService()->original['data']['activeAddress'];
 
         if(!$wallet){
@@ -431,9 +432,15 @@ class CommissionWalletController extends Controller
 
         $wallet = CommissionWallet::where('person_id',$personId)->where('commission_id',$typeId)->first();
         $person = Person::whereId($personId)->first();
-        $country = Country::whereId($activeAddress->country_id)->first()->shortcode;
+        $countryCCA2 = strtolower(Country::whereId($activeAddress->country_id)->first()->cca2);
 
-        $response = (new FedapayController())->processPackage($person,$request->amount,$activeAddress->phone,'bj',$request->type);
+        $countryArray = ["ci","tg","sn","ne","gn","bj"];
+
+        if (!in_array($countryCCA2, $countryArray)) {
+            return (new Service())->apiResponse(404, (object)[], "Payment cannot be processed from this country.");
+        }
+
+        $response = (new FedapayController())->processPackage($person,$request->amount,$activeAddress->phone,$countryCCA2,$request->type);
 
         $transactionId = $response['payment_intent']['intentable_id'];
         $amount = $request->amount;

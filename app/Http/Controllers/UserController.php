@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 /**
  * @OA\Info(
@@ -276,7 +277,6 @@ class UserController extends Controller
         try
         {
 
-            // return User::whereEmail($request->username)->first();
 
             $request->validate([
                 'username' => 'required',
@@ -312,6 +312,10 @@ class UserController extends Controller
 
                     if (!empty($authenticatedUser)) {
                         $token = Auth::attempt(['email' => $username, 'password' => $password]);
+                       
+                        // auth()->attempt(['foo' => 'bar']);
+                        
+                        
                         $codes =  (new Service())->generateSixDigitNumber();
                        
 
@@ -347,6 +351,7 @@ class UserController extends Controller
                                 // 'expires_in' => Auth::factory()->getTTL() * 60,
                                 // 'n' => $n
                         ];
+
                         return (new Service())->apiResponse(200, $data, 'Logged sucessfully');
                     } else {
                         return (new Service())->apiResponse(404, [], 'Empty authentificate user');

@@ -84,13 +84,22 @@ class CountryController extends Controller
  
 
  private function getData(): mixed
-{
-    $path = storage_path('country.json');
-
-    $data = file_get_contents($path);
-
-    return json_decode($data, false, 512, JSON_THROW_ON_ERROR);
-}
+ {
+     $path = storage_path('country1.json');
+ 
+     $data = file_get_contents($path);
+ 
+     $decodedData = json_decode($data, false, 512);
+ 
+     // Vérifier si le décodage a échoué
+     if (json_last_error() !== JSON_ERROR_NONE) {
+         // Gérer l'erreur ici, par exemple en renvoyant un message d'erreur ou en lançant une exception
+         return response()->json(['error' => 'Erreur de décodage JSON'], 400);
+     }
+ 
+     return $decodedData;
+ }
+ 
 
 
 /**
@@ -116,7 +125,6 @@ class CountryController extends Controller
 
     public function load()
     {
-        // Récupérer les données du fichier JSON
         $countryRaw = $this->getData();
 
         DB::transaction(function() use ($countryRaw) {
@@ -125,6 +133,7 @@ class CountryController extends Controller
                 $countryNew->fullname = $country->fullname;
                 $countryNew->flag = $country->flag;
                 $countryNew->shortcode = $country->shortcode;
+                $countryNew->cca2 = $country->cca2;
                 
                 if ($country->callcode !== null) {
                     $countryNew->callcode = $country->callcode;

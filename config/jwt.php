@@ -284,7 +284,9 @@ return [
         |
         */
 
-        'auth' => PHPOpenSourceSaver\JWTAuth\Providers\Auth\Illuminate::class,
+        // 'auth' => PHPOpenSourceSaver\JWTAuth\Providers\Auth\Illuminate::class,
+
+        'auth' =>  PHPOpenSourceSaver\JWTAuth\Providers\LaravelServiceProvider::class,
 
         /*
         |--------------------------------------------------------------------------
