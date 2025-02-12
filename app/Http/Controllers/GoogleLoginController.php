@@ -99,8 +99,7 @@ class GoogleLoginController extends Controller
                 'prompt' => 'consent',
             ]);
             $googleToken = $response->json();
-    
-    
+
             if (isset($googleToken['error'])) {
                 return (new Service())->apiResponse(404, [$googleToken['error']], $googleToken['error_description']);
             }
